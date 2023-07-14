@@ -53,7 +53,7 @@
       width: 300px;
     }
 
-    #searchButton, #randomPlayButton, #sequencePlayButton {
+    #searchButton, #randomPlayButton {
       padding: 10px 20px;
       font-size: 1em;
       background-color: #FFD700;
@@ -89,17 +89,13 @@
     <button type="submit" id="searchButton">Search</button>
   </form>
 
- <button id="randomPlayButton">Random Play</button>
-<button id="sequencePlayButton">Play Sequence</button>
-  
+  <button id="randomPlayButton">Random Play</button>
+
   <div id="results"></div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     let players = [];
-    let randomPlayIntervalId = null;
-    let sequencePlayIntervalId = null;
-    let sequencePlayIndex = 0;
 
     function createPlayer(id, videoId) {
       return new YT.Player(id, {
@@ -127,15 +123,14 @@
         players.push(createPlayer(videoDiv.id, item.id.videoId));
       });
 
-     document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
-document.getElementById('sequencePlayButton').addEventListener('click', handleSequencePlayButtonClick);
+      document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
     }
 
     function handleFormSubmit(event) {
       event.preventDefault();
       const searchQuery = document.getElementById('searchQuery').value;
       const request = new XMLHttpRequest();
-      const apiKey = 'AIzaSyAEzhGEyJJgZpoN6ahBTvnZyr4g5FV5s9s';
+      const apiKey = 'YOUR_YOUTUBE_API_KEY';
       const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${searchQuery}&key=${apiKey}`;
 
       request.open('GET', url, true);
@@ -164,48 +159,15 @@ document.getElementById('sequencePlayButton').addEventListener('click', handleSe
     }
 
     function handleRandomPlayButtonClick() {
-      if (randomPlayIntervalId !== null) {
-        clearInterval(randomPlayIntervalId);
-        randomPlayIntervalId = null;
-        document.getElementById('randomPlayButton').textContent = 'Random Play';
-      } else {
-        randomPlayIntervalId = setInterval(function() {
-          const playerIndex = Math.floor(Math.random() * players.length);
-          const player = players[playerIndex];
-          player.playVideo();
-          player.setVolume(Math.random() * 100);
-        }, 2000);
-        document.getElementById('randomPlayButton').textContent = 'Stop Random Play';
-      }
-    }
+      const randomIndex = Math.floor(Math.random() * players.length);
+      const player = players[randomIndex];
 
-    function handleSequencePlayButtonClick() {
-      if (sequencePlayIntervalId !== null) {
-        clearInterval(sequencePlayIntervalId);
-        sequencePlayIntervalId = null;
-        document.getElementById('sequencePlayButton').textContent = 'Play Sequence';
-      } else {
-        sequencePlayIndex = 0;
-        playNextInSequence();
-        sequencePlayIntervalId = setInterval(playNextInSequence, 5000);
-        document.getElementById('sequencePlayButton').textContent = 'Stop Sequence';
-      }
-    }
-
-    function playNextInSequence() {
-      if (players[sequencePlayIndex]) {
-        players[sequencePlayIndex].playVideo();
-        players[sequencePlayIndex].setVolume(100);
-        sequencePlayIndex++;
-        if (sequencePlayIndex >= players.length) {
-          sequencePlayIndex = 0;
-        }
-      }
+      player.playVideo();
+      player.setVolume(Math.random() * 100);
     }
 
     document.getElementById('searchForm').addEventListener('submit', handleFormSubmit);
-  document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
-document.getElementById('sequencePlayButton').addEventListener('click', handleSequencePlayButtonClick);
+
     startWebcam();
   </script>
 </body>
