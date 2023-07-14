@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YouTube Song Search</title>
+  <style>
+    #searchForm {
+      margin-bottom: 20px;
+    }
+    #results {
+      list-style-type: none;
+      padding: 0;
+    }
+    #results li {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Song Search</h1>
+
+  <form id="searchForm">
+    <input type="text" id="searchQuery" placeholder="Enter a song name">
+    <button type="submit">Search</button>
+  </form>
+
+  <ul id="results"></ul>
+
+  <script>
+    // Function to remove ads from YouTube video URLs
+    function removeAdsFromURL(url) {
+      // Remove parameters related to ads
+      const adParams = ['autoplay', 'showinfo', 'rel'];
+      const urlObj = new URL(url);
+      adParams.forEach(param => urlObj.searchParams.delete(param));
+      return urlObj.toString();
+    }
+
+    // Function to display the search results
+    function displayResults(data) {
+      const resultsList = document.getElementById('results');
+      resultsList.innerHTML = '';
+
+      data.items.forEach(item => {
+        const videoURL = removeAdsFromURL(`https://www.youtube.com/watch?v=${item.id.videoId}`);
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <h3>${item.snippet.title}</h3>
+          <iframe width="560" height="315" src="${videoURL}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        `;
+        resultsList.appendChild(listItem);
+      });
+    }
+
+    // Function to handle form submission
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const searchQuery = document.getElementById('searchQuery').value;
+      const request = new XMLHttpRequest();
+      const apiKey = 'YOUR_YOUTUBE_API_KEY';
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${searchQuery}&key=${apiKey}`;
+
+      request.open('GET', url, true);
+
+      request.onload = function() {
+        if (request.status >= 200 && request.status < 400) {
+          const data = JSON.parse(request.responseText);
+          displayResults(data);
+        } else {
+          console.error('An error occurred while fetching data from YouTube.');
+        }
+      };
+
+      request.onerror = function() {
+        console.error('An error occurred while fetching data from YouTube.');
+      };
+
+      request.send();
+    }
+
+    // Attach form submit event handler
+    const searchForm = document.getElementById('searchForm');
+    searchForm.addEventListener('submit', handleFormSubmit);
+  </script>
+</body>
+</html>
