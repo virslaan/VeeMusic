@@ -5,26 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YouTube Song Search</title>
   <style>
-    @keyframes gradientBackground {
-      0% {background: #000000;}
-      50% {background: #333333;}
-      100% {background: #000000;}
-    }
-
-    @keyframes wiggle {
-      10%, 90% {transform: translate3d(-1px, 0, 0);}
-      20%, 80% {transform: translate3d(2px, 0, 0);}
-      30%, 50%, 70% {transform: translate3d(-4px, 0, 0);}
-      40%, 60% {transform: translate3d(4px, 0, 0);}
-    }
-
-    @keyframes slideIn {
-      from {transform: translate3d(0, 100%, 0);}
-      to {transform: translate3d(0, 0, 0);}
-    }
-
     body {
-      animation: gradientBackground 10s ease infinite;
+      background: linear-gradient(to bottom, #000000, #333333);
       color: #FFFFFF;
       font-family: 'Helvetica Neue', Arial, sans-serif;
       margin: 0;
@@ -54,7 +36,7 @@
       width: 300px;
     }
 
-    #searchButton {
+    #searchButton, #randomPlayButton {
       padding: 10px 20px;
       font-size: 18px;
       background-color: #FFD700;
@@ -64,32 +46,42 @@
       transition: background-color 0.3s;
     }
 
-    #searchButton:hover {
-      animation: wiggle 0.5s ease;
+    #searchButton:hover, #randomPlayButton:hover {
       background-color: #FFCC00;
     }
 
     #results {
-      list-style-type: none;
       padding: 0;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
     }
 
-    #results li {
-      animation: slideIn 0.5s ease;
-      margin: 10px;
+    video {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      opacity: 0.5;
+      z-index: -1;
     }
 
-    iframe {
-      width: 360px;
-      height: 215px;
-      border: none;
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: -1;
     }
   </style>
 </head>
 <body>
+  <video id="webcam" autoplay playsinline></video>
+  <div id="overlay"></div>
+
   <h1>YouTube Song Search</h1>
 
   <form id="searchForm">
@@ -97,25 +89,42 @@
     <button type="submit" id="searchButton">Search</button>
   </form>
 
-  <ul id="results"></ul>
+  <button id="randomPlayButton" style="display: none;">Random Play</button>
 
+  <div id="results"></div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    // Function to display the search results
-    function displayResults(data) {
-      const resultsList = document.getElementById('results');
-      resultsList.innerHTML = '';
+    let players = [];
 
-      data.items.forEach(item => {
-        const videoURL = `https://www.youtube.com/embed/${item.id.videoId}`;
-        const listItem = document.createElement('li');
-        const videoFrame = document.createElement('iframe');
-        videoFrame.src = videoURL;
-        listItem.appendChild(videoFrame);
-        resultsList.appendChild(listItem);
+    function displayResults(data) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      data.items.forEach((item, index) => {
+        const videoDiv = document.createElement('div');
+        videoDiv.id = `player${index}`;
+        resultsDiv.appendChild(videoDiv);
+
+        players[index] = new YT.Player(videoDiv.id, {
+          height: '215',
+          width: '360',
+          videoId: item.id.videoId,
+          events: {
+            'onReady': function() {
+              players[index].setVolume(50);
+            }
+          }
+        });
       });
+
+      if (players.length > 0) {
+        document.getElementById('randomPlayButton').style.display = 'inline-block';
+      } else {
+        document.getElementById('randomPlayButton').style.display = 'none';
+      }
     }
 
-    // Function to handle form submission
     function handleFormSubmit(event) {
       event.preventDefault();
       const searchQuery = document.getElementById('searchQuery').value;
@@ -141,9 +150,38 @@
       request.send();
     }
 
-    // Attach form submit event handler
+    function startWebcam() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          const video = document.getElementById('webcam');
+          video.srcObject = stream;
+        })
+        .catch(function(err) {
+          console.error('An error occurred: ' + err);
+        });
+    }
+
+    function handleRandomPlayButtonClick() {
+      const randomIndex = Math.floor(Math.random() * players.length);
+      const randomPlayer = players[randomIndex];
+
+      if (randomPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        randomPlayer.pauseVideo();
+      } else {
+        randomPlayer.playVideo();
+      }
+
+      const randomVolume = Math.floor(Math.random() * 101);
+      randomPlayer.setVolume(randomVolume);
+    }
+
     const searchForm = document.getElementById('searchForm');
     searchForm.addEventListener('submit', handleFormSubmit);
+
+    const randomPlayButton = document.getElementById('randomPlayButton');
+    randomPlayButton.addEventListener('click', handleRandomPlayButtonClick);
+
+    window.addEventListener('load', startWebcam);
   </script>
 </body>
 </html>
