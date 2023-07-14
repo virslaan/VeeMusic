@@ -18,8 +18,7 @@
       margin: 50px 0;
       font-size: 36px;
       font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 0.5px;
     }
 
     #searchForm {
@@ -41,9 +40,10 @@
       font-size: 18px;
       background-color: #FFD700;
       border: none;
+      color:white;
       border-radius: 4px;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: background-color 0.9s;
     }
 
     #searchButton:hover, #randomPlayButton:hover {
@@ -89,8 +89,9 @@
     <button type="submit" id="searchButton">Search</button>
   </form>
 <center>
-  <button id="randomPlayButton" style="color:lime;display: block;">Co-Pilot Spin (Hit me)</button>
+  <button id="randomPlayButton" style="background-color:lime!important;display: block;">Co-Pilot Spin (Hit me)</button>
 </center>
+  <br>Made by Virslaan (Vipul Rules)<br>
   <div id="results"></div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -183,5 +184,9 @@
 
     window.addEventListener('load', startWebcam);
   </script>
+  <footer style="background-color: #333333; color: #FFFFFF; padding: 20px; text-align: center;">
+  <p>Made by Virslaan (Vipul Rules)</p>
+  <p>&copy; 2023 All rights reserved.</p>
+</footer>
 </body>
 </html>
