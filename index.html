@@ -1,21 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YouTube Song Search</title>
   <style>
     body {
       background: linear-gradient(to bottom, #000000, #333333);
-      color: #FFD700;
+      color: #FFFFFF;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
     }
+
+    h1 {
+      text-align: center;
+      margin: 50px 0;
+      font-size: 36px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
     #searchForm {
-      margin-bottom: 20px;
+      text-align: center;
+      margin-bottom: 30px;
     }
+
+    #searchQuery {
+      padding: 10px;
+      font-size: 18px;
+      border: none;
+      border-radius: 4px;
+      outline: none;
+      width: 300px;
+    }
+
+    #searchButton {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #FFD700;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #searchButton:hover {
+      background-color: #FFCC00;
+    }
+
     #results {
       list-style-type: none;
       padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
     }
+
     #results li {
-      margin-bottom: 10px;
+      margin: 10px;
+    }
+
+    iframe {
+      width: 360px;
+      height: 215px;
+      border: none;
     }
   </style>
 </head>
@@ -24,7 +74,7 @@
 
   <form id="searchForm">
     <input type="text" id="searchQuery" placeholder="Enter a song name">
-    <button type="submit">Search</button>
+    <button type="submit" id="searchButton">Search</button>
   </form>
 
   <ul id="results"></ul>
@@ -47,10 +97,9 @@
       data.items.forEach(item => {
         const videoURL = removeAdsFromURL(`https://www.youtube.com/watch?v=${item.id.videoId}`);
         const listItem = document.createElement('li');
-        listItem.innerHTML = `
-          <h3>${item.snippet.title}</h3>
-          <iframe width="560" height="315" src="${videoURL}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        `;
+        const videoFrame = document.createElement('iframe');
+        videoFrame.src = videoURL;
+        listItem.appendChild(videoFrame);
         resultsList.appendChild(listItem);
       });
     }
