@@ -5,76 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VeeMusic DJ</title>
   <style>
-    body, html {
-      height: 100%;
+    body {
+      background: linear-gradient(to bottom, #000000, #333333);
+      color: #FFFFFF;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
       margin: 0;
-      font-family: 'Arial', sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-
-    #webcam {
-      position: fixed;
-      min-width: 100%;
-      min-height: 100%;
-      width: auto;
-      height: auto;
-      z-index: -1;
-      background-size: cover;
-    }
-
-    #overlay {
-      position: fixed;
-      background: rgba(0, 0, 0, 0.6);
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+      padding: 0;
     }
 
     h1 {
       text-align: center;
-      font-size: 3em;
-      color: white;
-      z-index: 1;
+      margin: 50px 0;
+      font-size: 36px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
 
     #searchForm {
-      z-index: 1;
-      margin-bottom: 2em;
+      text-align: center;
+      margin-bottom: 30px;
     }
 
     #searchQuery {
       padding: 10px;
-      font-size: 1em;
+      font-size: 18px;
       border: none;
       border-radius: 4px;
+      outline: none;
       width: 300px;
     }
 
     #searchButton, #randomPlayButton {
       padding: 10px 20px;
-      font-size: 1em;
+      font-size: 18px;
       background-color: #FFD700;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      margin: 0.5em;
+      transition: background-color 0.3s;
+    }
+
+    #searchButton:hover, #randomPlayButton:hover {
+      background-color: #FFCC00;
     }
 
     #results {
+      padding: 0;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      z-index: 1;
     }
 
-    .video {
-      margin: 1em;
-      width: 360px;
-      height: 215px;
-      border: none;
+    video {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: -1;
     }
   </style>
 </head>
@@ -82,14 +82,14 @@
   <video id="webcam" autoplay playsinline></video>
   <div id="overlay"></div>
 
-  <h1>VeeMusic DJ</h1>
+  <h1>YouTube Song Search</h1>
 
   <form id="searchForm">
     <input type="text" id="searchQuery" placeholder="Enter a song name">
     <button type="submit" id="searchButton">Search</button>
   </form>
 
-  <button id="randomPlayButton">Random Play</button>
+  <button id="randomPlayButton" style="display: none;">Co-Pilot Play</button>
 
   <div id="results"></div>
 
@@ -97,43 +97,43 @@
   <script>
     let players = [];
 
-    function createPlayer(id, videoId) {
-      return new YT.Player(id, {
-        height: '215',
-        width: '360',
-        videoId: videoId,
-        events: {
-          'onReady': function(event) {
-            event.target.setVolume(50);
-          }
-        }
-      });
-    }
-
     function displayResults(data) {
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '';
 
       data.items.forEach((item, index) => {
         const videoDiv = document.createElement('div');
-        videoDiv.id = 'player' + index;
-        videoDiv.className = 'video';
+        videoDiv.id = `player${index}`;
         resultsDiv.appendChild(videoDiv);
 
-        players.push(createPlayer(videoDiv.id, item.id.videoId));
+        players[index] = new YT.Player(videoDiv.id, {
+          height: '215',
+          width: '360',
+          videoId: item.id.videoId,
+          events: {
+            'onReady': function() {
+              players[index].setVolume(50);
+            }
+          }
+        });
       });
 
-      document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
+      if (players.length > 0) {
+        document.getElementById('randomPlayButton').style.display = 'inline-block';
+      } else {
+        document.getElementById('randomPlayButton').style.display = 'none';
+      }
     }
 
     function handleFormSubmit(event) {
       event.preventDefault();
       const searchQuery = document.getElementById('searchQuery').value;
       const request = new XMLHttpRequest();
-      const apiKey = 'YOUR_YOUTUBE_API_KEY';
+      const apiKey = 'AIzaSyAEzhGEyJJgZpoN6ahBTvnZyr4g5FV5s9s';
       const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${searchQuery}&key=${apiKey}`;
 
       request.open('GET', url, true);
+
       request.onload = function() {
         if (request.status >= 200 && request.status < 400) {
           const data = JSON.parse(request.responseText);
@@ -142,33 +142,46 @@
           console.error('An error occurred while fetching data from YouTube.');
         }
       };
+
       request.onerror = function() {
         console.error('An error occurred while fetching data from YouTube.');
       };
+
       request.send();
     }
 
     function startWebcam() {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
-          const webcam = document.getElementById('webcam');
-          webcam.srcObject = stream;
-          webcam.play();
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          const video = document.getElementById('webcam');
+          video.srcObject = stream;
+        })
+        .catch(function(err) {
+          console.error('An error occurred: ' + err);
         });
-      }
     }
 
     function handleRandomPlayButtonClick() {
       const randomIndex = Math.floor(Math.random() * players.length);
-      const player = players[randomIndex];
+      const randomPlayer = players[randomIndex];
 
-      player.playVideo();
-      player.setVolume(Math.random() * 100);
+      if (randomPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        randomPlayer.pauseVideo();
+      } else {
+        randomPlayer.playVideo();
+      }
+
+      const randomVolume = Math.floor(Math.random() * 101);
+      randomPlayer.setVolume(randomVolume);
     }
 
-    document.getElementById('searchForm').addEventListener('submit', handleFormSubmit);
+    const searchForm = document.getElementById('searchForm');
+    searchForm.addEventListener('submit', handleFormSubmit);
 
-    startWebcam();
+    const randomPlayButton = document.getElementById('randomPlayButton');
+    randomPlayButton.addEventListener('click', handleRandomPlayButtonClick);
+
+    window.addEventListener('load', startWebcam);
   </script>
 </body>
 </html>
