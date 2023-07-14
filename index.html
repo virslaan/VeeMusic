@@ -89,9 +89,9 @@
     <button type="submit" id="searchButton">Search</button>
   </form>
 
-  <button id="randomPlayButton" style="display: none;">Random Play</button>
-  <button id="sequencePlayButton" style="display: none;">Play Sequence</button>
-
+ <button id="randomPlayButton">Random Play</button>
+<button id="sequencePlayButton">Play Sequence</button>
+  
   <div id="results"></div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -127,8 +127,8 @@
         players.push(createPlayer(videoDiv.id, item.id.videoId));
       });
 
-      document.getElementById('randomPlayButton').style.display = 'inline-block';
-      document.getElementById('sequencePlayButton').style.display = 'inline-block';
+     document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
+document.getElementById('sequencePlayButton').addEventListener('click', handleSequencePlayButtonClick);
     }
 
     function handleFormSubmit(event) {
@@ -204,9 +204,8 @@
     }
 
     document.getElementById('searchForm').addEventListener('submit', handleFormSubmit);
-    document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
-    document.getElementById('sequencePlayButton').addEventListener('click', handleSequencePlayButtonClick);
-
+  document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
+document.getElementById('sequencePlayButton').addEventListener('click', handleSequencePlayButtonClick);
     startWebcam();
   </script>
 </body>
