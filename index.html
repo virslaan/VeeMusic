@@ -3,82 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Song Search</title>
+  <title>VeeMusic DJ</title>
   <style>
-    body {
-      background: linear-gradient(to bottom, #000000, #333333);
-      color: #FFFFFF;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
+    body, html {
+      height: 100%;
       margin: 0;
-      padding: 0;
-    }
-
-    h1 {
-      text-align: center;
-      margin: 50px 0;
-      font-size: 36px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
-    #searchForm {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    #searchQuery {
-      padding: 10px;
-      font-size: 18px;
-      border: none;
-      border-radius: 4px;
-      outline: none;
-      width: 300px;
-    }
-
-    #searchButton, #randomPlayButton {
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #FFD700;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    #searchButton:hover, #randomPlayButton:hover {
-      background-color: #FFCC00;
-    }
-
-    #results {
-      padding: 0;
+      font-family: 'Arial', sans-serif;
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
       justify-content: center;
+      flex-direction: column;
     }
 
-    video {
+    #webcam {
       position: fixed;
-      right: 0;
-      bottom: 0;
       min-width: 100%;
       min-height: 100%;
-      opacity: 0.5;
+      width: auto;
+      height: auto;
       z-index: -1;
+      background-size: cover;
     }
 
     #overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.6);
-      z-index: -1;
+      background: rgba(0, 0, 0, 0.6);
+      width: 100%;
+      height: 100%;
+      z-index: 0;
     }
-     #sequencePlayButton {
-      margin: 10px auto;
-      display: block;
+
+    h1 {
+      text-align: center;
+      font-size: 3em;
+      color: white;
+      z-index: 1;
+    }
+
+    #searchForm {
+      z-index: 1;
+      margin-bottom: 2em;
+    }
+
+    #searchQuery {
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 4px;
+      width: 300px;
+    }
+
+    #searchButton, #randomPlayButton, #sequencePlayButton {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #FFD700;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0.5em;
+    }
+
+    #results {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      z-index: 1;
+    }
+
+    .video {
+      margin: 1em;
+      width: 360px;
+      height: 215px;
+      border: none;
     }
   </style>
 </head>
@@ -87,21 +83,36 @@
   <div id="overlay"></div>
 
   <h1>VeeMusic DJ</h1>
-<h6>Powered by YouTube</h6>
+
   <form id="searchForm">
     <input type="text" id="searchQuery" placeholder="Enter a song name">
     <button type="submit" id="searchButton">Search</button>
   </form>
- <button id="randomPlayButton" style="display: none;">Random Play</button>
- <button id="sequencePlayButton" style="display: none;">Auto Pilot AI Assistance</button>
 
- 
+  <button id="randomPlayButton" style="display: none;">Random Play</button>
+  <button id="sequencePlayButton" style="display: none;">Play Sequence</button>
 
   <div id="results"></div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     let players = [];
+    let randomPlayIntervalId = null;
+    let sequencePlayIntervalId = null;
+    let sequencePlayIndex = 0;
+
+    function createPlayer(id, videoId) {
+      return new YT.Player(id, {
+        height: '215',
+        width: '360',
+        videoId: videoId,
+        events: {
+          'onReady': function(event) {
+            event.target.setVolume(50);
+          }
+        }
+      });
+    }
 
     function displayResults(data) {
       const resultsDiv = document.getElementById('results');
@@ -109,26 +120,15 @@
 
       data.items.forEach((item, index) => {
         const videoDiv = document.createElement('div');
-        videoDiv.id = `player${index}`;
+        videoDiv.id = 'player' + index;
+        videoDiv.className = 'video';
         resultsDiv.appendChild(videoDiv);
 
-        players[index] = new YT.Player(videoDiv.id, {
-          height: '215',
-          width: '360',
-          videoId: item.id.videoId,
-          events: {
-            'onReady': function() {
-              players[index].setVolume(50);
-            }
-          }
-        });
+        players.push(createPlayer(videoDiv.id, item.id.videoId));
       });
 
-      if (players.length > 0) {
-        document.getElementById('randomPlayButton').style.display = 'inline-block';
-      } else {
-        document.getElementById('randomPlayButton').style.display = 'none';
-      }
+      document.getElementById('randomPlayButton').style.display = 'inline-block';
+      document.getElementById('sequencePlayButton').style.display = 'inline-block';
     }
 
     function handleFormSubmit(event) {
@@ -139,7 +139,6 @@
       const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${searchQuery}&key=${apiKey}`;
 
       request.open('GET', url, true);
-
       request.onload = function() {
         if (request.status >= 200 && request.status < 400) {
           const data = JSON.parse(request.responseText);
@@ -148,55 +147,44 @@
           console.error('An error occurred while fetching data from YouTube.');
         }
       };
-
       request.onerror = function() {
         console.error('An error occurred while fetching data from YouTube.');
       };
-
       request.send();
     }
 
     function startWebcam() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function(stream) {
-          const video = document.getElementById('webcam');
-          video.srcObject = stream;
-        })
-        .catch(function(err) {
-          console.error('An error occurred: ' + err);
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+          const webcam = document.getElementById('webcam');
+          webcam.srcObject = stream;
+          webcam.play();
         });
+      }
     }
 
     function handleRandomPlayButtonClick() {
-      const randomIndex = Math.floor(Math.random() * players.length);
-      const randomPlayer = players[randomIndex];
-
-      if (randomPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-        randomPlayer.pauseVideo();
+      if (randomPlayIntervalId !== null) {
+        clearInterval(randomPlayIntervalId);
+        randomPlayIntervalId = null;
+        document.getElementById('randomPlayButton').textContent = 'Random Play';
       } else {
-        randomPlayer.playVideo();
+        randomPlayIntervalId = setInterval(function() {
+          const playerIndex = Math.floor(Math.random() * players.length);
+          const player = players[playerIndex];
+          player.playVideo();
+          player.setVolume(Math.random() * 100);
+        }, 2000);
+        document.getElementById('randomPlayButton').textContent = 'Stop Random Play';
       }
-
-      const randomVolume = Math.floor(Math.random() * 101);
-      randomPlayer.setVolume(randomVolume);
     }
 
-    const searchForm = document.getElementById('searchForm');
-    searchForm.addEventListener('submit', handleFormSubmit);
-
-    const randomPlayButton = document.getElementById('randomPlayButton');
-    randomPlayButton.addEventListener('click', handleRandomPlayButtonClick);
-
-    window.addEventListener('load', startWebcam);
-
-        function handleSequencePlayButtonClick() {
+    function handleSequencePlayButtonClick() {
       if (sequencePlayIntervalId !== null) {
-        // Stop the current sequence
         clearInterval(sequencePlayIntervalId);
         sequencePlayIntervalId = null;
         document.getElementById('sequencePlayButton').textContent = 'Play Sequence';
       } else {
-        // Start a new sequence
         sequencePlayIndex = 0;
         playNextInSequence();
         sequencePlayIntervalId = setInterval(playNextInSequence, 5000);
@@ -209,25 +197,17 @@
         players[sequencePlayIndex].playVideo();
         players[sequencePlayIndex].setVolume(100);
         sequencePlayIndex++;
-      } else {
-        // We've reached the end of the sequence
-        clearInterval(sequencePlayIntervalId);
-        sequencePlayIntervalId = null;
-        document.getElementById('sequencePlayButton').textContent = 'Play Sequence';
+        if (sequencePlayIndex >= players.length) {
+          sequencePlayIndex = 0;
+        }
       }
     }
 
-    const searchForm = document.getElementById('searchForm');
-    searchForm.addEventListener('submit', handleFormSubmit);
+    document.getElementById('searchForm').addEventListener('submit', handleFormSubmit);
+    document.getElementById('randomPlayButton').addEventListener('click', handleRandomPlayButtonClick);
+    document.getElementById('sequencePlayButton').addEventListener('click', handleSequencePlayButtonClick);
 
-    const randomPlayButton = document.getElementById('randomPlayButton');
-    randomPlayButton.addEventListener('click', handleRandomPlayButtonClick);
-
-    const sequencePlayButton = document.getElementById('sequencePlayButton');
-    sequencePlayButton.addEventListener('click', handleSequencePlayButtonClick);
-
-    window.addEventListener('load', startWebcam);
-
+    startWebcam();
   </script>
 </body>
 </html>
