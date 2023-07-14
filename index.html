@@ -76,20 +76,26 @@
       background-color: rgba(0, 0, 0, 0.6);
       z-index: -1;
     }
+     #sequencePlayButton {
+      margin: 10px auto;
+      display: block;
+    }
   </style>
 </head>
 <body>
   <video id="webcam" autoplay playsinline></video>
   <div id="overlay"></div>
 
-  <h1>YouTube Song Search</h1>
-
+  <h1>VeeMusic DJ</h1>
+<h6>Powered by YouTube</h6>
   <form id="searchForm">
     <input type="text" id="searchQuery" placeholder="Enter a song name">
     <button type="submit" id="searchButton">Search</button>
   </form>
+ <button id="randomPlayButton" style="display: none;">Random Play</button>
+ <button id="sequencePlayButton" style="display: none;">Auto Pilot AI Assistance</button>
 
-  <button id="randomPlayButton" style="display: none;">Random Play</button>
+ 
 
   <div id="results"></div>
 
@@ -182,6 +188,46 @@
     randomPlayButton.addEventListener('click', handleRandomPlayButtonClick);
 
     window.addEventListener('load', startWebcam);
+
+        function handleSequencePlayButtonClick() {
+      if (sequencePlayIntervalId !== null) {
+        // Stop the current sequence
+        clearInterval(sequencePlayIntervalId);
+        sequencePlayIntervalId = null;
+        document.getElementById('sequencePlayButton').textContent = 'Play Sequence';
+      } else {
+        // Start a new sequence
+        sequencePlayIndex = 0;
+        playNextInSequence();
+        sequencePlayIntervalId = setInterval(playNextInSequence, 5000);
+        document.getElementById('sequencePlayButton').textContent = 'Stop Sequence';
+      }
+    }
+
+    function playNextInSequence() {
+      if (players[sequencePlayIndex]) {
+        players[sequencePlayIndex].playVideo();
+        players[sequencePlayIndex].setVolume(100);
+        sequencePlayIndex++;
+      } else {
+        // We've reached the end of the sequence
+        clearInterval(sequencePlayIntervalId);
+        sequencePlayIntervalId = null;
+        document.getElementById('sequencePlayButton').textContent = 'Play Sequence';
+      }
+    }
+
+    const searchForm = document.getElementById('searchForm');
+    searchForm.addEventListener('submit', handleFormSubmit);
+
+    const randomPlayButton = document.getElementById('randomPlayButton');
+    randomPlayButton.addEventListener('click', handleRandomPlayButtonClick);
+
+    const sequencePlayButton = document.getElementById('sequencePlayButton');
+    sequencePlayButton.addEventListener('click', handleSequencePlayButtonClick);
+
+    window.addEventListener('load', startWebcam);
+
   </script>
 </body>
 </html>
