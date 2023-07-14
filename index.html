@@ -80,22 +80,13 @@
   <ul id="results"></ul>
 
   <script>
-    // Function to remove ads from YouTube video URLs
-    function removeAdsFromURL(url) {
-      // Remove parameters related to ads
-      const adParams = ['autoplay', 'showinfo', 'rel'];
-      const urlObj = new URL(url);
-      adParams.forEach(param => urlObj.searchParams.delete(param));
-      return urlObj.toString();
-    }
-
     // Function to display the search results
     function displayResults(data) {
       const resultsList = document.getElementById('results');
       resultsList.innerHTML = '';
 
       data.items.forEach(item => {
-        const videoURL = removeAdsFromURL(`https://www.youtube.com/watch?v=${item.id.videoId}`);
+        const videoURL = `https://www.youtube.com/watch?v=${item.id.videoId}`;
         const listItem = document.createElement('li');
         const videoFrame = document.createElement('iframe');
         videoFrame.src = videoURL;
