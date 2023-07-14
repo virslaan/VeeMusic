@@ -3,10 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VeeMuisc YouTube Song Search</title>
+  <title>YouTube Song Search</title>
   <style>
+    @keyframes gradientBackground {
+      0% {background: #000000;}
+      50% {background: #333333;}
+      100% {background: #000000;}
+    }
+
+    @keyframes wiggle {
+      10%, 90% {transform: translate3d(-1px, 0, 0);}
+      20%, 80% {transform: translate3d(2px, 0, 0);}
+      30%, 50%, 70% {transform: translate3d(-4px, 0, 0);}
+      40%, 60% {transform: translate3d(4px, 0, 0);}
+    }
+
+    @keyframes slideIn {
+      from {transform: translate3d(0, 100%, 0);}
+      to {transform: translate3d(0, 0, 0);}
+    }
+
     body {
-      background: linear-gradient(to bottom, #000000, #333333);
+      animation: gradientBackground 10s ease infinite;
       color: #FFFFFF;
       font-family: 'Helvetica Neue', Arial, sans-serif;
       margin: 0;
@@ -47,6 +65,7 @@
     }
 
     #searchButton:hover {
+      animation: wiggle 0.5s ease;
       background-color: #FFCC00;
     }
 
@@ -59,6 +78,7 @@
     }
 
     #results li {
+      animation: slideIn 0.5s ease;
       margin: 10px;
     }
 
@@ -80,27 +100,20 @@
   <ul id="results"></ul>
 
   <script>
-// Function to display the search results
-function displayResults(data) {
-  const resultsList = document.getElementById('results');
-  resultsList.innerHTML = '';
+    // Function to display the search results
+    function displayResults(data) {
+      const resultsList = document.getElementById('results');
+      resultsList.innerHTML = '';
 
-  data.items.forEach(item => {
-    const videoURL = `https://www.youtube.com/embed/${item.id.videoId}`;
-    const listItem = document.createElement('li');
-    const videoFrame = document.createElement('iframe');
-    videoFrame.src = videoURL;
-    listItem.appendChild(videoFrame);
-    resultsList.appendChild(listItem);
-  });
-}
-
-
-
-
-
-
-
+      data.items.forEach(item => {
+        const videoURL = `https://www.youtube.com/embed/${item.id.videoId}`;
+        const listItem = document.createElement('li');
+        const videoFrame = document.createElement('iframe');
+        videoFrame.src = videoURL;
+        listItem.appendChild(videoFrame);
+        resultsList.appendChild(listItem);
+      });
+    }
 
     // Function to handle form submission
     function handleFormSubmit(event) {
