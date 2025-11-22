@@ -5,75 +5,525 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VeeMusic DJ</title>
   <style>
-    body {
-      background: linear-gradient(to bottom, #000000, #333333);
-      color: #FFFFFF;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
-    h1 {
-      text-align: center;
-      margin: 50px 0;
-      font-size: 36px;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-
-    #searchForm {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    #searchQuery {
-      padding: 10px;
-      font-size: 18px;
-      border: none;
-      border-radius: 4px;
-      outline: none;
-      width: 300px;
-    }
-
-    #searchButton, #randomPlayButton {
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #FFD700;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.9s;
-    }
-
-    #searchButton:hover, #randomPlayButton:hover {
-      background-color: #FFCC00;
-    }
-
-    #results {
-      padding: 0;
+    body {
+      background: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+      transition: background 0.5s ease;
     }
 
-    video {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      min-width: 100%;
-      min-height: 100%;
-      opacity: 0.5;
-      z-index: -1;
-    }
-
-    #overlay {
+    .background-videos {
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.6);
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      overflow: hidden;
+      background: #000000;
+    }
+
+    .background-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      display: block;
+    }
+
+    .background-video.active {
+      opacity: 1;
+      z-index: 1;
+    }
+
+    .background-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
       z-index: -1;
+      pointer-events: none;
+      transition: background 0.3s ease;
+    }
+
+    .background-overlay.search-active {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 20px;
+      overflow: hidden;
+      position: relative;
+      z-index: 10;
+    }
+
+    body.copilot-active {
+      animation: clubLights 3s ease infinite;
+    }
+
+    @keyframes clubLights {
+      0% {
+        background: linear-gradient(135deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%);
+      }
+      25% {
+        background: linear-gradient(135deg, #fb5607 0%, #ff006e 50%, #8338ec 100%);
+      }
+      50% {
+        background: linear-gradient(135deg, #ffbe0b 0%, #fb5607 50%, #ff006e 100%);
+      }
+      75% {
+        background: linear-gradient(135deg, #06ffa5 0%, #ffbe0b 50%, #fb5607 100%);
+      }
+      100% {
+        background: linear-gradient(135deg, #3a86ff 0%, #06ffa5 50%, #ffbe0b 100%);
+      }
+    }
+
+
+    header {
+      flex-shrink: 0;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+
+    .instruction-text {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      margin-top: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .search-section {
+      flex-shrink: 0;
+      margin-bottom: 20px;
+    }
+
+    #searchForm {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #searchQuery {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-weight: 400;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    #searchQuery::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    #searchQuery:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    #searchButton {
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      background: #ffffff;
+      border: none;
+      border-radius: 8px;
+      color: #000000;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #searchButton:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .copilot-section {
+      flex-shrink: 0;
+      margin-bottom: 20px;
+    }
+
+    #copilotButton {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: none;
+    }
+
+    #copilotButton:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #copilotButton.active {
+      background: #ffffff;
+      color: #000000;
+      border-color: #ffffff;
+    }
+
+    #results {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    #results::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #results::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #results::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+
+    #results::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .video-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .video-card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .video-card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .video-card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .video-card:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    .video-card.disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .video-card.disabled .play-button,
+    .video-card.disabled .slider {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .video-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .video-card.playing {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      background: #1a1a1a;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .video-wrapper video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 20px;
+    }
+
+    .video-wrapper > div {
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .video-wrapper > div {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .video-info {
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+
+    .video-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 4px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .video-channel {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 400;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-icon {
+      font-size: 14px;
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .control-value {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      min-width: 40px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .slider-container {
+      flex: 1;
+      position: relative;
+    }
+
+    .slider {
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .slider:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .slider::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      border: none;
+    }
+
+    .play-button {
+      width: 100%;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #ffffff;
+      border: none;
+      border-radius: 6px;
+      color: #000000;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .play-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .play-button:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .play-button.playing {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 12px;
+      }
+
+      #results {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      #searchForm {
+        flex-direction: column;
+      }
+
+      #searchButton {
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .video-card {
+        padding: 10px;
+      }
+    }
+
+    video {
+      display: none;
+    }
+
+    #overlay {
+      display: none;
     }
   </style>
 </head>
@@ -81,56 +531,947 @@
   <video id="webcam" autoplay playsinline></video>
   <div id="overlay"></div>
 
-  <h1>VeeMusic DJ</h1>
+  <div class="background-videos" id="backgroundVideos"></div>
+  <div class="background-overlay"></div>
 
+  <div class="container">
+    <header>
+  <h1>VeeMusic DJ</h1>
+      <p class="subtitle">Search and mix your tracks</p>
+      <p class="instruction-text">Search video, enter and press the DJ Vee take care and use the controls to feel the dj already</p>
+    </header>
+
+    <div class="search-section">
   <form id="searchForm">
-    <input type="text" id="searchQuery" placeholder="Enter a song name">
+        <input 
+          type="text" 
+          id="searchQuery" 
+          placeholder="Search songs, artists..."
+          autocomplete="off"
+        >
     <button type="submit" id="searchButton">Search</button>
   </form>
-<center>
-  <button id="randomPlayButton" style="">Co-Pilot Spin (Hit me)</button>
-</center>
-  <br><br>
+    </div>
+
+    <div class="copilot-section">
+      <button id="copilotButton">DJ VEE</button>
+    </div>
+
   <div id="results"></div>
+  </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     let players = [];
+    let videoData = [];
+    let ytApiReady = false;
+    let copilotActive = false;
+    let copilotInterval = null;
+    let currentPlayingIndex = -1;
+    let trackHistory = [];
+    let trackPlayCount = {};
+    let lastMixTime = 0;
+    let mixIntensity = 0.5; // 0 = calm, 1 = intense
+    let autoPlayActive = true;
+    let autoPlayInterval = null;
+    let readyPlayers = [];
+    let userInteracted = false;
+    let localVideos = ['bg.mp4', 'bg2.mp4', 'bg3.mp4'];
+    let localVideoElements = [];
+    let backgroundVideoStarted = false;
+
+    window.onYouTubeIframeAPIReady = function() {
+      ytApiReady = true;
+    }
 
     function displayResults(data) {
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '';
 
-      data.items.forEach((item, index) => {
+      // Ensure background videos are stopped when showing search results
+      stopBackgroundVideos();
+
+      if (!data.items || data.items.length === 0) {
+        resultsDiv.innerHTML = `
+          <div class="empty-state">
+            <p>No results found. Try a different search term.</p>
+          </div>
+        `;
+        document.getElementById('copilotButton').style.display = 'none';
+        return;
+      }
+
+      const limitedItems = data.items.slice(0, 4);
+      videoData = limitedItems;
+      players = [];
+
+      if (!ytApiReady && typeof YT === 'undefined') {
+        resultsDiv.innerHTML = '<div class="loading">Loading...</div>';
+        setTimeout(() => displayResults(data), 500);
+        return;
+      }
+
+      limitedItems.forEach((item, index) => {
+        const videoCard = document.createElement('div');
+        videoCard.className = 'video-card';
+        videoCard.id = `card${index}`;
+        videoCard.style.animationDelay = `${index * 0.1}s`;
+        
+        const videoWrapper = document.createElement('div');
+        videoWrapper.className = 'video-wrapper';
         const videoDiv = document.createElement('div');
         videoDiv.id = `player${index}`;
-        resultsDiv.appendChild(videoDiv);
+        videoWrapper.appendChild(videoDiv);
+        
+        const videoInfo = document.createElement('div');
+        videoInfo.className = 'video-info';
+        videoInfo.innerHTML = `
+          <div class="video-title">${item.snippet.title}</div>
+          <div class="video-channel">${item.snippet.channelTitle}</div>
+        `;
+        
+        const controls = document.createElement('div');
+        controls.className = 'controls';
+        
+        const playButton = document.createElement('button');
+        playButton.className = 'play-button';
+        playButton.id = `playBtn${index}`;
+        playButton.textContent = 'Play';
+        playButton.onclick = () => togglePlay(index);
+        
+        const volumeGroup = document.createElement('div');
+        volumeGroup.className = 'control-group';
+        volumeGroup.innerHTML = `
+          <span class="control-icon" title="Volume">●</span>
+          <div class="slider-container">
+            <input type="range" class="slider" id="volume${index}" min="0" max="100" value="50">
+          </div>
+          <span class="control-value" id="volumeValue${index}">50%</span>
+        `;
+        
+        const speedGroup = document.createElement('div');
+        speedGroup.className = 'control-group';
+        speedGroup.innerHTML = `
+          <span class="control-icon" title="Speed">▲</span>
+          <div class="slider-container">
+            <input type="range" class="slider" id="speed${index}" min="0.25" max="2" step="0.25" value="1">
+          </div>
+          <span class="control-value" id="speedValue${index}">1.0x</span>
+        `;
+        
+        controls.appendChild(playButton);
+        controls.appendChild(volumeGroup);
+        controls.appendChild(speedGroup);
+        
+        videoCard.appendChild(videoWrapper);
+        videoCard.appendChild(videoInfo);
+        videoCard.appendChild(controls);
+        resultsDiv.appendChild(videoCard);
 
-        players[index] = new YT.Player(videoDiv.id, {
-          height: '215',
-          width: '360',
-          videoId: item.id.videoId,
-          events: {
-            'onReady': function() {
-              players[index].setVolume(50);
+        // Wait for card to be rendered, then calculate proper dimensions
+        setTimeout(() => {
+          const cardWidth = videoCard.offsetWidth || 280;
+          const cardHeight = Math.round(cardWidth * 0.5625); // 16:9 aspect ratio
+          
+          try {
+            players[index] = new YT.Player(videoDiv.id, {
+              height: cardHeight.toString(),
+              width: cardWidth.toString(),
+              videoId: item.id.videoId,
+              playerVars: {
+                modestbranding: 1,
+                rel: 0,
+                showinfo: 0,
+                playsinline: 1,
+                enablejsapi: 1
+              },
+              events: {
+                'onReady': function(event) {
+                  event.target.setVolume(50);
+                  setupControls(index);
+                  readyPlayers.push(index);
+                  
+                  // Resize iframe to fill container
+                  const iframe = videoDiv.querySelector('iframe');
+                  if (iframe) {
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                  }
+                  
+                  // Start auto-play sequence when all players are ready
+                  if (readyPlayers.length === limitedItems.length && autoPlayActive && !userInteracted) {
+                    startAutoPlaySequence();
+                  }
+                },
+                'onStateChange': function(event) {
+                  updatePlayButton(index, event.data);
+                  
+                  // Auto-advance to next video when current ends
+                  if (autoPlayActive && !userInteracted && event.data === YT.PlayerState.ENDED) {
+                    autoAdvanceToNext(index);
+                  }
+                },
+                'onError': function(event) {
+                  console.error('YouTube player error:', event.data);
+                  videoCard.style.opacity = '0.5';
+                }
+              }
+            });
+          } catch (error) {
+            console.error('Error creating YouTube player:', error);
+          }
+        }, 100);
+      });
+
+      if (limitedItems.length > 0) {
+        document.getElementById('copilotButton').style.display = 'block';
+      }
+      
+      // Reset auto-play state
+      readyPlayers = [];
+      userInteracted = false;
+      autoPlayActive = true;
+    }
+
+    function startAutoPlaySequence() {
+      if (!autoPlayActive || userInteracted || readyPlayers.length === 0) return;
+      
+      // Wait for fade-in animation to complete, then start playing
+      const animationDelay = readyPlayers.length * 100 + 300; // Wait for all cards to fade in
+      setTimeout(() => {
+        if (autoPlayActive && !userInteracted) {
+          const firstIndex = readyPlayers[0];
+          // Check if using local videos or YouTube
+          if (localVideoElements.length > 0) {
+            playLocalVideoAuto(firstIndex);
+      } else {
+            playVideoAuto(firstIndex);
+          }
+        }
+      }, animationDelay);
+    }
+
+    function playVideoAuto(index) {
+      if (!autoPlayActive || userInteracted) return;
+      
+      const player = players[index];
+      if (!player) return;
+      
+      // Stop all other videos
+      players.forEach((p, i) => {
+        if (i !== index && p && p.getPlayerState() === YT.PlayerState.PLAYING) {
+          p.pauseVideo();
+          updatePlayButton(i, YT.PlayerState.PAUSED);
+          const card = document.getElementById(`card${i}`);
+          if (card) card.classList.remove('playing');
+        }
+      });
+      
+      // Fade in volume for smooth start
+      player.setVolume(0);
+      player.playVideo();
+      
+      // Fade in volume over 1 second
+      let volumeStep = 0;
+      const fadeInterval = setInterval(() => {
+        volumeStep += 2;
+        if (volumeStep <= 50) {
+          player.setVolume(volumeStep);
+        } else {
+          clearInterval(fadeInterval);
+          player.setVolume(50);
+        }
+      }, 40);
+      
+      const playButton = document.getElementById(`playBtn${index}`);
+      const videoCard = document.getElementById(`card${index}`);
+      
+      if (playButton) {
+        playButton.textContent = 'Pause';
+        playButton.classList.add('playing');
+      }
+      if (videoCard) {
+        videoCard.classList.add('playing');
+      }
+      
+      currentPlayingIndex = index;
+    }
+
+    function autoAdvanceToNext(currentIndex) {
+      if (!autoPlayActive || userInteracted) return;
+      
+      // Find next video in sequence
+      const currentPos = readyPlayers.indexOf(currentIndex);
+      const nextPos = (currentPos + 1) % readyPlayers.length;
+      const nextIndex = readyPlayers[nextPos];
+      
+      // Small delay before next video starts
+      setTimeout(() => {
+        if (autoPlayActive && !userInteracted) {
+          // Check if using local videos or YouTube
+          if (localVideoElements.length > 0) {
+            playLocalVideoAuto(nextIndex);
+          } else {
+            playVideoAuto(nextIndex);
+          }
+        }
+      }, 1000);
+    }
+
+    function setupControls(index) {
+      const player = players[index];
+      if (!player) return;
+
+      const volumeSlider = document.getElementById(`volume${index}`);
+      const volumeValue = document.getElementById(`volumeValue${index}`);
+      
+      volumeSlider.addEventListener('input', function() {
+        if (!this.disabled) {
+          // User interaction - stop auto-play
+          if (autoPlayActive && !userInteracted) {
+            userInteracted = true;
+            autoPlayActive = false;
+          }
+          
+          const volume = parseInt(this.value);
+          player.setVolume(volume);
+          volumeValue.textContent = volume + '%';
+        }
+      });
+
+      const speedSlider = document.getElementById(`speed${index}`);
+      const speedValue = document.getElementById(`speedValue${index}`);
+      
+      speedSlider.addEventListener('input', function() {
+        if (!this.disabled) {
+          // User interaction - stop auto-play
+          if (autoPlayActive && !userInteracted) {
+            userInteracted = true;
+            autoPlayActive = false;
+          }
+          
+          const speed = parseFloat(this.value);
+          player.setPlaybackRate(speed);
+          speedValue.textContent = speed.toFixed(2) + 'x';
+        }
+      });
+    }
+
+    function togglePlay(index) {
+      if (copilotActive) return; // Don't allow manual play when copilot is active
+      
+      // User has interacted - stop auto-play
+      if (autoPlayActive && !userInteracted) {
+        userInteracted = true;
+        autoPlayActive = false;
+        // Stop any currently playing auto-play video
+        players.forEach((p, i) => {
+          if (p && p.getPlayerState() === YT.PlayerState.PLAYING && i !== index) {
+            p.pauseVideo();
+            updatePlayButton(i, YT.PlayerState.PAUSED);
+            document.getElementById(`card${i}`).classList.remove('playing');
+          }
+        });
+      }
+      
+      const player = players[index];
+      if (!player) return;
+
+      players.forEach((p, i) => {
+        if (i !== index && p && p.getPlayerState() === YT.PlayerState.PLAYING) {
+          p.pauseVideo();
+          updatePlayButton(i, YT.PlayerState.PAUSED);
+          document.getElementById(`card${i}`).classList.remove('playing');
+        }
+      });
+
+      const state = player.getPlayerState();
+      const playButton = document.getElementById(`playBtn${index}`);
+      const videoCard = document.getElementById(`card${index}`);
+      
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+        playButton.textContent = 'Play';
+        playButton.classList.remove('playing');
+        videoCard.classList.remove('playing');
+        currentPlayingIndex = -1;
+      } else {
+        player.playVideo();
+        playButton.textContent = 'Pause';
+        playButton.classList.add('playing');
+        videoCard.classList.add('playing');
+        currentPlayingIndex = index;
+      }
+    }
+
+    function updatePlayButton(index, state) {
+      const playButton = document.getElementById(`playBtn${index}`);
+      const videoCard = document.getElementById(`card${index}`);
+      if (!playButton) return;
+
+      if (state === YT.PlayerState.PLAYING) {
+        playButton.textContent = 'Pause';
+        playButton.classList.add('playing');
+        videoCard.classList.add('playing');
+        currentPlayingIndex = index;
+      } else {
+        playButton.textContent = 'Play';
+        playButton.classList.remove('playing');
+        if (currentPlayingIndex === index) {
+          videoCard.classList.remove('playing');
+          currentPlayingIndex = -1;
+        }
+      }
+    }
+
+    function djAlgorithm() {
+      if (players.length < 2) return;
+
+      const now = Date.now();
+      const timeSinceLastMix = now - lastMixTime;
+      
+      // Adjust mix intensity based on time
+      if (timeSinceLastMix > 15000) {
+        mixIntensity = Math.min(1, mixIntensity + 0.1);
+      } else if (timeSinceLastMix < 5000) {
+        mixIntensity = Math.max(0.3, mixIntensity - 0.1);
+      }
+
+      const playingTracks = [];
+      const trackStates = [];
+      
+      players.forEach((player, index) => {
+        if (player) {
+          const state = player.getPlayerState();
+          if (state === YT.PlayerState.PLAYING) {
+            playingTracks.push(index);
+            trackStates.push({
+              index: index,
+              volume: player.getVolume(),
+              speed: player.getPlaybackRate(),
+              playTime: now
+            });
             }
           }
         });
-      });
 
-      if (players.length > 0) {
-        document.getElementById('randomPlayButton').style.display = 'inline-block';
+      // Smart decision making with multiple factors
+      const decision = Math.random();
+      const trackCount = playingTracks.length;
+      const totalTracks = players.length;
+      
+      if (trackCount === 0) {
+        // No tracks - smart selection (avoid recently played)
+        const nextIndex = selectNextTrack();
+        startTrackWithDJMix(nextIndex);
+      } else if (trackCount === 1) {
+        const currentIndex = playingTracks[0];
+        const currentState = trackStates[0];
+        
+        // More sophisticated decision tree
+        if (decision < 0.4) {
+          // 40% - Crossfade to new track
+          const nextIndex = selectNextTrack([currentIndex]);
+          crossfadeTracks(currentIndex, nextIndex, mixIntensity);
+        } else if (decision < 0.65) {
+          // 25% - Enhance current track with dynamic effects
+          enhanceTrackAdvanced(currentIndex, currentState);
+        } else if (decision < 0.85) {
+          // 20% - Add second track for layering
+          const layerIndex = selectNextTrack([currentIndex]);
+          layerTracks(currentIndex, layerIndex);
+        } else {
+          // 15% - Create build-up effect
+          createBuildUp(currentIndex);
+        }
+      } else if (trackCount === 2) {
+        // Two tracks playing - balance and mix
+        if (decision < 0.4) {
+          // 40% - Perfect balance
+          perfectBalance(trackStates);
+        } else if (decision < 0.7) {
+          // 30% - Dynamic mix adjustment
+          adjustMixAdvanced(trackStates);
+        } else {
+          // 30% - Remove one track smoothly
+          const toRemove = selectTrackToRemove(trackStates);
+          fadeOutTrack(toRemove);
+        }
       } else {
-        document.getElementById('randomPlayButton').style.display = 'none';
+        // Multiple tracks - reduce and balance
+        if (decision < 0.5) {
+          const toRemove = selectTrackToRemove(trackStates);
+          fadeOutTrack(toRemove);
+        } else {
+          adjustMixAdvanced(trackStates);
+        }
       }
+      
+      lastMixTime = now;
+    }
+
+    function selectNextTrack(excludeIndices = []) {
+      // Smart track selection - avoid recently played
+      const available = players.map((_, i) => i).filter(i => !excludeIndices.includes(i));
+      
+      // Prefer tracks that haven't been played recently
+      const scored = available.map(index => {
+        const playCount = trackPlayCount[index] || 0;
+        const lastPlayed = trackHistory.filter(h => h.index === index);
+        const timeSincePlay = lastPlayed.length > 0 ? Date.now() - lastPlayed[lastPlayed.length - 1].time : Infinity;
+        
+        // Lower score = better (less played, longer ago)
+        const score = playCount * 10 - (timeSincePlay / 1000);
+        return { index, score };
+      });
+      
+      // Sort by score and pick from top 2 (adds some randomness)
+      scored.sort((a, b) => a.score - b.score);
+      const topTracks = scored.slice(0, Math.min(2, scored.length));
+      const selected = topTracks[Math.floor(Math.random() * topTracks.length)];
+      
+      return selected ? selected.index : available[Math.floor(Math.random() * available.length)];
+    }
+
+    function selectTrackToRemove(trackStates) {
+      // Remove track with lowest volume or longest playing
+      trackStates.sort((a, b) => {
+        if (Math.abs(a.volume - b.volume) > 10) {
+          return a.volume - b.volume; // Lower volume first
+        }
+        return b.playTime - a.playTime; // Longer playing first
+      });
+      return trackStates[0].index;
+    }
+
+    function startTrackWithDJMix(index) {
+      const player = players[index];
+      if (!player) return;
+
+      // Dynamic volume based on mix intensity
+      const baseVolume = 40 + mixIntensity * 30; // 40-70%
+      const initialVolume = baseVolume + (Math.random() - 0.5) * 15;
+      
+      // Smart speed selection - prefer normal tempo with slight variation
+      const initialSpeed = 0.95 + Math.random() * 0.1; // 0.95-1.05x
+      
+      player.setVolume(0);
+      player.setPlaybackRate(initialSpeed);
+      
+      // Smooth fade in with acceleration
+      fadeInTrackAdvanced(index, initialVolume);
+      
+      updateTrackUI(index, initialVolume, initialSpeed);
+      
+      player.playVideo();
+      currentPlayingIndex = index;
+      
+      // Track history
+      trackHistory.push({ index, time: Date.now() });
+      trackPlayCount[index] = (trackPlayCount[index] || 0) + 1;
+    }
+
+    function crossfadeTracks(fromIndex, toIndex, intensity = 0.5) {
+      const fromPlayer = players[fromIndex];
+      const toPlayer = players[toIndex];
+      if (!fromPlayer || !toPlayer) return;
+
+      // Dynamic fade duration based on intensity
+      const fadeDuration = 2000 + (1 - intensity) * 3000; // 2-5 seconds
+      const steps = 40;
+      const stepDuration = fadeDuration / steps;
+      let step = 0;
+
+      const fromVolume = fromPlayer.getVolume();
+      const baseVolume = 45 + intensity * 25; // 45-70%
+      const targetVolume = baseVolume + (Math.random() - 0.5) * 10;
+      
+      // Beat matching - try to match speeds
+      const fromSpeed = fromPlayer.getPlaybackRate();
+      const targetSpeed = fromSpeed + (Math.random() - 0.5) * 0.15; // Stay close to current speed
+      const clampedSpeed = Math.max(0.8, Math.min(1.2, targetSpeed));
+      
+      toPlayer.setVolume(0);
+      toPlayer.setPlaybackRate(clampedSpeed);
+      toPlayer.playVideo();
+      
+      updateTrackUI(toIndex, targetVolume, clampedSpeed);
+
+      // Advanced crossfade with easing curve
+      const fadeInterval = setInterval(() => {
+        step++;
+        const progress = step / steps;
+        
+        // Easing function for smoother transition
+        const easeProgress = progress < 0.5 
+          ? 2 * progress * progress 
+          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        
+        // Fade out old track
+        const fromNewVolume = fromVolume * (1 - easeProgress);
+        fromPlayer.setVolume(Math.max(0, fromNewVolume));
+        
+        // Fade in new track
+        const toNewVolume = targetVolume * easeProgress;
+        toPlayer.setVolume(toNewVolume);
+        
+        if (step >= steps) {
+          clearInterval(fadeInterval);
+          fromPlayer.pauseVideo();
+          toPlayer.setVolume(targetVolume);
+          currentPlayingIndex = toIndex;
+          
+          // Track history
+          trackHistory.push({ index: toIndex, time: Date.now() });
+          trackPlayCount[toIndex] = (trackPlayCount[toIndex] || 0) + 1;
+        }
+      }, stepDuration);
+    }
+
+    function enhanceTrackAdvanced(index, trackState) {
+      const player = players[index];
+      if (!player) return;
+
+      const currentVolume = trackState.volume;
+      const currentSpeed = trackState.speed;
+      
+      // More intelligent adjustments
+      const volumeDirection = currentVolume < 50 ? 1 : (currentVolume > 70 ? -1 : (Math.random() > 0.5 ? 1 : -1));
+      const volumeChange = (5 + mixIntensity * 10) * volumeDirection;
+      const newVolume = Math.max(25, Math.min(85, currentVolume + volumeChange));
+      
+      // Speed adjustments - prefer staying close to 1.0x
+      const speedBias = 1.0 - currentSpeed; // Pull towards 1.0
+      const speedChange = speedBias * 0.05 + (Math.random() - 0.5) * 0.08;
+      const newSpeed = Math.max(0.7, Math.min(1.3, currentSpeed + speedChange));
+      
+      // Smooth transition
+      animateVolumeChange(index, currentVolume, newVolume, 500);
+      animateSpeedChange(index, currentSpeed, newSpeed, 500);
+    }
+
+    function createBuildUp(index) {
+      const player = players[index];
+      if (!player) return;
+
+      const currentVolume = player.getVolume();
+      const currentSpeed = player.getPlaybackRate();
+      
+      // Build up: increase volume and speed
+      const targetVolume = Math.min(90, currentVolume + 15);
+      const targetSpeed = Math.min(1.15, currentSpeed + 0.05);
+      
+      animateVolumeChange(index, currentVolume, targetVolume, 2000);
+      animateSpeedChange(index, currentSpeed, targetSpeed, 2000);
+      
+      // Then drop back down after a moment
+      setTimeout(() => {
+        animateVolumeChange(index, targetVolume, currentVolume, 1500);
+        animateSpeedChange(index, targetSpeed, currentSpeed, 1500);
+      }, 3000);
+    }
+
+    function layerTracks(mainIndex, layerIndex) {
+      const mainPlayer = players[mainIndex];
+      const layerPlayer = players[layerIndex];
+      if (!mainPlayer || !layerPlayer) return;
+
+      // Layer: play both tracks with main louder
+      const mainVolume = mainPlayer.getVolume();
+      const layerVolume = Math.min(40, mainVolume * 0.5);
+      
+      layerPlayer.setVolume(0);
+      layerPlayer.setPlaybackRate(mainPlayer.getPlaybackRate()); // Match tempo
+      layerPlayer.playVideo();
+      
+      fadeInTrackAdvanced(layerIndex, layerVolume);
+      updateTrackUI(layerIndex, layerVolume, mainPlayer.getPlaybackRate());
+    }
+
+    function perfectBalance(trackStates) {
+      // Balance two tracks perfectly
+      const avgVolume = trackStates.reduce((sum, t) => sum + t.volume, 0) / trackStates.length;
+      const targetVolume = Math.min(70, Math.max(40, avgVolume));
+      
+      trackStates.forEach(state => {
+        animateVolumeChange(state.index, state.volume, targetVolume, 1000);
+      });
+    }
+
+    function adjustMixAdvanced(trackStates) {
+      // Advanced mixing with better balance
+      const totalVolume = trackStates.reduce((sum, t) => sum + t.volume, 0);
+      const avgVolume = totalVolume / trackStates.length;
+      const targetVolume = Math.min(75, Math.max(35, avgVolume));
+      
+      trackStates.forEach((state, i) => {
+        // Vary volumes slightly but keep balanced
+        const variation = (Math.random() - 0.5) * 10;
+        const newVolume = Math.max(30, Math.min(80, targetVolume + variation));
+        
+        // Slight tempo adjustments
+        const speedAdjust = (Math.random() - 0.5) * 0.06;
+        const newSpeed = Math.max(0.85, Math.min(1.15, state.speed + speedAdjust));
+        
+        animateVolumeChange(state.index, state.volume, newVolume, 800);
+        animateSpeedChange(state.index, state.speed, newSpeed, 800);
+      });
+    }
+
+    function animateVolumeChange(index, from, to, duration) {
+      const player = players[index];
+      if (!player) return;
+
+      const steps = 20;
+      const stepSize = (to - from) / steps;
+      const stepDuration = duration / steps;
+      let step = 0;
+
+      const interval = setInterval(() => {
+        step++;
+        const currentVolume = from + (stepSize * step);
+        player.setVolume(Math.max(0, Math.min(100, currentVolume)));
+        
+        if (step >= steps) {
+          clearInterval(interval);
+          player.setVolume(to);
+          updateTrackUI(index, to, player.getPlaybackRate());
+        }
+      }, stepDuration);
+    }
+
+    function animateSpeedChange(index, from, to, duration) {
+      const player = players[index];
+      if (!player) return;
+
+      const steps = 15;
+      const stepSize = (to - from) / steps;
+      const stepDuration = duration / steps;
+      let step = 0;
+
+      const interval = setInterval(() => {
+        step++;
+        const currentSpeed = from + (stepSize * step);
+        player.setPlaybackRate(Math.max(0.5, Math.min(2, currentSpeed)));
+        
+        if (step >= steps) {
+          clearInterval(interval);
+          player.setPlaybackRate(to);
+          updateTrackUI(index, player.getVolume(), to);
+        }
+      }, stepDuration);
+    }
+
+    function fadeInTrackAdvanced(index, targetVolume) {
+      const player = players[index];
+      if (!player) return;
+
+      const fadeSteps = 20;
+      const stepSize = targetVolume / fadeSteps;
+      let step = 0;
+
+      player.setVolume(0);
+      player.playVideo();
+
+      const fadeInterval = setInterval(() => {
+        step++;
+        // Exponential fade in for smoother start
+        const progress = step / fadeSteps;
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        player.setVolume(targetVolume * easedProgress);
+        
+        if (step >= fadeSteps) {
+          clearInterval(fadeInterval);
+          player.setVolume(targetVolume);
+        }
+      }, 80);
+    }
+
+    function updateTrackUI(index, volume, speed) {
+      const volumeSlider = document.getElementById(`volume${index}`);
+      const volumeValue = document.getElementById(`volumeValue${index}`);
+      const speedSlider = document.getElementById(`speed${index}`);
+      const speedValue = document.getElementById(`speedValue${index}`);
+      
+      if (volumeSlider) volumeSlider.value = volume;
+      if (volumeValue) volumeValue.textContent = Math.round(volume) + '%';
+      if (speedSlider) speedSlider.value = speed;
+      if (speedValue) speedValue.textContent = speed.toFixed(2) + 'x';
+    }
+
+    function fadeOutTrack(index) {
+      const player = players[index];
+      if (!player) return;
+
+      const fadeSteps = 20;
+      const currentVolume = player.getVolume();
+      const stepSize = currentVolume / fadeSteps;
+      let step = 0;
+
+      const fadeInterval = setInterval(() => {
+        step++;
+        player.setVolume(Math.max(0, currentVolume - (stepSize * step)));
+        
+        if (step >= fadeSteps) {
+          clearInterval(fadeInterval);
+          player.pauseVideo();
+        }
+      }, 100);
+    }
+
+    function adjustMix(playingTracks) {
+      playingTracks.forEach(index => {
+        const player = players[index];
+        if (!player) return;
+
+        const volumeAdjust = (Math.random() - 0.5) * 15;
+        const speedAdjust = (Math.random() - 0.5) * 0.08;
+        
+        const currentVolume = player.getVolume();
+        const newVolume = Math.max(30, Math.min(90, currentVolume + volumeAdjust));
+        const currentSpeed = player.getPlaybackRate();
+        const newSpeed = Math.max(0.75, Math.min(1.5, currentSpeed + speedAdjust));
+        
+        player.setVolume(newVolume);
+        player.setPlaybackRate(newSpeed);
+        
+        document.getElementById(`volume${index}`).value = newVolume;
+        document.getElementById(`volumeValue${index}`).textContent = Math.round(newVolume) + '%';
+        document.getElementById(`speed${index}`).value = newSpeed;
+        document.getElementById(`speedValue${index}`).textContent = newSpeed.toFixed(2) + 'x';
+      });
+    }
+
+
+    function toggleCopilot() {
+      copilotActive = !copilotActive;
+      const button = document.getElementById('copilotButton');
+      const body = document.body;
+      
+      if (copilotActive) {
+        button.classList.add('active');
+        button.textContent = 'Stop DJ VEE';
+        body.classList.add('copilot-active');
+        
+        // Disable all controls
+        players.forEach((player, index) => {
+          const card = document.getElementById(`card${index}`);
+          if (card) {
+            card.classList.add('disabled');
+          }
+          const playButton = document.getElementById(`playBtn${index}`);
+          if (playButton) {
+            playButton.disabled = true;
+          }
+          const volumeSlider = document.getElementById(`volume${index}`);
+          if (volumeSlider) {
+            volumeSlider.disabled = true;
+          }
+          const speedSlider = document.getElementById(`speed${index}`);
+          if (speedSlider) {
+            speedSlider.disabled = true;
+          }
+        });
+        
+        // Dynamic interval based on mix intensity
+        const baseInterval = 6000 + (1 - mixIntensity) * 4000; // 6-10 seconds
+        copilotInterval = setInterval(() => {
+          djAlgorithm();
+          // Adjust interval dynamically
+          if (copilotInterval) {
+            clearInterval(copilotInterval);
+            const newInterval = 6000 + (1 - mixIntensity) * 4000 + Math.random() * 2000;
+            copilotInterval = setInterval(() => djAlgorithm(), newInterval);
+          }
+        }, baseInterval);
+        setTimeout(() => djAlgorithm(), 1000);
+      } else {
+        button.classList.remove('active');
+        button.textContent = 'DJ VEE';
+        body.classList.remove('copilot-active');
+        
+        // Re-enable all controls
+        players.forEach((player, index) => {
+          const card = document.getElementById(`card${index}`);
+          if (card) {
+            card.classList.remove('disabled');
+          }
+          const playButton = document.getElementById(`playBtn${index}`);
+          if (playButton) {
+            playButton.disabled = false;
+          }
+          const volumeSlider = document.getElementById(`volume${index}`);
+          if (volumeSlider) {
+            volumeSlider.disabled = false;
+          }
+          const speedSlider = document.getElementById(`speed${index}`);
+          if (speedSlider) {
+            speedSlider.disabled = false;
+          }
+        });
+        
+        if (copilotInterval) {
+          clearInterval(copilotInterval);
+          copilotInterval = null;
+        }
+      }
+    }
+
+    function stopBackgroundVideos() {
+      localVideoElements.forEach((video, index) => {
+        if (video) {
+          video.pause();
+          video.classList.remove('active');
+          video.style.opacity = '0';
+        }
+      });
+      const overlay = document.querySelector('.background-overlay');
+      if (overlay) {
+        overlay.classList.add('search-active');
+      }
+    }
+
+    function resumeBackgroundVideos() {
+      const overlay = document.querySelector('.background-overlay');
+      if (overlay) {
+        overlay.classList.remove('search-active');
+      }
+      // Don't auto-resume, let user control
     }
 
     function handleFormSubmit(event) {
       event.preventDefault();
-      const searchQuery = document.getElementById('searchQuery').value;
+      const searchQuery = document.getElementById('searchQuery').value.trim();
+      
+      if (!searchQuery) {
+        return;
+      }
+
+      // Stop background videos when search is active
+      stopBackgroundVideos();
+
+      if (copilotActive) {
+        toggleCopilot();
+      }
+      
+      // Stop auto-play on new search
+      autoPlayActive = false;
+      userInteracted = false;
+
+      // Reset track history on new search
+      trackHistory = [];
+      trackPlayCount = {};
+      mixIntensity = 0.5;
+      userInteracted = false;
+      autoPlayActive = true;
+      readyPlayers = [];
+
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
+
       const request = new XMLHttpRequest();
       const apiKey = 'AIzaSyAEzhGEyJJgZpoN6ahBTvnZyr4g5FV5s9s';
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${searchQuery}&key=${apiKey}`;
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=4&q=${encodeURIComponent(searchQuery)}&key=${apiKey}&type=video`;
 
       request.open('GET', url, true);
 
@@ -139,53 +1480,418 @@
           const data = JSON.parse(request.responseText);
           displayResults(data);
         } else {
-          console.error('An error occurred while fetching data from YouTube.');
+          resultsDiv.innerHTML = `
+            <div class="empty-state">
+              <p>Error fetching videos. Please try again.</p>
+            </div>
+          `;
+          console.error('Error fetching data from YouTube.');
         }
       };
 
       request.onerror = function() {
-        console.error('An error occurred while fetching data from YouTube.');
+        resultsDiv.innerHTML = `
+          <div class="empty-state">
+            <p>Network error. Please check your connection.</p>
+          </div>
+        `;
+        console.error('Network error.');
       };
 
       request.send();
     }
 
-    function startWebcam() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function(stream) {
-          const video = document.getElementById('webcam');
-          video.srcObject = stream;
-        })
-        .catch(function(err) {
-          console.error('An error occurred: ' + err);
-        });
-    }
-
-    function handleRandomPlayButtonClick() {
-      const randomIndex = Math.floor(Math.random() * players.length);
-      const randomPlayer = players[randomIndex];
-
-      if (randomPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-        randomPlayer.pauseVideo();
-      } else {
-        randomPlayer.playVideo();
-      }
-
-      const randomVolume = Math.floor(Math.random() * 101);
-      randomPlayer.setVolume(randomVolume);
-    }
-
     const searchForm = document.getElementById('searchForm');
     searchForm.addEventListener('submit', handleFormSubmit);
 
-    const randomPlayButton = document.getElementById('randomPlayButton');
-    randomPlayButton.addEventListener('click', handleRandomPlayButtonClick);
+    const copilotButton = document.getElementById('copilotButton');
+    copilotButton.addEventListener('click', toggleCopilot);
 
-    // window.addEventListener('load', startWebcam);
+    document.getElementById('searchQuery').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        handleFormSubmit(e);
+      }
+    });
+
+    function displayLocalVideos() {
+      const backgroundContainer = document.getElementById('backgroundVideos');
+      if (!backgroundContainer) return;
+      
+      backgroundContainer.innerHTML = '';
+      
+      localVideoElements = [];
+      readyPlayers = [];
+      autoPlayActive = true;
+      userInteracted = false;
+      backgroundVideoStarted = false;
+
+      localVideos.forEach((videoFile, index) => {
+        const videoElement = document.createElement('video');
+        videoElement.className = 'background-video';
+        videoElement.id = `bgVideo${index}`;
+        videoElement.src = videoFile;
+        videoElement.muted = true;
+        videoElement.loop = false; // Don't loop - play sequentially
+        videoElement.playsinline = true;
+        videoElement.preload = 'auto';
+        
+        backgroundContainer.appendChild(videoElement);
+        localVideoElements.push(videoElement);
+        
+        // Single event listener to start first video
+        let videoStarted = false;
+        const startVideoOnce = () => {
+          if (index === 0 && autoPlayActive && !backgroundVideoStarted && !videoStarted) {
+            videoStarted = true;
+            backgroundVideoStarted = true;
+            console.log('First background video ready, starting playback');
+            setTimeout(() => playBackgroundVideo(0), 200);
+          }
+        };
+        
+        // Track when video is ready - use multiple events but only start once
+        videoElement.addEventListener('canplay', () => {
+          if (!readyPlayers.includes(index)) {
+            readyPlayers.push(index);
+            console.log(`Background video ${index} ready`);
+          }
+          startVideoOnce();
+        });
+        
+        videoElement.addEventListener('loadeddata', () => {
+          if (!readyPlayers.includes(index)) {
+            readyPlayers.push(index);
+          }
+          startVideoOnce();
+        });
+        
+        // Auto-advance to next video when current ends
+        videoElement.addEventListener('ended', () => {
+          console.log(`Background video ${index} ended, switching to next`);
+          const nextIndex = (index + 1) % localVideos.length;
+          switchToNextBackground(index);
+        });
+        
+        // Handle errors
+        videoElement.addEventListener('error', (e) => {
+          console.error(`Error loading background video ${index}:`, e, videoFile);
+        });
+        
+        // Try to load immediately
+        videoElement.load();
+      });
+    }
+
+    function startBackgroundVideoSequence() {
+      if (!autoPlayActive || readyPlayers.length === 0 || backgroundVideoStarted) return;
+      
+      // Start with first video
+      backgroundVideoStarted = true;
+      playBackgroundVideo(0);
+    }
+
+    function playBackgroundVideo(index) {
+      if (localVideoElements.length === 0) {
+        console.log('No background videos available');
+        return;
+      }
+      
+      console.log(`Attempting to play background video ${index}`);
+      
+      // Stop all background videos
+      localVideoElements.forEach((video, i) => {
+        if (video) {
+          video.pause();
+          video.classList.remove('active');
+        }
+      });
+      
+      // Play selected video
+      const video = localVideoElements[index];
+      if (!video) {
+        console.error(`Background video ${index} not found`);
+        return;
+      }
+      
+      console.log(`Playing video ${index}, src: ${video.src}`);
+      video.currentTime = 0;
+      video.muted = true; // Ensure muted for autoplay
+      
+      // Make visible immediately
+      video.style.opacity = '1';
+      video.classList.add('active');
+      
+      const playPromise = video.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log(`Background video ${index} playing successfully`);
+          video.style.opacity = '1';
+          video.classList.add('active');
+          // Verify it's actually playing
+          console.log(`Video playing state: ${!video.paused}, currentTime: ${video.currentTime}`);
+        }).catch(err => {
+          console.error(`Background video ${index} play failed:`, err);
+          // Keep it visible even if play fails
+          video.style.opacity = '1';
+          video.classList.add('active');
+          // Try again after a short delay
+          setTimeout(() => {
+            video.play().then(() => {
+              console.log(`Background video ${index} playing on retry`);
+              video.style.opacity = '1';
+            }).catch(e => {
+              console.error('Retry also failed:', e);
+            });
+          }, 1000);
+        });
+      } else {
+        video.style.opacity = '1';
+        video.classList.add('active');
+      }
+    }
+
+    function switchToNextBackground(currentIndex) {
+      const nextIndex = (currentIndex + 1) % localVideoElements.length;
+      console.log(`Switching from video ${currentIndex} to video ${nextIndex}`);
+      
+      // Fade transition
+      const currentVideo = localVideoElements[currentIndex];
+      const nextVideo = localVideoElements[nextIndex];
+      
+      if (currentVideo) {
+        currentVideo.classList.remove('active');
+        currentVideo.style.opacity = '0';
+        currentVideo.pause();
+      }
+      
+      // Small delay for smooth transition
+      setTimeout(() => {
+        if (nextVideo) {
+          nextVideo.currentTime = 0;
+          nextVideo.muted = true;
+          nextVideo.style.opacity = '1';
+          nextVideo.classList.add('active');
+          
+          nextVideo.play().then(() => {
+            console.log(`Background video ${nextIndex} playing`);
+          }).catch(err => {
+            console.error(`Background video ${nextIndex} play failed:`, err);
+            // Retry
+            setTimeout(() => {
+              nextVideo.play().catch(e => console.error('Retry failed:', e));
+            }, 500);
+          });
+        }
+      }, 500);
+    }
+
+    // Get current playing video index
+    function getCurrentBackgroundIndex() {
+      for (let i = 0; i < localVideoElements.length; i++) {
+        if (localVideoElements[i] && localVideoElements[i].classList.contains('active') && !localVideoElements[i].paused) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    // Enable video playback on any user interaction (click anywhere)
+    document.addEventListener('click', function enableVideos() {
+      if (localVideoElements.length > 0 && !userInteracted) {
+        userInteracted = true;
+        localVideoElements.forEach(video => {
+          if (video && video.paused) {
+            video.muted = true;
+            video.play().catch(err => {
+              console.error('Video play on click failed:', err);
+            });
+          }
+        });
+        // Start the sequence if not already playing
+        const activeVideo = localVideoElements.find(v => v.classList.contains('active'));
+        if (!activeVideo) {
+          playBackgroundVideo(0);
+        }
+      }
+    }, { once: false });
+
+    function setupLocalControls(index, videoElement) {
+      const volumeSlider = document.getElementById(`volume${index}`);
+      const volumeValue = document.getElementById(`volumeValue${index}`);
+      
+      if (volumeSlider && volumeValue) {
+        volumeSlider.addEventListener('input', function() {
+          if (!this.disabled) {
+            // User interaction - enable unmuting
+            if (!userInteracted) {
+              userInteracted = true;
+              autoPlayActive = false;
+              // Unmute all videos after user interaction
+              localVideoElements.forEach(v => {
+                if (v) v.muted = false;
+              });
+            }
+            
+            const volume = parseInt(this.value);
+            videoElement.volume = volume / 100;
+            if (videoElement.muted && volume > 0) {
+              videoElement.muted = false;
+            }
+            volumeValue.textContent = volume + '%';
+          }
+        });
+      }
+
+      const speedSlider = document.getElementById(`speed${index}`);
+      const speedValue = document.getElementById(`speedValue${index}`);
+      
+      if (speedSlider && speedValue) {
+        speedSlider.addEventListener('input', function() {
+          if (!this.disabled) {
+            // User interaction - enable unmuting
+            if (!userInteracted) {
+              userInteracted = true;
+              autoPlayActive = false;
+              // Unmute all videos after user interaction
+              localVideoElements.forEach(v => {
+                if (v) v.muted = false;
+              });
+            }
+            
+            const speed = parseFloat(this.value);
+            videoElement.playbackRate = speed;
+            speedValue.textContent = speed.toFixed(2) + 'x';
+          }
+        });
+      }
+    }
+
+    function toggleLocalPlay(index) {
+      // Always stop all other videos first - only one plays at a time
+      localVideoElements.forEach((video, i) => {
+        if (i !== index && !video.paused) {
+          video.pause();
+          updateLocalPlayButton(i, false);
+          const card = document.getElementById(`card${i}`);
+          if (card) card.classList.remove('playing');
+        }
+      });
+      
+      // User interaction - enable unmuting
+      if (!userInteracted) {
+        userInteracted = true;
+        autoPlayActive = false;
+        // Unmute all videos after user interaction
+        localVideoElements.forEach(video => {
+          if (video) {
+            video.muted = false;
+          }
+        });
+      }
+      
+      const video = localVideoElements[index];
+      if (!video) return;
+      
+      if (video.paused) {
+        // Unmute on play if user has interacted
+        if (userInteracted) {
+          video.muted = false;
+        }
+        video.play().catch(err => {
+          console.log('Play failed, trying muted:', err);
+          video.muted = true;
+          video.play();
+        });
+        updateLocalPlayButton(index, true);
+        document.getElementById(`card${index}`).classList.add('playing');
+        currentPlayingIndex = index;
+      } else {
+        video.pause();
+        updateLocalPlayButton(index, false);
+        document.getElementById(`card${index}`).classList.remove('playing');
+        currentPlayingIndex = -1;
+      }
+    }
+
+    function updateLocalPlayButton(index, playing) {
+      const playButton = document.getElementById(`playBtn${index}`);
+      if (playButton) {
+        playButton.textContent = playing ? 'Pause' : 'Play';
+        playButton.classList.toggle('playing', playing);
+      }
+    }
+
+    function playLocalVideoAuto(index) {
+      if (!autoPlayActive || userInteracted) return;
+      
+      const video = localVideoElements[index];
+      if (!video) return;
+      
+      // ALWAYS stop all other videos first - only one plays at a time
+      localVideoElements.forEach((v, i) => {
+        if (i !== index) {
+          v.pause();
+          updateLocalPlayButton(i, false);
+          const card = document.getElementById(`card${i}`);
+          if (card) card.classList.remove('playing');
+        }
+      });
+      
+      // Start muted for autoplay policy compliance
+      video.muted = true;
+      video.volume = 0.5; // Set volume but keep muted until user interaction
+      
+      // Try to play (will be muted)
+      video.play().catch(err => {
+        console.log('Autoplay failed:', err);
+      });
+      
+      // Fade in volume over 1 second (but video stays muted until user interaction)
+      let volumeStep = 0;
+      const fadeInterval = setInterval(() => {
+        volumeStep += 2;
+        if (volumeStep <= 50) {
+          video.volume = volumeStep / 100;
+        } else {
+          clearInterval(fadeInterval);
+          video.volume = 0.5;
+        }
+      }, 40);
+      
+      const playButton = document.getElementById(`playBtn${index}`);
+      const videoCard = document.getElementById(`card${index}`);
+      
+      if (playButton) {
+        playButton.textContent = 'Pause';
+        playButton.classList.add('playing');
+      }
+      if (videoCard) {
+        videoCard.classList.add('playing');
+      }
+      
+      currentPlayingIndex = index;
+    }
+
+    // Auto-load background videos on page load
+    window.addEventListener('load', function() {
+      console.log('Page loaded, initializing background videos');
+      setTimeout(() => {
+        displayLocalVideos();
+      }, 500);
+    });
+
+    // Also try on DOMContentLoaded as fallback
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM ready, checking for background videos');
+      if (localVideoElements.length === 0) {
+        setTimeout(() => {
+          displayLocalVideos();
+        }, 300);
+      }
+    });
+
+    // Videos now automatically advance when each one ends (no timer needed)
   </script>
-  <footer style="background-color: #333333; color: #FFFFFF; padding: 20px; text-align: center;">
-  <p>Made by Virslaan (Vipul Rules)</p>
-  <p>&copy; 2023 All rights reserved.</p>
-</footer>
 </body>
 </html>
