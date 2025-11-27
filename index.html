@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta http-equiv="Permissions-Policy" content="autoplay=*, encrypted-media=*, picture-in-picture=*, accelerometer=*, gyroscope=*, clipboard-write=*, web-share=*">
   <title>VeeMusic DJ - Professional DJ Mixing Experience</title>
   <meta name="copyright" content="© 2025 VIPUL RULES. All rights reserved.">
@@ -28,6 +28,29 @@
       position: relative;
       transition: background 0.5s ease;
       -webkit-overflow-scrolling: touch;
+      /* Prevent zoom on mobile */
+      touch-action: pan-x pan-y;
+      -ms-touch-action: pan-x pan-y;
+    }
+    
+    /* Prevent zoom on mobile - disable pinch zoom */
+    @media (max-width: 768px) {
+      * {
+        touch-action: pan-x pan-y;
+        -ms-touch-action: pan-x pan-y;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      input, textarea, select {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+      }
     }
 
     .background-videos {
@@ -946,6 +969,30 @@
       color: #06ffa5;
     }
 
+    .reverse-button {
+      transition: all 0.2s ease;
+    }
+
+    .reverse-button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .reverse-button.active {
+      background: rgba(255, 0, 0, 0.3);
+      border-color: rgba(255, 0, 0, 0.5);
+      color: #ff6b6b;
+      animation: pulse 1s ease infinite;
+    }
+
+    .reverse-button svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: currentColor;
+      stroke-width: 0;
+    }
+
     .loading {
       text-align: center;
       padding: 40px 20px;
@@ -1324,7 +1371,8 @@
         tts: '<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>',
         play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
         pause: '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>',
-        spacebar: '<svg viewBox="0 0 24 24"><path d="M4 9h16v2H4V9zm0 4h16v2H4v-2z"/></svg>'
+        spacebar: '<svg viewBox="0 0 24 24"><path d="M4 9h16v2H4V9zm0 4h16v2H4v-2z"/></svg>',
+        reverse: '<svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>'
       };
       return icons[type] || '';
     }
@@ -1530,6 +1578,8 @@
     let trackLoops = {}; // Track loop state for each player
     let loopIntervals = {}; // Store loop interval IDs
     let loopStartTimes = {}; // Store loop start times
+    let trackReverse = {}; // Track reverse state for each player
+    let reverseIntervals = {}; // Store reverse interval IDs
     let loopEndTimes = {}; // Store loop end times
     let loopPatterns = {}; // Store loop patterns for each player (e.g., "x xx xxx")
     let loopPatternIndex = {}; // Current position in pattern
@@ -1875,6 +1925,21 @@
         playButton.onclick = () => togglePlay(index);
         playButton.title = 'Play/Pause';
         
+        // Add reverse button
+        const reverseButton = document.createElement('button');
+        reverseButton.className = 'reverse-button';
+        reverseButton.id = `reverseBtn${index}`;
+        reverseButton.innerHTML = getSVGIcon('reverse');
+        reverseButton.onclick = () => toggleReverse(index);
+        reverseButton.title = 'Play in Reverse';
+        reverseButton.style.cssText = 'padding: 6px 12px; font-size: 11px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: #ffffff; cursor: pointer; min-height: 32px; display: flex; align-items: center; justify-content: center; flex: 1;';
+        
+        // Create button group for play and reverse
+        const playControlsGroup = document.createElement('div');
+        playControlsGroup.style.cssText = 'display: flex; gap: 8px; width: 100%;';
+        playControlsGroup.appendChild(playButton);
+        playControlsGroup.appendChild(reverseButton);
+        
         const volumeGroup = document.createElement('div');
         volumeGroup.className = 'control-group';
         volumeGroup.innerHTML = `
@@ -1967,7 +2032,7 @@
           </div>
         `;
         
-        controls.appendChild(playButton);
+        controls.appendChild(playControlsGroup);
         controls.appendChild(volumeGroup);
         controls.appendChild(speedGroup);
         controls.appendChild(pitchGroup);
@@ -2222,6 +2287,7 @@
       // Initialize loop state
       trackLoops[index] = false;
       trackPitch[index] = 0;
+      trackReverse[index] = false;
       loopPatterns[index] = ''; // Default: no pattern (use default loop)
       loopPatternIndex[index] = 0;
       loopSegmentLooped[index] = false;
@@ -2466,6 +2532,7 @@
       if (state === YT.PlayerState.PLAYING) {
         player.pauseVideo();
         stopLoop(index);
+        stopReverse(index);
         stopBeatIndicator(index);
         playButton.innerHTML = getSVGIcon('play');
         playButton.classList.remove('playing');
@@ -2474,6 +2541,10 @@
         currentPlayingIndex = -1;
         }
       } else {
+        // Stop reverse if active
+        if (trackReverse[index]) {
+          stopReverse(index);
+        }
         player.playVideo();
         startBeatIndicator(index);
         if (trackLoops[index]) {
@@ -2483,6 +2554,127 @@
         playButton.classList.add('playing');
         videoCard.classList.add('playing');
         currentPlayingIndex = index;
+      }
+    }
+    
+    // Toggle reverse playback
+    function toggleReverse(index) {
+      const player = players[index];
+      if (!player) return;
+      
+      // Stop normal playback if active
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING && !trackReverse[index]) {
+        player.pauseVideo();
+        const playButton = document.getElementById(`playBtn${index}`);
+        if (playButton) {
+          playButton.innerHTML = getSVGIcon('play');
+          playButton.classList.remove('playing');
+        }
+      }
+      
+      // Stop loop if active
+      if (trackLoops[index]) {
+        stopLoop(index);
+      }
+      
+      if (trackReverse[index]) {
+        // Stop reverse
+        stopReverse(index);
+      } else {
+        // Start reverse
+        startReverse(index);
+      }
+    }
+    
+    // Start reverse playback
+    function startReverse(index) {
+      const player = players[index];
+      if (!player) return;
+      
+      // Stop any existing reverse
+      if (reverseIntervals[index]) {
+        clearInterval(reverseIntervals[index]);
+      }
+      
+      trackReverse[index] = true;
+      const reverseButton = document.getElementById(`reverseBtn${index}`);
+      if (reverseButton) {
+        reverseButton.classList.add('active');
+        reverseButton.style.background = 'rgba(255, 0, 0, 0.3)';
+      }
+      
+      // Set very slow playback rate for reverse effect
+      player.setPlaybackRate(0.25); // Slowest possible
+      player.playVideo();
+      
+      // Seek backwards continuously to simulate reverse
+      const reverseInterval = setInterval(() => {
+        if (!trackReverse[index] || !player) {
+          clearInterval(reverseInterval);
+          return;
+        }
+        
+        try {
+          const currentTime = player.getCurrentTime();
+          if (currentTime > 0.1) {
+            // Seek backwards by 0.1 seconds
+            player.seekTo(Math.max(0, currentTime - 0.1), true);
+          } else {
+            // Reached beginning, stop reverse
+            stopReverse(index);
+          }
+        } catch (e) {
+          console.error('Error in reverse playback:', e);
+          stopReverse(index);
+        }
+      }, 100); // Update every 100ms for smooth reverse
+      
+      reverseIntervals[index] = reverseInterval;
+      
+      // Update UI
+      const videoCard = document.getElementById(`card${index}`);
+      if (videoCard) {
+        videoCard.classList.add('playing');
+      }
+    }
+    
+    // Stop reverse playback
+    function stopReverse(index) {
+      trackReverse[index] = false;
+      
+      if (reverseIntervals[index]) {
+        clearInterval(reverseIntervals[index]);
+        reverseIntervals[index] = null;
+      }
+      
+      const player = players[index];
+      if (player) {
+        player.pauseVideo();
+        // Reset playback rate
+        const speedSlider = document.getElementById(`speed${index}`);
+        if (speedSlider) {
+          const speed = parseFloat(speedSlider.value) || 1.0;
+          const pitchMultiplier = Math.pow(2, (trackPitch[index] || 0) / 12);
+          player.setPlaybackRate(speed * pitchMultiplier);
+        }
+      }
+      
+      const reverseButton = document.getElementById(`reverseBtn${index}`);
+      if (reverseButton) {
+        reverseButton.classList.remove('active');
+        reverseButton.style.background = 'rgba(255, 255, 255, 0.1)';
+      }
+      
+      const playButton = document.getElementById(`playBtn${index}`);
+      if (playButton) {
+        playButton.innerHTML = getSVGIcon('play');
+        playButton.classList.remove('playing');
+      }
+      
+      const videoCard = document.getElementById(`card${index}`);
+      if (videoCard) {
+        videoCard.classList.remove('playing');
       }
     }
     
@@ -2947,8 +3139,8 @@
           setTimeout(() => {
             speakText(ttsText, { 
               volume: 1.0,  // MAXIMUM volume - LOUD
-              rate: 0.92,   // Slower for more melodic, musical effect
-              pitch: 1.2    // Higher pitch (1.2) for energetic, melodious DJ voice
+              rate: 0.85,   // Slower for heavier, more powerful effect
+              pitch: 0.7    // LOWER pitch (0.7) for HEAVY, deep DJ voice
             });
           }, 2000);
         }
@@ -3704,8 +3896,9 @@
         }
       }
       
-      // Stop any loops and beat indicators
+      // Stop any loops, reverse, and beat indicators
       stopLoop(index);
+      stopReverse(index);
       if (beatIndicators[index]) {
         clearInterval(beatIndicators[index]);
         delete beatIndicators[index];
@@ -3726,8 +3919,10 @@
       if (videoData[index]) videoData[index] = null;
       trackLoops[index] = null;
       trackPitch[index] = null;
+      trackReverse[index] = null;
       loopPatterns[index] = null;
       loopIntervals[index] = null;
+      reverseIntervals[index] = null;
       loopStartTimes[index] = null;
       loopEndTimes[index] = null;
       trackGenres[index] = null;
@@ -4472,6 +4667,21 @@
         playButton.onclick = () => togglePlay(index);
         playButton.title = 'Play/Pause';
         
+        // Add reverse button
+        const reverseButton = document.createElement('button');
+        reverseButton.className = 'reverse-button';
+        reverseButton.id = `reverseBtn${index}`;
+        reverseButton.innerHTML = getSVGIcon('reverse');
+        reverseButton.onclick = () => toggleReverse(index);
+        reverseButton.title = 'Play in Reverse';
+        reverseButton.style.cssText = 'padding: 6px 12px; font-size: 11px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: #ffffff; cursor: pointer; min-height: 32px; display: flex; align-items: center; justify-content: center; flex: 1;';
+        
+        // Create button group for play and reverse
+        const playControlsGroup = document.createElement('div');
+        playControlsGroup.style.cssText = 'display: flex; gap: 8px; width: 100%;';
+        playControlsGroup.appendChild(playButton);
+        playControlsGroup.appendChild(reverseButton);
+        
         const volumeGroup = document.createElement('div');
         volumeGroup.className = 'control-group';
         volumeGroup.innerHTML = `
@@ -4523,6 +4733,26 @@
           >
         `;
         
+        // Add numbered cue buttons (1-5)
+        const cueButtonsGroup = document.createElement('div');
+        cueButtonsGroup.className = 'cue-buttons-group';
+        cueButtonsGroup.style.cssText = 'display: flex; gap: 4px; margin-bottom: 8px; justify-content: center;';
+        cueButtonsGroup.innerHTML = `
+          <button class="cue-number-btn" id="cueBtn${index}_1" title="Set/Jump to Cue 1">1</button>
+          <button class="cue-number-btn" id="cueBtn${index}_2" title="Set/Jump to Cue 2">2</button>
+          <button class="cue-number-btn" id="cueBtn${index}_3" title="Set/Jump to Cue 3">3</button>
+          <button class="cue-number-btn" id="cueBtn${index}_4" title="Set/Jump to Cue 4">4</button>
+          <button class="cue-number-btn" id="cueBtn${index}_5" title="Set/Jump to Cue 5">5</button>
+        `;
+        
+        // Add event listeners for cue buttons
+        for (let cueNum = 1; cueNum <= 5; cueNum++) {
+          const cueBtn = document.getElementById(`cueBtn${index}_${cueNum}`);
+          if (cueBtn) {
+            cueBtn.addEventListener('click', () => handleCueButton(index, cueNum));
+          }
+        }
+        
         // Add EQ controls
         const eqControls = document.createElement('div');
         eqControls.className = 'eq-controls';
@@ -4544,27 +4774,7 @@
           </div>
         `;
         
-        // Add numbered cue buttons (1-5)
-        const cueButtonsGroup = document.createElement('div');
-        cueButtonsGroup.className = 'cue-buttons-group';
-        cueButtonsGroup.style.cssText = 'display: flex; gap: 4px; margin-bottom: 8px; justify-content: center;';
-        cueButtonsGroup.innerHTML = `
-          <button class="cue-number-btn" id="cueBtn${index}_1" title="Set/Jump to Cue 1">1</button>
-          <button class="cue-number-btn" id="cueBtn${index}_2" title="Set/Jump to Cue 2">2</button>
-          <button class="cue-number-btn" id="cueBtn${index}_3" title="Set/Jump to Cue 3">3</button>
-          <button class="cue-number-btn" id="cueBtn${index}_4" title="Set/Jump to Cue 4">4</button>
-          <button class="cue-number-btn" id="cueBtn${index}_5" title="Set/Jump to Cue 5">5</button>
-        `;
-        
-        // Add event listeners for cue buttons
-        for (let cueNum = 1; cueNum <= 5; cueNum++) {
-          const cueBtn = document.getElementById(`cueBtn${index}_${cueNum}`);
-          if (cueBtn) {
-            cueBtn.addEventListener('click', () => handleCueButton(index, cueNum));
-          }
-        }
-        
-        controls.appendChild(playButton);
+        controls.appendChild(playControlsGroup);
         controls.appendChild(volumeGroup);
         controls.appendChild(speedGroup);
         controls.appendChild(pitchGroup);
@@ -4580,6 +4790,7 @@
         // Initialize track state
         trackLoops[index] = false;
         trackPitch[index] = 0;
+        trackReverse[index] = false;
         loopPatterns[index] = '';
         loopPatternIndex[index] = 0;
         loopSegmentLooped[index] = false;
@@ -4962,44 +5173,43 @@
         const loadVoices = () => {
           ttsVoices = speechSynthesis.getVoices();
           
-          // Select best MELODIOUS voice - prefer female voices for more musical sound
-          // Female voices tend to be more melodic and energetic for DJ announcements
-          const preferredMelodiousVoices = [
-            'Google UK English Female',  // Very clear and melodic
-            'Google US English Female',  // Energetic and clear
-            'Microsoft Zira',            // Professional female voice
-            'Samantha',                  // Apple's melodic female voice
-            'Victoria',                  // Clear female voice
-            'Karen',                     // Australian melodic voice
-            'Moira',                     // Irish melodic voice
-            'Tessa',                     // South African melodic voice
-            'Fiona',                     // Scottish melodic voice
-            'Microsoft Zira Desktop'     // Windows melodic voice
+          // Select HEAVY/DEEP voice - prefer male voices for heavy, bassy sound
+          // Male voices tend to be deeper and heavier for powerful DJ announcements
+          const preferredHeavyVoices = [
+            'Google UK English Male',     // Deep and clear
+            'Google US English Male',     // Heavy and powerful
+            'Microsoft David',           // Professional deep male voice
+            'Microsoft Mark',            // Deep male voice
+            'Alex',                      // Apple's deep male voice
+            'Daniel',                    // Deep British voice
+            'Tom',                       // Deep American voice
+            'Microsoft David Desktop',   // Windows deep voice
+            'Microsoft Mark Desktop'     // Windows heavy voice
           ];
           
-          // Try to find preferred melodious voice
-          for (const preferred of preferredMelodiousVoices) {
+          // Try to find preferred heavy/deep voice
+          for (const preferred of preferredHeavyVoices) {
             const voice = ttsVoices.find(v => 
               v.name.includes(preferred) || 
-              (v.name.toLowerCase().includes('female') && v.lang.startsWith('en'))
+              (v.name.toLowerCase().includes('male') && v.lang.startsWith('en'))
             );
             if (voice) {
               selectedVoice = voice;
-              console.log('Selected melodious voice:', voice.name);
+              console.log('Selected heavy voice:', voice.name);
               break;
             }
           }
           
-          // If no preferred found, prefer female English voices for melodious sound
+          // If no preferred found, prefer male English voices for heavy sound
           if (!selectedVoice) {
             selectedVoice = ttsVoices.find(v => 
               v.lang.startsWith('en') && 
-              (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman'))
+              (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('man') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('mark') || v.name.toLowerCase().includes('alex'))
             ) || ttsVoices.find(v => v.lang.startsWith('en')) || ttsVoices[0];
           }
           
           if (selectedVoice) {
-            console.log('Using TTS voice:', selectedVoice.name, 'for melodious DJ announcements');
+            console.log('Using TTS voice:', selectedVoice.name, 'for HEAVY DJ announcements');
           }
         };
         
@@ -5033,30 +5243,30 @@
           utterance.voice = selectedVoice;
         }
         
-        // Set properties for best quality
-        // Make TTS LOUDER and MORE MELODIOUS for DJ announcements
-        utterance.rate = options.rate || 0.92; // Slower rate for more melodic, musical effect
-        utterance.pitch = options.pitch || 1.2; // Higher pitch (1.2) for energetic, melodious DJ voice
+        // Set properties for HEAVY voice
+        // Make TTS LOUDER and HEAVIER (DEEP) for DJ announcements
+        utterance.rate = options.rate || 0.85; // Slower rate for heavier, more powerful effect
+        utterance.pitch = options.pitch || 0.7; // LOWER pitch (0.7) for HEAVY, deep DJ voice
         utterance.volume = options.volume || 1.0; // MAXIMUM volume (1.0) for LOUDNESS
         utterance.lang = selectedVoice?.lang || 'en-US';
         
-        // Enhanced melodious effect - create musical intonation
-        // Higher pitch creates more energetic, DJ-like announcements
-        if (!options.noMelody) {
-          // Add slight pitch variation for musicality
+        // Enhanced HEAVY effect - create deep, powerful intonation
+        // Lower pitch creates heavier, more powerful DJ announcements
+        if (!options.noHeavy) {
+          // Add pitch variation for heavy effect
           const isExclamation = text.includes('!');
           const isQuestion = text.includes('?');
           
           if (isExclamation) {
-            // Exclamations get even higher pitch for energy
-            utterance.pitch = 1.25;
-            utterance.rate = 0.88; // Slower for dramatic effect
+            // Exclamations get slightly higher but still heavy
+            utterance.pitch = 0.75;
+            utterance.rate = 0.80; // Slower for dramatic heavy effect
           } else if (isQuestion) {
-            // Questions get rising pitch
-            utterance.pitch = 1.15;
+            // Questions get slightly higher but still deep
+            utterance.pitch = 0.72;
           } else {
-            // Normal statements with melodic pitch
-            utterance.pitch = 1.2;
+            // Normal statements with heavy deep pitch
+            utterance.pitch = 0.7;
           }
         }
         
@@ -5162,8 +5372,8 @@
         // Play immediately - LOUD and MELODIOUS
         await speakText(text, {
           volume: 1.0,  // MAXIMUM volume - LOUD
-          rate: 0.92,  // Slower for more melodic, musical effect
-          pitch: 1.2   // Higher pitch (1.2) for energetic, melodious DJ voice
+          rate: 0.85,  // Slower for heavier, more powerful effect
+          pitch: 0.7   // LOWER pitch (0.7) for HEAVY, deep DJ voice
         });
         
         // Also add to DJ VEEX20 queue
@@ -5187,6 +5397,12 @@
     });
 
     function displayLocalVideos() {
+      // NEVER play background videos on mobile - return early
+      if (isMobileDevice()) {
+        console.log('Mobile device detected - background videos disabled');
+        return;
+      }
+      
       const backgroundContainer = document.getElementById('backgroundVideos');
       if (!backgroundContainer) return;
       
@@ -5212,8 +5428,13 @@
         localVideoElements.push(videoElement);
         
         // Single event listener to start first video
+        // NEVER start on mobile
         let videoStarted = false;
         const startVideoOnce = () => {
+          // NEVER play background videos on mobile
+          if (isMobileDevice()) {
+            return;
+          }
           if (index === 0 && autoPlayActive && !backgroundVideoStarted && !videoStarted) {
             videoStarted = true;
             backgroundVideoStarted = true;
@@ -5256,6 +5477,11 @@
     }
 
     function startBackgroundVideoSequence() {
+      // NEVER start background videos on mobile
+      if (isMobileDevice()) {
+        return;
+      }
+      
       if (!autoPlayActive || readyPlayers.length === 0 || backgroundVideoStarted) return;
       
       // Start with first video
@@ -5264,6 +5490,12 @@
     }
 
     function playBackgroundVideo(index) {
+      // NEVER play background videos on mobile
+      if (isMobileDevice()) {
+        console.log('Mobile device - background videos disabled');
+        return;
+      }
+      
       if (localVideoElements.length === 0) {
         console.log('No background videos available');
         return;
