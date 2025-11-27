@@ -296,7 +296,7 @@
     }
 
     #lockButton.unlocked #lockText::after {
-      content: " - JAM with DJ VEE";
+      content: " - JAM with DJ VEEX20";
     }
 
     #spacebarButton {
@@ -1163,7 +1163,7 @@
     <header>
   <h1>VeeMusic DJ</h1>
       <p class="subtitle">Professional DJ Mixing Experience</p>
-      <p class="instruction-text">Search video, enter and press the DJ Vee take care and use the controls to feel the dj already</p>
+      <p class="instruction-text">Search video, enter and press the DJ VEEX20 take care and use the controls to feel the dj already</p>
       <p class="eq-explanation" style="font-size: 10px; color: rgba(255, 255, 255, 0.4); margin-top: 6px; padding: 6px; background: rgba(255, 255, 255, 0.02); border-radius: 4px; text-align: center;">
         <strong>EQ Controls:</strong> Low (Bass) • Mid (Vocals) • High (Treble) - Adjust frequency ranges for better mixing
       </p>
@@ -1183,9 +1183,9 @@
     </div>
 
     <div class="copilot-section">
-      <button id="copilotButton">DJ VEE</button>
+      <button id="copilotButton">DJ VEEX20</button>
       <button id="beatDropButton" style="margin-left: 10px;">Beat Drop Mix</button>
-      <button id="lockButton" style="margin-left: 10px; display: none;" title="Lock/Unlock DJ VEE for manual mixing">
+      <button id="lockButton" style="margin-left: 10px; display: none;" title="Lock/Unlock DJ VEEX20 for manual mixing">
         <span id="lockIcon"></span>
         <span id="lockText" style="margin-left: 5px;">Lock</span>
       </button>
@@ -1203,7 +1203,7 @@
       <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
         <button class="tts-prefill" data-text="Let's go!">Let's go!</button>
         <button class="tts-prefill" data-text="Drop the beat!">Drop the beat!</button>
-        <button class="tts-prefill" data-text="This is DJ VEE!">DJ VEE!</button>
+        <button class="tts-prefill" data-text="This is DJ VEEX20!">DJ VEEX20!</button>
         <button class="tts-prefill" data-text="Feel the music!">Feel the music!</button>
         <button class="tts-prefill" data-text="Energy rising!">Energy rising!</button>
         <button class="tts-prefill" data-text="Here we go!">Here we go!</button>
@@ -1218,6 +1218,10 @@
         <button id="ttsButton" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #ffffff; cursor: pointer; min-height: 36px;">
           <span id="ttsIcon"></span>
           <span style="margin-left: 5px;">Speak</span>
+        </button>
+        <button id="ttsStopButton" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.4); border-radius: 6px; color: #ff6b6b; cursor: pointer; min-height: 36px;">
+          <span>⏹</span>
+          <span style="margin-left: 5px;">Stop</span>
         </button>
       </div>
     </div>
@@ -1392,7 +1396,7 @@
     let copilotInterval = null;
     let beatDropActive = false;
     let beatDropInterval = null;
-    let djVeeLocked = true; // Lock state for DJ VEE (locked = no manual mixing, unlocked = allow manual mixing)
+    let djVeeLocked = true; // Lock state for DJ VEEX20 (locked = no manual mixing, unlocked = allow manual mixing)
     let currentPlayingIndex = -1;
     let currentFocusedIndex = 0; // Track focused for spacebar control
     let trackHistory = [];
@@ -2274,7 +2278,7 @@
     }
 
     function togglePlay(index) {
-      // Allow manual play when DJ VEE is active but unlocked (JAM mode)
+      // Allow manual play when DJ VEEX20 is active but unlocked (JAM mode)
       if (copilotActive && djVeeLocked) return; // Don't allow manual play when copilot is active and locked
       
       // User has interacted - stop auto-play
@@ -3378,6 +3382,7 @@
       const player = players[index];
       if (!player) {
         console.log('No player for index:', index);
+        alert('Player not ready. Please wait for the track to load.');
         return;
       }
       
@@ -3390,31 +3395,48 @@
         if (cuePoints[index][cueNumber] !== undefined && cuePoints[index][cueNumber] !== null) {
           // Jump to existing cue point
           const cueTime = cuePoints[index][cueNumber];
-          player.seekTo(cueTime, true);
-          console.log(`Jumped to cue ${cueNumber} at ${cueTime.toFixed(2)}s`);
+          try {
+            player.seekTo(cueTime, true);
+            console.log(`Jumped to cue ${cueNumber} at ${cueTime.toFixed(2)}s`);
+            
+            // If player is paused, play it briefly to show the cue point
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.UNSTARTED) {
+              player.playVideo();
+              setTimeout(() => {
+                player.pauseVideo();
+              }, 500);
+            }
+          } catch (seekError) {
+            console.error('Error seeking to cue point:', seekError);
+            alert('Could not jump to cue point. Please try again.');
+          }
         } else {
           // Set new cue point at current position
           try {
-            const currentTime = player.getCurrentTime();
-            if (currentTime !== undefined && !isNaN(currentTime) && currentTime >= 0) {
-              cuePoints[index][cueNumber] = currentTime;
-              console.log(`Cue ${cueNumber} set at ${currentTime.toFixed(2)}s for track ${index}`);
-              
-              // Update button to show it has a cue point
-              const cueButton = document.getElementById(`cueBtn${index}_${cueNumber}`);
-              if (cueButton) {
-                cueButton.style.background = 'rgba(58, 134, 255, 0.3)';
-                cueButton.style.borderColor = '#3a86ff';
+            let currentTime = 0;
+            try {
+              currentTime = player.getCurrentTime();
+              if (isNaN(currentTime) || currentTime < 0) {
+                currentTime = 0;
               }
-            } else {
-              // Player not ready, set cue at 0
-              cuePoints[index][cueNumber] = 0;
-              console.log(`Cue ${cueNumber} set at 0s (player not ready) for track ${index}`);
+            } catch (timeError) {
+              currentTime = 0;
             }
-          } catch (timeError) {
-            // If getCurrentTime fails, set cue at 0
-            cuePoints[index][cueNumber] = 0;
-            console.log(`Cue ${cueNumber} set at 0s (error getting time) for track ${index}`);
+            
+            cuePoints[index][cueNumber] = currentTime;
+            console.log(`Cue ${cueNumber} set at ${currentTime.toFixed(2)}s for track ${index}`);
+            
+            // Update button to show it has a cue point
+            const cueButton = document.getElementById(`cueBtn${index}_${cueNumber}`);
+            if (cueButton) {
+              cueButton.style.background = 'rgba(58, 134, 255, 0.3)';
+              cueButton.style.borderColor = '#3a86ff';
+              cueButton.title = `Jump to Cue ${cueNumber} (${currentTime.toFixed(1)}s)`;
+            }
+          } catch (setError) {
+            console.error('Error setting cue point:', setError);
+            alert('Could not set cue point. Please try again.');
           }
         }
         
@@ -3428,6 +3450,7 @@
         }
       } catch (e) {
         console.error('Error handling cue button:', e);
+        alert('Error with cue button. Please try again.');
       }
     }
 
@@ -3786,7 +3809,7 @@
       
       if (copilotActive) {
         button.classList.add('active');
-        button.textContent = 'Stop DJ VEE';
+        button.textContent = 'Stop DJ VEEX20';
         body.classList.add('copilot-active');
         
         // Show lock button
@@ -3812,7 +3835,7 @@
         setTimeout(() => djAlgorithm(), 1000);
       } else {
         button.classList.remove('active');
-        button.textContent = 'DJ VEE';
+        button.textContent = 'DJ VEEX20';
         body.classList.remove('copilot-active');
         
         // Hide lock button
@@ -4265,7 +4288,7 @@
     }
 
     function toggleLock() {
-      if (!copilotActive) return; // Only allow locking when DJ VEE is active
+      if (!copilotActive) return; // Only allow locking when DJ VEEX20 is active
       
       djVeeLocked = !djVeeLocked;
       const lockButton = document.getElementById('lockButton');
@@ -4320,6 +4343,12 @@
     
     if (ttsButton) {
       ttsButton.addEventListener('click', handleTTS);
+    }
+    
+    // TTS Stop button
+    const ttsStopButton = document.getElementById('ttsStopButton');
+    if (ttsStopButton) {
+      ttsStopButton.addEventListener('click', stopTTS);
     }
     
     // Prefill buttons
@@ -4584,12 +4613,21 @@
       });
     }
 
+    function stopTTS() {
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel(); // Stop all speech
+        isTTSPlaying = false;
+        ttsQueue = []; // Clear the queue to prevent repeating
+        console.log('TTS stopped and queue cleared');
+      }
+    }
+
     function playTTSBetweenTracks(text) {
-      // Add to queue for DJ VEE to play between tracks
+      // Add to queue for DJ VEEX20 to play between tracks
       ttsQueue.push(text);
     }
 
-    // Auto-generate TTS phrases for DJ VEE based on context
+    // Auto-generate TTS phrases for DJ VEEX20 based on context
     function generateAutoTTSPhrase(context) {
       const phrases = {
         trackStart: [
@@ -4597,7 +4635,7 @@
           'Here we go!',
           'Feel the beat!',
           'Energy rising!',
-          'This is DJ VEE!'
+          'This is DJ VEEX20!'
         ],
         trackTransition: [
           'Smooth transition!',
@@ -4639,7 +4677,7 @@
         pitch: 1.2   // Higher pitch (1.2) for energetic, melodious DJ voice
       });
       
-      // Also add to DJ VEE queue
+      // Also add to DJ VEEX20 queue
       playTTSBetweenTracks(text);
       
       // Clear input
