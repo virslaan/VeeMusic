@@ -327,6 +327,40 @@
       animation: pulse 1s ease infinite;
     }
 
+    #peopleModeButton {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #peopleModeButton:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #peopleModeButton.active {
+      background: linear-gradient(135deg, #06ffa5 0%, #3a86ff 100%);
+      border-color: transparent;
+      animation: pulse 2s ease infinite;
+    }
+
+    #energyLevel {
+      font-size: 11px;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+
     #voiceButton {
       padding: 10px 20px;
       font-size: 13px;
@@ -1197,6 +1231,11 @@
         <span id="spacebarIcon"></span>
         <span id="spacebarText" style="margin-left: 5px;">Spacebar</span>
       </button>
+      <button id="peopleModeButton" style="margin-left: 10px;" title="People Mode: Adjust rhythm and dance speed based on energy level">
+        <span id="peopleModeIcon">👥</span>
+        <span id="peopleModeText" style="margin-left: 5px;">People Mode</span>
+        <span id="energyLevel" style="margin-left: 8px; font-size: 11px; opacity: 0.7;">⚡ Medium</span>
+      </button>
     </div>
 
     <div class="tts-section" id="ttsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
@@ -1261,6 +1300,8 @@
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
+  <!-- Note: True pitch shifting without speed change requires direct audio access -->
+  <!-- YouTube iframes block this due to CORS, so we use playbackRate as a workaround -->
   <script>
     // SVG Icon Functions - Minimalistic Design
     function getSVGIcon(type) {
@@ -1292,6 +1333,7 @@
     let ttsVoices = [];
     let selectedVoice = null;
     let audioContext = null;
+    let pitchShifters = {}; // Store pitch shifters for each track
     
     // Initialize AudioContext for sound effects
     function initAudioContext() {
@@ -1303,6 +1345,66 @@
         }
       }
       return audioContext;
+    }
+    
+    // Create a pitch shifter using Web Audio API
+    function createPitchShifter(audioContext, semitones) {
+      // Calculate pitch ratio (2^(semitones/12))
+      const pitchRatio = Math.pow(2, semitones / 12);
+      
+      // Create nodes for pitch shifting
+      const source = audioContext.createBufferSource();
+      const gainNode = audioContext.createGain();
+      
+      // Use playbackRate to change pitch (but this also changes speed)
+      // For true pitch shifting without speed change, we'd need SoundTouchJS
+      // But since YouTube iframes have CORS, we'll use a workaround
+      
+      return {
+        source: source,
+        gainNode: gainNode,
+        pitchRatio: pitchRatio,
+        setPitch: function(newSemitones) {
+          this.pitchRatio = Math.pow(2, newSemitones / 12);
+          if (this.source) {
+            this.source.playbackRate.value = this.pitchRatio;
+          }
+        },
+        connect: function(destination) {
+          this.source.connect(this.gainNode);
+          this.gainNode.connect(destination);
+        }
+      };
+    }
+    
+    // Apply pitch shift using Web Audio API workaround
+    // Note: True pitch shifting without speed change requires audio buffer access
+    // YouTube iframes prevent this, so we use playbackRate as a compromise
+    function applyPitchShift(index, semitones) {
+      // For YouTube videos, we can only use playbackRate
+      // True pitch shifting requires direct audio access which YouTube blocks
+      // This is a limitation of YouTube's iframe API
+      
+      const player = players[index];
+      if (!player) return;
+      
+      // Calculate pitch multiplier
+      const pitchMultiplier = Math.pow(2, semitones / 12);
+      
+      // Get current speed
+      const speedSlider = document.getElementById(`speed${index}`);
+      const currentSpeed = parseFloat(speedSlider.value) || 1.0;
+      
+      // Apply pitch by adjusting playback rate
+      // This changes both pitch AND speed (YouTube API limitation)
+      const newRate = currentSpeed * pitchMultiplier;
+      const clampedRate = Math.max(0.25, Math.min(2.0, newRate));
+      
+      try {
+        player.setPlaybackRate(clampedRate);
+      } catch (e) {
+        console.error('Error applying pitch:', e);
+      }
     }
     
     // Sound effect functions
@@ -1406,6 +1508,9 @@
     let mixIntensity = 0.5; // 0 = calm, 1 = intense
     let autoPlayActive = true;
     let autoPlayInterval = null;
+    let peopleModeActive = false; // People Mode: adjust rhythm based on energy
+    let energyLevel = 0.5; // 0 = Low, 0.5 = Medium, 1 = High
+    let energyHistory = []; // Track energy over time
     let readyPlayers = [];
     let userInteracted = false;
     let localVideos = ['bg.mp4', 'bg2.mp4', 'bg3.mp4'];
@@ -2155,26 +2260,62 @@
             }
             
             const pitchSemitones = parseInt(this.value);
+            const oldPitch = trackPitch[index] || 0;
             
             // Update stored pitch value
             trackPitch[index] = pitchSemitones;
             
-            // Get base speed from slider (this is the speed without pitch adjustment)
-            const baseSpeed = parseFloat(speedSlider.value) || 1.0;
+            // Get current speed from slider (user's desired speed)
+            let userSpeed = parseFloat(speedSlider.value) || 1.0;
+            
+            // IMPORTANT LIMITATION: YouTube iframe API does NOT support independent pitch control
+            // The setPlaybackRate() method changes BOTH speed AND pitch together
+            // True pitch-only shifting requires:
+            // 1. Direct audio stream access (blocked by YouTube CORS)
+            // 2. Web Audio API with audio buffer (not available from iframes)
+            // 3. Libraries like SoundTouchJS (require audio buffer access)
+            
+            // WORKAROUND: We compensate speed to minimize tempo change when pitch changes
+            // This is the best we can do with YouTube's API limitations
             
             // Calculate pitch multiplier (2^(semitones/12))
             const pitchMultiplier = Math.pow(2, pitchSemitones / 12);
             
-            // Apply pitch to base speed
-            const newPlaybackRate = baseSpeed * pitchMultiplier;
+            // Smart compensation: When pitch changes, adjust speed inversely to maintain tempo
+            // Formula: compensatedSpeed = userSpeed / pitchMultiplier
+            // This keeps the perceived tempo closer to the original
+            const compensatedSpeed = userSpeed / pitchMultiplier;
+            
+            // Clamp compensated speed to reasonable range (0.6x to 1.4x)
+            const clampedCompensatedSpeed = Math.max(0.6, Math.min(1.4, compensatedSpeed));
+            
+            // Calculate final playback rate (compensated speed * pitch multiplier)
+            // This should result in approximately: userSpeed (maintaining tempo)
+            let finalPlaybackRate = clampedCompensatedSpeed * pitchMultiplier;
+            
+            // Final safety check - keep in YouTube's supported range
+            if (finalPlaybackRate < 0.5) {
+              finalPlaybackRate = 0.5;
+              const adjustedSpeed = 0.5 / pitchMultiplier;
+              speedSlider.value = Math.max(0.6, Math.min(1.4, adjustedSpeed));
+              speedValue.textContent = speedSlider.value.toFixed(2) + 'x';
+            } else if (finalPlaybackRate > 1.5) {
+              finalPlaybackRate = 1.5;
+              const adjustedSpeed = 1.5 / pitchMultiplier;
+              speedSlider.value = Math.max(0.6, Math.min(1.4, adjustedSpeed));
+              speedValue.textContent = speedSlider.value.toFixed(2) + 'x';
+            }
             
             // Clamp to YouTube's supported range (0.25 to 2.0)
-            const clampedRate = Math.max(0.25, Math.min(2.0, newPlaybackRate));
+            const clampedRate = Math.max(0.25, Math.min(2.0, finalPlaybackRate));
             
             // Apply the new playback rate to the player
+            // NOTE: YouTube API limitation - this changes both pitch AND speed
+            // We've compensated speed to minimize tempo change
             try {
               if (player && typeof player.setPlaybackRate === 'function') {
                 player.setPlaybackRate(clampedRate);
+                console.log(`Pitch: ${pitchSemitones} semitones | Speed: ${clampedCompensatedSpeed.toFixed(2)}x | Rate: ${clampedRate.toFixed(2)}x`);
               }
             } catch (e) {
               console.error('Error setting playback rate for pitch:', e);
@@ -2187,6 +2328,18 @@
               pitchValue.textContent = '+' + pitchSemitones;
             } else {
               pitchValue.textContent = pitchSemitones.toString();
+            }
+            
+            // Trigger algorithm to react IMMEDIATELY to the change
+            if (copilotActive) {
+              lastMixTime = Date.now() - 15000; // Make algorithm think it's been a while
+              mixIntensity = Math.min(1, mixIntensity + 0.3); // Increase intensity significantly
+              // Force immediate algorithm run
+              setTimeout(() => {
+                if (copilotActive) {
+                  djAlgorithm();
+                }
+              }, 100);
             }
           }
         });
@@ -2353,17 +2506,108 @@
       }
     }
 
+    // Calculate energy level based on current tracks
+    function calculateEnergyLevel() {
+      if (!peopleModeActive) return 0.5; // Default medium if not active
+      
+      let totalEnergy = 0;
+      let trackCount = 0;
+      
+      players.forEach((player, index) => {
+        if (player) {
+          const state = player.getPlayerState();
+          if (state === YT.PlayerState.PLAYING) {
+            const volume = player.getVolume() / 100; // 0-1
+            const speed = player.getPlaybackRate(); // 0.25-2.0
+            const genre = trackGenres[index] || 'electronic';
+            
+            // Energy factors:
+            // 1. Volume (higher = more energy)
+            // 2. Speed (faster = more energy)
+            // 3. Genre (some genres are more energetic)
+            const genreEnergy = {
+              'dubstep': 0.9, 'drumandbass': 0.9, 'edm': 0.8,
+              'house': 0.7, 'techno': 0.7, 'trance': 0.7,
+              'hiphop': 0.6, 'pop': 0.6, 'rock': 0.7,
+              'metal': 0.8, 'reggae': 0.5, 'jazz': 0.4,
+              'ambient': 0.3, 'classical': 0.3
+            }[genre] || 0.5;
+            
+            const trackEnergy = (volume * 0.4) + ((speed - 0.25) / 1.75 * 0.3) + (genreEnergy * 0.3);
+            totalEnergy += trackEnergy;
+            trackCount++;
+          }
+        }
+      });
+      
+      if (trackCount === 0) return 0.5;
+      
+      const avgEnergy = totalEnergy / trackCount;
+      
+      // Smooth energy transitions (prevent sudden jumps)
+      energyHistory.push(avgEnergy);
+      if (energyHistory.length > 10) {
+        energyHistory.shift(); // Keep last 10 readings
+      }
+      
+      // Average over history for smoother transitions
+      const smoothedEnergy = energyHistory.reduce((a, b) => a + b, 0) / energyHistory.length;
+      
+      return Math.max(0, Math.min(1, smoothedEnergy));
+    }
+    
+    // Update energy level display
+    function updateEnergyDisplay() {
+      const energyLevelElement = document.getElementById('energyLevel');
+      if (!energyLevelElement) return;
+      
+      if (!peopleModeActive) {
+        energyLevelElement.textContent = '⚡ Off';
+        energyLevelElement.style.opacity = '0.5';
+        return;
+      }
+      
+      let levelText = '';
+      let emoji = '⚡';
+      
+      if (energyLevel < 0.33) {
+        levelText = 'Low';
+        emoji = '😴';
+      } else if (energyLevel < 0.67) {
+        levelText = 'Medium';
+        emoji = '⚡';
+      } else {
+        levelText = 'High';
+        emoji = '🔥';
+      }
+      
+      energyLevelElement.textContent = `${emoji} ${levelText}`;
+      energyLevelElement.style.opacity = '1';
+    }
+
     function djAlgorithm() {
       if (players.length < 2) return;
 
       const now = Date.now();
       const timeSinceLastMix = now - lastMixTime;
       
-      // Adjust mix intensity based on time
-      if (timeSinceLastMix > 15000) {
-        mixIntensity = Math.min(1, mixIntensity + 0.1);
-      } else if (timeSinceLastMix < 5000) {
-        mixIntensity = Math.max(0.3, mixIntensity - 0.1);
+      // Calculate energy level if People Mode is active
+      if (peopleModeActive) {
+        energyLevel = calculateEnergyLevel();
+        updateEnergyDisplay();
+        
+        // Adjust mix intensity based on energy level
+        // High energy = faster, more aggressive mixing
+        // Low energy = slower, smoother mixing
+        const energyBasedIntensity = energyLevel * 0.7 + 0.3; // Range: 0.3 to 1.0
+        mixIntensity = energyBasedIntensity;
+      } else {
+        // Normal intensity adjustment
+        if (timeSinceLastMix > 8000) {
+          mixIntensity = Math.min(1, mixIntensity + 0.15); // Faster increase
+        } else if (timeSinceLastMix < 3000) {
+          mixIntensity = Math.max(0.3, mixIntensity - 0.15); // Faster decrease
+        }
       }
 
       const playingTracks = [];
@@ -2403,15 +2647,28 @@
         const variations = currentProfile.variations || ['smoothCrossfade', 'beatMatch'];
         const variationType = variations[Math.floor(Math.random() * variations.length)];
         
-        if (decision < 0.35) {
-          // 35% - Crossfade to new track (genre-aware)
+        // People Mode: Adjust decision thresholds based on energy
+        // High energy = more frequent transitions, Low energy = fewer transitions
+        let crossfadeThreshold = 0.35;
+        let enhanceThreshold = 0.55;
+        let layerThreshold = 0.75;
+        
+        if (peopleModeActive) {
+          // High energy: more transitions (40%), Low energy: fewer transitions (25%)
+          crossfadeThreshold = 0.25 + (energyLevel * 0.15);
+          enhanceThreshold = crossfadeThreshold + 0.20;
+          layerThreshold = enhanceThreshold + 0.20;
+        }
+        
+        if (decision < crossfadeThreshold) {
+          // Crossfade to new track (genre-aware, energy-adjusted)
           const nextIndex = selectNextTrack([currentIndex], currentGenre);
           crossfadeTracks(currentIndex, nextIndex, mixIntensity);
-        } else if (decision < 0.55) {
-          // 20% - Enhance current track with genre-specific effects
+        } else if (decision < enhanceThreshold) {
+          // Enhance current track with genre-specific effects
           enhanceTrackAdvanced(currentIndex, currentState);
-        } else if (decision < 0.75) {
-          // 20% - Add second track for layering
+        } else if (decision < layerThreshold) {
+          // Add second track for layering
           const layerIndex = selectNextTrack([currentIndex], currentGenre);
           layerTracks(currentIndex, layerIndex);
         } else if (decision < 0.85) {
@@ -2647,7 +2904,15 @@
       const bpmRatio = fromBPM / toBPM;
       
       // Genre-aware fade duration with professional DJ curve
-      const baseFadeDuration = (fromProfile.crossfadeDuration + toProfile.crossfadeDuration) / 2;
+      // People Mode: High energy = faster transitions, Low energy = slower transitions
+      let baseFadeDuration = (fromProfile.crossfadeDuration + toProfile.crossfadeDuration) / 2;
+      
+      if (peopleModeActive) {
+        // Energy-based duration: High energy (1.0) = 50% faster, Low energy (0.0) = 50% slower
+        const energyMultiplier = 0.5 + (energyLevel * 0.5); // Range: 0.5 to 1.0
+        baseFadeDuration = baseFadeDuration * energyMultiplier;
+      }
+      
       const fadeDuration = baseFadeDuration + (1 - intensity) * (baseFadeDuration * 0.5);
       const steps = 50; // More steps for smoother transition
       const stepDuration = fadeDuration / steps;
@@ -3822,17 +4087,30 @@
         updateControlsForLockState();
         
         // Dynamic interval based on mix intensity
-        const baseInterval = 6000 + (1 - mixIntensity) * 4000; // 6-10 seconds
+        // Calculate base interval - People Mode adjusts based on energy
+        let baseInterval;
+        if (peopleModeActive) {
+          // Energy-based rhythm: High energy = faster (2-4s), Low energy = slower (5-8s)
+          baseInterval = 5000 - (energyLevel * 3000); // 2-5 seconds based on energy
+        } else {
+          baseInterval = 3000 + (1 - mixIntensity) * 2000; // 3-5 seconds (faster reaction)
+        }
+        
         copilotInterval = setInterval(() => {
           djAlgorithm();
-          // Adjust interval dynamically
+          // Adjust interval dynamically - People Mode uses energy, normal mode uses intensity
           if (copilotInterval) {
             clearInterval(copilotInterval);
-            const newInterval = 6000 + (1 - mixIntensity) * 4000 + Math.random() * 2000;
+            let newInterval;
+            if (peopleModeActive) {
+              newInterval = 5000 - (energyLevel * 3000) + Math.random() * 1000; // 2-6 seconds based on energy
+            } else {
+              newInterval = 3000 + (1 - mixIntensity) * 2000 + Math.random() * 1000; // 3-6 seconds
+            }
             copilotInterval = setInterval(() => djAlgorithm(), newInterval);
           }
         }, baseInterval);
-        setTimeout(() => djAlgorithm(), 1000);
+        setTimeout(() => djAlgorithm(), 500); // Start faster
       } else {
         button.classList.remove('active');
         button.textContent = 'DJ VEEX20';
@@ -4287,6 +4565,24 @@
       });
     }
 
+    function togglePeopleMode() {
+      peopleModeActive = !peopleModeActive;
+      const peopleModeButton = document.getElementById('peopleModeButton');
+      const energyLevelElement = document.getElementById('energyLevel');
+      
+      if (peopleModeActive) {
+        peopleModeButton.classList.add('active');
+        energyHistory = []; // Reset energy history
+        energyLevel = 0.5; // Start at medium
+        updateEnergyDisplay();
+        console.log('People Mode: ON - Rhythm adjusts based on energy');
+      } else {
+        peopleModeButton.classList.remove('active');
+        updateEnergyDisplay();
+        console.log('People Mode: OFF');
+      }
+    }
+
     function toggleLock() {
       if (!copilotActive) return; // Only allow locking when DJ VEEX20 is active
       
@@ -4379,6 +4675,12 @@
     }
     if (spacebarButton) {
       spacebarButton.addEventListener('click', handleSpacebar);
+    }
+
+    // People Mode button initialization
+    const peopleModeButton = document.getElementById('peopleModeButton');
+    if (peopleModeButton) {
+      peopleModeButton.addEventListener('click', togglePeopleMode);
     }
 
     // Keyboard event listener for spacebar
