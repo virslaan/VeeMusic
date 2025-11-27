@@ -41,6 +41,22 @@
       background: #000000;
     }
 
+    /* Hide background videos on mobile - just show black background */
+    @media (max-width: 768px) {
+      .background-videos {
+        display: none !important;
+      }
+      .background-video {
+        display: none !important;
+      }
+      .background-overlay {
+        background: #000000 !important;
+      }
+      body {
+        background: #000000 !important;
+      }
+    }
+
     .background-video {
       position: absolute;
       top: 0;
@@ -1218,24 +1234,9 @@
 
     <div class="copilot-section">
       <button id="copilotButton">DJ VEEX20</button>
-      <button id="beatDropButton" style="margin-left: 10px;">Beat Drop Mix</button>
-      <button id="lockButton" style="margin-left: 10px; display: none;" title="Lock/Unlock DJ VEEX20 for manual mixing">
-        <span id="lockIcon"></span>
-        <span id="lockText" style="margin-left: 5px;">Lock</span>
-      </button>
-      <button id="voiceButton" style="margin-left: 10px;" title="Record and play your voice">
-        <span id="voiceIcon"></span>
-        <span id="voiceText" style="margin-left: 5px;">Voice</span>
-      </button>
-      <button id="spacebarButton" style="margin-left: 10px;" title="Press Spacebar: Play current track and fade up/down for mixing">
-        <span id="spacebarIcon"></span>
-        <span id="spacebarText" style="margin-left: 5px;">Spacebar</span>
-      </button>
-      <button id="peopleModeButton" style="margin-left: 10px;" title="People Mode: Adjust rhythm and dance speed based on energy level">
-        <span id="peopleModeIcon">👥</span>
-        <span id="peopleModeText" style="margin-left: 5px;">People Mode</span>
-        <span id="energyLevel" style="margin-left: 8px; font-size: 11px; opacity: 0.7;">⚡ Medium</span>
-      </button>
+      <button id="playAllButton" style="margin-left: 10px; display: none;" title="Play all tracks together">▶ All</button>
+      <button id="shiftButton" style="margin-left: 10px; display: none;" title="Shift to next track">⇄ Shift</button>
+      <button id="beatDropButton" style="margin-left: 10px; display: none;">Beat Drop</button>
     </div>
 
     <div class="tts-section" id="ttsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
@@ -1516,6 +1517,12 @@
     let localVideos = ['bg.mp4', 'bg2.mp4', 'bg3.mp4'];
     let localVideoElements = [];
     let backgroundVideoStarted = false;
+    
+    // Detect mobile device
+    function isMobileDevice() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+             (window.innerWidth <= 768);
+    }
     let trackLoops = {}; // Track loop state for each player
     let loopIntervals = {}; // Store loop interval IDs
     let loopStartTimes = {}; // Store loop start times
@@ -2103,6 +2110,8 @@
 
       if (limitedItems.length > 0) {
         document.getElementById('copilotButton').style.display = 'block';
+        document.getElementById('playAllButton').style.display = 'block';
+        document.getElementById('shiftButton').style.display = 'block';
         document.getElementById('beatDropButton').style.display = 'block';
         document.getElementById('addMoreSection').style.display = 'block';
         document.getElementById('ttsSection').style.display = 'block';
@@ -2438,27 +2447,12 @@
       if (autoPlayActive && !userInteracted) {
         userInteracted = true;
         autoPlayActive = false;
-        // Stop any currently playing auto-play video
-        players.forEach((p, i) => {
-          if (p && p.getPlayerState() === YT.PlayerState.PLAYING && i !== index) {
-            p.pauseVideo();
-            updatePlayButton(i, YT.PlayerState.PAUSED);
-            document.getElementById(`card${i}`).classList.remove('playing');
-          }
-        });
       }
       
       const player = players[index];
       if (!player) return;
 
-      players.forEach((p, i) => {
-        if (i !== index && p && p.getPlayerState() === YT.PlayerState.PLAYING) {
-          p.pauseVideo();
-          updatePlayButton(i, YT.PlayerState.PAUSED);
-          document.getElementById(`card${i}`).classList.remove('playing');
-        }
-      });
-
+      // Allow multiple tracks to play together - don't stop other tracks
       const state = player.getPlayerState();
       const playButton = document.getElementById(`playBtn${index}`);
       const videoCard = document.getElementById(`card${index}`);
@@ -2470,7 +2464,9 @@
         playButton.innerHTML = getSVGIcon('play');
         playButton.classList.remove('playing');
         videoCard.classList.remove('playing');
-        currentPlayingIndex = -1;
+        if (currentPlayingIndex === index) {
+          currentPlayingIndex = -1;
+        }
       } else {
         player.playVideo();
         startBeatIndicator(index);
@@ -2481,6 +2477,102 @@
         playButton.classList.add('playing');
         videoCard.classList.add('playing');
         currentPlayingIndex = index;
+      }
+    }
+    
+    // Play all tracks together
+    function playAllTracks() {
+      players.forEach((player, index) => {
+        if (player) {
+          const state = player.getPlayerState();
+          if (state !== YT.PlayerState.PLAYING) {
+            player.playVideo();
+            const playButton = document.getElementById(`playBtn${index}`);
+            const videoCard = document.getElementById(`card${index}`);
+            if (playButton) {
+              playButton.innerHTML = getSVGIcon('pause');
+              playButton.classList.add('playing');
+            }
+            if (videoCard) {
+              videoCard.classList.add('playing');
+            }
+            startBeatIndicator(index);
+            if (trackLoops[index]) {
+              setTimeout(() => startLoop(index), 500);
+            }
+          }
+        }
+      });
+    }
+    
+    // Shift to next track (fade out current, fade in next)
+    function shiftToNext() {
+      const playingTracks = [];
+      players.forEach((player, index) => {
+        if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
+          playingTracks.push(index);
+        }
+      });
+      
+      if (playingTracks.length === 0) {
+        // No tracks playing, start first one
+        if (players.length > 0) {
+          togglePlay(0);
+        }
+        return;
+      }
+      
+      // Find next track to play
+      const currentIndex = playingTracks[0];
+      let nextIndex = (currentIndex + 1) % players.length;
+      
+      // Fade out current track
+      const currentPlayer = players[currentIndex];
+      if (currentPlayer) {
+        let volume = currentPlayer.getVolume();
+        const fadeOut = setInterval(() => {
+          volume = Math.max(0, volume - 5);
+          currentPlayer.setVolume(volume);
+          if (volume <= 0) {
+            clearInterval(fadeOut);
+            currentPlayer.pauseVideo();
+            const playButton = document.getElementById(`playBtn${currentIndex}`);
+            const videoCard = document.getElementById(`card${currentIndex}`);
+            if (playButton) {
+              playButton.innerHTML = getSVGIcon('play');
+              playButton.classList.remove('playing');
+            }
+            if (videoCard) {
+              videoCard.classList.remove('playing');
+            }
+            
+            // Fade in next track
+            const nextPlayer = players[nextIndex];
+            if (nextPlayer) {
+              nextPlayer.setVolume(0);
+              nextPlayer.playVideo();
+              let nextVolume = 0;
+              const fadeIn = setInterval(() => {
+                nextVolume = Math.min(50, nextVolume + 5);
+                nextPlayer.setVolume(nextVolume);
+                if (nextVolume >= 50) {
+                  clearInterval(fadeIn);
+                  const nextPlayButton = document.getElementById(`playBtn${nextIndex}`);
+                  const nextVideoCard = document.getElementById(`card${nextIndex}`);
+                  if (nextPlayButton) {
+                    nextPlayButton.innerHTML = getSVGIcon('pause');
+                    nextPlayButton.classList.add('playing');
+                  }
+                  if (nextVideoCard) {
+                    nextVideoCard.classList.add('playing');
+                  }
+                  startBeatIndicator(nextIndex);
+                  currentPlayingIndex = nextIndex;
+                }
+              }, 50);
+            }
+          }
+        }, 50);
       }
     }
 
@@ -4617,8 +4709,17 @@
     const beatDropButton = document.getElementById('beatDropButton');
     beatDropButton.addEventListener('click', toggleBeatDropMix);
 
-    const lockButton = document.getElementById('lockButton');
-    lockButton.addEventListener('click', toggleLock);
+    // Play All button
+    const playAllButton = document.getElementById('playAllButton');
+    if (playAllButton) {
+      playAllButton.addEventListener('click', playAllTracks);
+    }
+
+    // Shift button
+    const shiftButton = document.getElementById('shiftButton');
+    if (shiftButton) {
+      shiftButton.addEventListener('click', shiftToNext);
+    }
 
     // Initialize voice button icon
     const voiceButton = document.getElementById('voiceButton');
