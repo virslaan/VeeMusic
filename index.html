@@ -299,6 +299,34 @@
       content: " - JAM with DJ VEE";
     }
 
+    #spacebarButton {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #spacebarButton:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #spacebarButton.active {
+      background: linear-gradient(135deg, #ff006e 0%, #8338ec 100%);
+      border-color: transparent;
+      animation: pulse 1s ease infinite;
+    }
+
     #voiceButton {
       padding: 10px 20px;
       font-size: 13px;
@@ -543,6 +571,41 @@
       font-weight: 600;
       text-transform: uppercase;
       cursor: help;
+    }
+
+    .cue-buttons-group {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+      justify-content: center;
+    }
+
+    .cue-number-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cue-number-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .cue-number-btn.active {
+      background: #3a86ff;
+      border-color: #3a86ff;
+      transform: scale(1.1);
     }
 
     .eq-slider {
@@ -791,18 +854,30 @@
 
     .play-button {
       width: 100%;
-      padding: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      background: #ffffff;
-      border: none;
-      border-radius: 6px;
-      color: #000000;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #ffffff;
       cursor: pointer;
       transition: all 0.2s ease;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      min-height: 44px; /* iOS touch target size */
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .play-button svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: currentColor;
+      stroke-width: 0;
     }
 
     .play-button:disabled {
@@ -811,12 +886,14 @@
     }
 
     .play-button:hover {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     .play-button.playing {
-      background: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
+      background: rgba(6, 255, 165, 0.2);
+      border-color: rgba(6, 255, 165, 0.4);
+      color: #06ffa5;
     }
 
     .loading {
@@ -1116,6 +1193,10 @@
         <span id="voiceIcon"></span>
         <span id="voiceText" style="margin-left: 5px;">Voice</span>
       </button>
+      <button id="spacebarButton" style="margin-left: 10px;" title="Press Spacebar: Play current track and fade up/down for mixing">
+        <span id="spacebarIcon"></span>
+        <span id="spacebarText" style="margin-left: 5px;">Spacebar</span>
+      </button>
     </div>
 
     <div class="tts-section" id="ttsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
@@ -1181,7 +1262,10 @@
         mic: '<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>',
         speaker: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>',
         cue: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
-        tts: '<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>'
+        tts: '<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>',
+        play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+        pause: '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>',
+        spacebar: '<svg viewBox="0 0 24 24"><path d="M4 9h16v2H4V9zm0 4h16v2H4v-2z"/></svg>'
       };
       return icons[type] || '';
     }
@@ -1204,8 +1288,10 @@
     let beatDropInterval = null;
     let djVeeLocked = true; // Lock state for DJ VEE (locked = no manual mixing, unlocked = allow manual mixing)
     let currentPlayingIndex = -1;
+    let currentFocusedIndex = 0; // Track focused for spacebar control
     let trackHistory = [];
     let trackPlayCount = {};
+    let spacebarFadeInterval = null;
     let lastMixTime = 0;
     let mixIntensity = 0.5; // 0 = calm, 1 = intense
     let autoPlayActive = true;
@@ -1226,7 +1312,7 @@
     let trackGenres = {}; // Track genre for each player
     let genreProfiles = {}; // Genre-specific mixing profiles
     let trackEQ = {}; // Track EQ settings: {low: -12 to 12, mid: -12 to 12, high: -12 to 12}
-    let cuePoints = {}; // Cue points for each track: {[index]: [time1, time2, ...]}
+    let cuePoints = {}; // Cue points for each track: {[index]: {1: time, 2: time, 3: time, 4: time, 5: time}}
     let beatIndicators = {}; // Beat indicator intervals
     let trackBPM = {}; // Estimated BPM for each track
 
@@ -1557,8 +1643,9 @@
         const playButton = document.createElement('button');
         playButton.className = 'play-button';
         playButton.id = `playBtn${index}`;
-        playButton.textContent = 'Play';
+        playButton.innerHTML = getSVGIcon('play');
         playButton.onclick = () => togglePlay(index);
+        playButton.title = 'Play/Pause';
         
         const volumeGroup = document.createElement('div');
         volumeGroup.className = 'control-group';
@@ -1611,13 +1698,25 @@
           >
         `;
         
-        // Add cue point button
-        const cueButton = document.createElement('button');
-        cueButton.className = 'cue-point-button';
-        cueButton.id = `cueBtn${index}`;
-        cueButton.innerHTML = getSVGIcon('cue');
-        cueButton.title = 'Set cue point at current position';
-        cueButton.onclick = () => setCuePoint(index);
+        // Add numbered cue buttons (1-5)
+        const cueButtonsGroup = document.createElement('div');
+        cueButtonsGroup.className = 'cue-buttons-group';
+        cueButtonsGroup.style.cssText = 'display: flex; gap: 4px; margin-bottom: 8px; justify-content: center;';
+        cueButtonsGroup.innerHTML = `
+          <button class="cue-number-btn" id="cueBtn${index}_1" title="Set/Jump to Cue 1">1</button>
+          <button class="cue-number-btn" id="cueBtn${index}_2" title="Set/Jump to Cue 2">2</button>
+          <button class="cue-number-btn" id="cueBtn${index}_3" title="Set/Jump to Cue 3">3</button>
+          <button class="cue-number-btn" id="cueBtn${index}_4" title="Set/Jump to Cue 4">4</button>
+          <button class="cue-number-btn" id="cueBtn${index}_5" title="Set/Jump to Cue 5">5</button>
+        `;
+        
+        // Add event listeners for cue buttons
+        for (let cueNum = 1; cueNum <= 5; cueNum++) {
+          const cueBtn = document.getElementById(`cueBtn${index}_${cueNum}`);
+          if (cueBtn) {
+            cueBtn.addEventListener('click', () => handleCueButton(index, cueNum));
+          }
+        }
         
         // Add EQ controls
         const eqControls = document.createElement('div');
@@ -1645,7 +1744,7 @@
         controls.appendChild(speedGroup);
         controls.appendChild(pitchGroup);
         controls.appendChild(loopGroup);
-        controls.appendChild(cueButton);
+        controls.appendChild(cueButtonsGroup);
         controls.appendChild(eqControls);
         
         videoCard.appendChild(videoWrapper);
@@ -1655,7 +1754,7 @@
         
         // Initialize track state
         trackEQ[index] = { low: 0, mid: 0, high: 0 };
-        cuePoints[index] = [];
+        cuePoints[index] = {}; // Initialize as object for numbered cues
         trackBPM[index] = 120; // Default BPM, will be estimated
 
         // Wait for card to be rendered, then calculate proper dimensions
@@ -1852,7 +1951,7 @@
       const videoCard = document.getElementById(`card${index}`);
       
       if (playButton) {
-        playButton.textContent = 'Pause';
+        playButton.innerHTML = getSVGIcon('pause');
         playButton.classList.add('playing');
       }
       if (videoCard) {
@@ -2102,7 +2201,7 @@
         player.pauseVideo();
         stopLoop(index);
         stopBeatIndicator(index);
-        playButton.textContent = 'Play';
+        playButton.innerHTML = getSVGIcon('play');
         playButton.classList.remove('playing');
         videoCard.classList.remove('playing');
         currentPlayingIndex = -1;
@@ -2112,7 +2211,7 @@
         if (trackLoops[index]) {
           setTimeout(() => startLoop(index), 500);
         }
-        playButton.textContent = 'Pause';
+        playButton.innerHTML = getSVGIcon('pause');
         playButton.classList.add('playing');
         videoCard.classList.add('playing');
         currentPlayingIndex = index;
@@ -2125,13 +2224,13 @@
       if (!playButton) return;
 
       if (state === YT.PlayerState.PLAYING) {
-        playButton.textContent = 'Pause';
+        playButton.innerHTML = getSVGIcon('pause');
         playButton.classList.add('playing');
         videoCard.classList.add('playing');
         currentPlayingIndex = index;
         startBeatIndicator(index);
       } else {
-        playButton.textContent = 'Play';
+        playButton.innerHTML = getSVGIcon('play');
         playButton.classList.remove('playing');
         stopBeatIndicator(index);
         if (currentPlayingIndex === index) {
@@ -3166,44 +3265,130 @@
       }
     }
 
-    function setCuePoint(index) {
+    function handleCueButton(index, cueNumber) {
       const player = players[index];
       if (!player) return;
       
       try {
-        const currentTime = player.getCurrentTime();
         if (!cuePoints[index]) {
-          cuePoints[index] = [];
+          cuePoints[index] = {};
         }
-        cuePoints[index].push(currentTime);
+        
+        // If cue point already exists, jump to it
+        if (cuePoints[index][cueNumber]) {
+          player.seekTo(cuePoints[index][cueNumber], true);
+          console.log(`Jumped to cue ${cueNumber} at ${cuePoints[index][cueNumber].toFixed(2)}s`);
+        } else {
+          // Set new cue point at current position
+          const currentTime = player.getCurrentTime();
+          cuePoints[index][cueNumber] = currentTime;
+          console.log(`Cue ${cueNumber} set at ${currentTime.toFixed(2)}s for track ${index}`);
+        }
         
         // Visual feedback
-        const cueButton = document.getElementById(`cueBtn${index}`);
+        const cueButton = document.getElementById(`cueBtn${index}_${cueNumber}`);
         if (cueButton) {
           cueButton.classList.add('active');
           setTimeout(() => {
             cueButton.classList.remove('active');
           }, 300);
         }
-        
-        // If cue points exist, allow jumping to them
-        if (cuePoints[index].length > 0) {
-          const lastCue = cuePoints[index][cuePoints[index].length - 1];
-          console.log(`Cue point set at ${lastCue.toFixed(2)}s for track ${index}`);
-        }
       } catch (e) {
-        console.error('Error setting cue point:', e);
+        console.error('Error handling cue button:', e);
       }
     }
 
-    function jumpToCuePoint(index, cueIndex = 0) {
-      const player = players[index];
-      if (!player || !cuePoints[index] || !cuePoints[index][cueIndex]) return;
+    function handleSpacebar() {
+      // Find the current focused track or first available track
+      let targetIndex = currentFocusedIndex;
       
-      try {
-        player.seekTo(cuePoints[index][cueIndex], true);
-      } catch (e) {
-        console.error('Error jumping to cue point:', e);
+      // If no focused track or track doesn't exist, find first available
+      if (targetIndex < 0 || !players[targetIndex] || players.length === 0) {
+        targetIndex = 0;
+        if (players.length > 0 && currentPlayingIndex >= 0) {
+          targetIndex = currentPlayingIndex;
+        }
+      }
+      
+      if (targetIndex < 0 || !players[targetIndex]) return;
+      
+      const player = players[targetIndex];
+      const state = player.getPlayerState();
+      const volumeSlider = document.getElementById(`volume${targetIndex}`);
+      const playButton = document.getElementById(`playBtn${targetIndex}`);
+      const videoCard = document.getElementById(`card${targetIndex}`);
+      
+      // Clear any existing fade
+      if (spacebarFadeInterval) {
+        clearInterval(spacebarFadeInterval);
+        spacebarFadeInterval = null;
+      }
+      
+      if (state === YT.PlayerState.PLAYING) {
+        // Track is playing - fade volume down for mixing
+        let currentVolume = parseInt(volumeSlider.value) || 50;
+        const fadeDown = () => {
+          if (currentVolume > 0) {
+            currentVolume = Math.max(0, currentVolume - 5);
+            volumeSlider.value = currentVolume;
+            player.setVolume(currentVolume);
+            const volumeValue = document.getElementById(`volumeValue${targetIndex}`);
+            if (volumeValue) volumeValue.textContent = currentVolume;
+          } else {
+            clearInterval(spacebarFadeInterval);
+            spacebarFadeInterval = null;
+            player.pauseVideo();
+            if (playButton) {
+              playButton.innerHTML = getSVGIcon('play');
+              playButton.classList.remove('playing');
+            }
+            if (videoCard) videoCard.classList.remove('playing');
+            if (currentPlayingIndex === targetIndex) {
+              currentPlayingIndex = -1;
+            }
+          }
+        };
+        spacebarFadeInterval = setInterval(fadeDown, 50);
+      } else {
+        // Track is paused - play and fade volume up
+        player.playVideo();
+        if (playButton) {
+          playButton.innerHTML = getSVGIcon('pause');
+          playButton.classList.add('playing');
+        }
+        if (videoCard) videoCard.classList.add('playing');
+        currentPlayingIndex = targetIndex;
+        currentFocusedIndex = targetIndex;
+        startBeatIndicator(targetIndex);
+        
+        // Start with low volume and fade up
+        let currentVolume = 0;
+        volumeSlider.value = 0;
+        player.setVolume(0);
+        const volumeValue = document.getElementById(`volumeValue${targetIndex}`);
+        if (volumeValue) volumeValue.textContent = 0;
+        
+        const fadeUp = () => {
+          if (currentVolume < 100) {
+            currentVolume = Math.min(100, currentVolume + 5);
+            volumeSlider.value = currentVolume;
+            player.setVolume(currentVolume);
+            if (volumeValue) volumeValue.textContent = currentVolume;
+          } else {
+            clearInterval(spacebarFadeInterval);
+            spacebarFadeInterval = null;
+          }
+        };
+        spacebarFadeInterval = setInterval(fadeUp, 50);
+      }
+      
+      // Visual feedback
+      const spacebarButton = document.getElementById('spacebarButton');
+      if (spacebarButton) {
+        spacebarButton.classList.add('active');
+        setTimeout(() => {
+          spacebarButton.classList.remove('active');
+        }, 200);
       }
     }
 
@@ -3751,8 +3936,9 @@
         const playButton = document.createElement('button');
         playButton.className = 'play-button';
         playButton.id = `playBtn${index}`;
-        playButton.textContent = 'Play';
+        playButton.innerHTML = getSVGIcon('play');
         playButton.onclick = () => togglePlay(index);
+        playButton.title = 'Play/Pause';
         
         const volumeGroup = document.createElement('div');
         volumeGroup.className = 'control-group';
@@ -3805,14 +3991,6 @@
           >
         `;
         
-        // Add cue point button
-        const cueButton = document.createElement('button');
-        cueButton.className = 'cue-point-button';
-        cueButton.id = `cueBtn${index}`;
-        cueButton.innerHTML = getSVGIcon('cue');
-        cueButton.title = 'Set cue point at current position';
-        cueButton.onclick = () => setCuePoint(index);
-        
         // Add EQ controls
         const eqControls = document.createElement('div');
         eqControls.className = 'eq-controls';
@@ -3834,12 +4012,32 @@
           </div>
         `;
         
+        // Add numbered cue buttons (1-5)
+        const cueButtonsGroup = document.createElement('div');
+        cueButtonsGroup.className = 'cue-buttons-group';
+        cueButtonsGroup.style.cssText = 'display: flex; gap: 4px; margin-bottom: 8px; justify-content: center;';
+        cueButtonsGroup.innerHTML = `
+          <button class="cue-number-btn" id="cueBtn${index}_1" title="Set/Jump to Cue 1">1</button>
+          <button class="cue-number-btn" id="cueBtn${index}_2" title="Set/Jump to Cue 2">2</button>
+          <button class="cue-number-btn" id="cueBtn${index}_3" title="Set/Jump to Cue 3">3</button>
+          <button class="cue-number-btn" id="cueBtn${index}_4" title="Set/Jump to Cue 4">4</button>
+          <button class="cue-number-btn" id="cueBtn${index}_5" title="Set/Jump to Cue 5">5</button>
+        `;
+        
+        // Add event listeners for cue buttons
+        for (let cueNum = 1; cueNum <= 5; cueNum++) {
+          const cueBtn = document.getElementById(`cueBtn${index}_${cueNum}`);
+          if (cueBtn) {
+            cueBtn.addEventListener('click', () => handleCueButton(index, cueNum));
+          }
+        }
+        
         controls.appendChild(playButton);
         controls.appendChild(volumeGroup);
         controls.appendChild(speedGroup);
         controls.appendChild(pitchGroup);
         controls.appendChild(loopGroup);
-        controls.appendChild(cueButton);
+        controls.appendChild(cueButtonsGroup);
         controls.appendChild(eqControls);
         
         videoCard.appendChild(videoWrapper);
@@ -3854,7 +4052,7 @@
         loopPatternIndex[index] = 0;
         loopSegmentLooped[index] = false;
         trackEQ[index] = { low: 0, mid: 0, high: 0 };
-        cuePoints[index] = [];
+        cuePoints[index] = {}; // Initialize as object for numbered cues
         trackBPM[index] = 120; // Default BPM
 
         // Wait for card to be rendered, then create player
@@ -4010,6 +4208,34 @@
         }
       });
     }
+
+    // Spacebar button initialization
+    const spacebarButton = document.getElementById('spacebarButton');
+    const spacebarIcon = document.getElementById('spacebarIcon');
+    if (spacebarIcon) {
+      spacebarIcon.innerHTML = getSVGIcon('spacebar');
+    }
+    if (spacebarButton) {
+      spacebarButton.addEventListener('click', handleSpacebar);
+    }
+
+    // Keyboard event listener for spacebar
+    document.addEventListener('keydown', function(e) {
+      // Only handle spacebar if not typing in an input field
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        const activeElement = document.activeElement;
+        const isInputField = activeElement && (
+          activeElement.tagName === 'INPUT' ||
+          activeElement.tagName === 'TEXTAREA' ||
+          activeElement.isContentEditable
+        );
+        
+        if (!isInputField) {
+          e.preventDefault();
+          handleSpacebar();
+        }
+      }
+    });
 
     // Voice recording and playback functions
     async function toggleVoice() {
@@ -4611,7 +4837,7 @@
       const videoCard = document.getElementById(`card${index}`);
       
       if (playButton) {
-        playButton.textContent = 'Pause';
+        playButton.innerHTML = getSVGIcon('pause');
         playButton.classList.add('playing');
       }
       if (videoCard) {
