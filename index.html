@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <meta http-equiv="Permissions-Policy" content="autoplay=*, encrypted-media=*, picture-in-picture=*, accelerometer=*, gyroscope=*, clipboard-write=*, web-share=*">
   <title>VeeMusic DJ</title>
   <style>
     * {
@@ -15,14 +16,16 @@
       background: #000000;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       position: relative;
       transition: background 0.5s ease;
+      -webkit-overflow-scrolling: touch;
     }
 
     .background-videos {
@@ -77,9 +80,10 @@
       margin: 0 auto;
       width: 100%;
       padding: 20px;
-      overflow: hidden;
+      overflow: visible;
       position: relative;
       z-index: 10;
+      min-height: 100vh;
     }
 
     body.copilot-active {
@@ -180,6 +184,9 @@
       color: #000000;
       cursor: pointer;
       transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px; /* iOS touch target size */
     }
 
     #searchButton:hover {
@@ -202,6 +209,9 @@
       cursor: pointer;
       transition: all 0.2s ease;
       display: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px; /* iOS touch target size */
     }
 
     #copilotButton:hover {
@@ -219,8 +229,10 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 16px;
-      overflow: hidden;
+      overflow: visible;
       padding: 0;
+      padding-bottom: 20px;
+      min-height: 0;
     }
 
     #results::-webkit-scrollbar {
@@ -251,6 +263,8 @@
       opacity: 0;
       transform: translateY(20px);
       animation: fadeInUp 0.6s ease forwards;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     @keyframes fadeInUp {
@@ -366,6 +380,18 @@
       font-weight: 400;
     }
 
+    .video-genre {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+      margin-top: 4px;
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      display: inline-block;
+      letter-spacing: 0.5px;
+    }
+
     .controls {
       display: flex;
       flex-direction: column;
@@ -414,6 +440,8 @@
       -webkit-appearance: none;
       appearance: none;
       cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .slider:disabled {
@@ -456,6 +484,9 @@
       color: #000000;
       cursor: pointer;
       transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px; /* iOS touch target size */
     }
 
     .play-button:disabled {
@@ -492,29 +523,146 @@
     }
 
     @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
       .container {
         padding: 12px;
+        min-height: auto;
       }
 
       #results {
         grid-template-columns: 1fr;
         gap: 12px;
+        padding-bottom: 40px;
       }
 
       #searchForm {
         flex-direction: column;
+        gap: 8px;
       }
 
       #searchButton {
         width: 100%;
+        padding: 12px;
+      }
+
+      #searchQuery {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px; /* Prevents zoom on iOS */
       }
 
       h1 {
         font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 12px;
+      }
+
+      .instruction-text {
+        font-size: 11px;
+        padding: 10px;
+        margin-top: 8px;
+      }
+
+      .video-card {
+        padding: 12px;
+        border-radius: 16px;
+      }
+
+      .video-wrapper {
+        border-radius: 16px;
+        margin-bottom: 10px;
+      }
+
+      .video-title {
+        font-size: 12px;
+      }
+
+      .video-channel {
+        font-size: 11px;
+      }
+
+      .video-genre {
+        font-size: 9px;
+        padding: 2px 5px;
+      }
+
+      .controls {
+        gap: 8px;
+      }
+
+      .control-group {
+        gap: 6px;
+      }
+
+      .control-icon {
+        font-size: 12px;
+        width: 20px;
+      }
+
+      .control-value {
+        font-size: 10px;
+        min-width: 35px;
+      }
+
+      .slider {
+        height: 6px;
+      }
+
+      .slider::-webkit-slider-thumb {
+        width: 16px;
+        height: 16px;
+      }
+
+      .play-button {
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      header {
+        margin-bottom: 16px;
+      }
+
+      .search-section {
+        margin-bottom: 16px;
+      }
+
+      .copilot-section {
+        margin-bottom: 16px;
+      }
+
+      #copilotButton {
+        width: 100%;
+        padding: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 20px;
       }
 
       .video-card {
         padding: 10px;
+      }
+
+      .control-group label {
+        font-size: 11px;
+      }
+
+      .control-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
       }
     }
 
@@ -579,10 +727,248 @@
     let localVideos = ['bg.mp4', 'bg2.mp4', 'bg3.mp4'];
     let localVideoElements = [];
     let backgroundVideoStarted = false;
+    let trackLoops = {}; // Track loop state for each player
+    let loopIntervals = {}; // Store loop interval IDs
+    let loopStartTimes = {}; // Store loop start times
+    let loopEndTimes = {}; // Store loop end times
+    let trackPitch = {}; // Track pitch offset for each player (in semitones)
+    let trackGenres = {}; // Track genre for each player
+    let genreProfiles = {}; // Genre-specific mixing profiles
+
+    // Check if running via file:// protocol (YouTube requires HTTP/HTTPS)
+    if (window.location.protocol === 'file:') {
+      console.warn('⚠️ File opened via file:// protocol. YouTube API works best over HTTP/HTTPS.');
+      console.warn('💡 To fix: Use a local server like "python -m http.server" or "npx serve"');
+      
+      // Show user-friendly warning
+      setTimeout(() => {
+        const warning = document.createElement('div');
+        warning.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ff6b6b; color: white; padding: 15px 20px; border-radius: 8px; z-index: 10000; max-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+        warning.innerHTML = `
+          <strong>⚠️ Protocol Warning</strong><br>
+          <small>For best results, serve this file over HTTP/HTTPS.<br>
+          Use: <code>python -m http.server</code> or <code>npx serve</code></small>
+          <button onclick="this.parentElement.remove()" style="margin-top: 8px; padding: 4px 8px; background: white; color: #ff6b6b; border: none; border-radius: 4px; cursor: pointer;">Dismiss</button>
+        `;
+        document.body.appendChild(warning);
+      }, 1000);
+    }
 
     window.onYouTubeIframeAPIReady = function() {
       ytApiReady = true;
     }
+
+    // Genre detection based on title, description, and keywords
+    function detectGenre(item) {
+      const title = (item.snippet.title || '').toLowerCase();
+      const description = (item.snippet.description || '').toLowerCase();
+      const channel = (item.snippet.channelTitle || '').toLowerCase();
+      const text = title + ' ' + description + ' ' + channel;
+      
+      // Genre keywords with weights
+      const genreKeywords = {
+        'house': ['house', 'deep house', 'tech house', 'progressive house', 'future house', 'bass house'],
+        'techno': ['techno', 'hard techno', 'minimal techno', 'acid techno', 'industrial techno'],
+        'trance': ['trance', 'uplifting trance', 'progressive trance', 'psytrance', 'vocal trance'],
+        'dubstep': ['dubstep', 'riddim', 'brostep', 'future bass', 'trap'],
+        'drumandbass': ['drum and bass', 'dnb', 'jungle', 'liquid dnb', 'neurofunk'],
+        'hiphop': ['hip hop', 'hiphop', 'rap', 'trap', 'drill', 'grime'],
+        'edm': ['edm', 'electronic', 'big room', 'festival', 'drop', 'bass boosted', 'bass boost', 'remix', 'remixes', 'tomorrowland', 'ultra', 'david guetta', 'martin garrix', 'tiesto', 'avicii', 'axwell', 'meduza', 'gigi d\'agostino', 'dj mix', 'music mix'],
+        'pop': ['pop', 'top 40', 'mainstream', 'radio'],
+        'rock': ['rock', 'metal', 'punk', 'alternative', 'indie rock'],
+        'reggae': ['reggae', 'dancehall', 'dub', 'ska'],
+        'jazz': ['jazz', 'smooth jazz', 'bebop', 'fusion'],
+        'classical': ['classical', 'orchestral', 'symphony', 'concerto'],
+        'ambient': ['ambient', 'chill', 'lounge', 'downtempo'],
+        'country': ['country', 'bluegrass', 'folk'],
+        'r&b': ['r&b', 'rnb', 'soul', 'neo soul']
+      };
+      
+      let genreScores = {};
+      
+      // Score each genre
+      Object.keys(genreKeywords).forEach(genre => {
+        genreScores[genre] = 0;
+        genreKeywords[genre].forEach(keyword => {
+          const regex = new RegExp(keyword, 'gi');
+          const matches = text.match(regex);
+          if (matches) {
+            genreScores[genre] += matches.length;
+          }
+        });
+      });
+      
+      // Find highest scoring genre
+      let maxScore = 0;
+      let detectedGenre = 'electronic'; // default
+      
+      Object.keys(genreScores).forEach(genre => {
+        if (genreScores[genre] > maxScore) {
+          maxScore = genreScores[genre];
+          detectedGenre = genre;
+        }
+      });
+      
+      // If no strong match, use default
+      if (maxScore === 0) {
+        detectedGenre = 'electronic';
+      }
+      
+      return detectedGenre;
+    }
+
+    // Genre-specific mixing profiles
+    function initializeGenreProfiles() {
+      genreProfiles = {
+        'house': {
+          tempo: { min: 0.95, max: 1.05, preferred: 1.0 },
+          pitch: { min: -2, max: 2, preferred: 0 },
+          volume: { min: 45, max: 75, preferred: 60 },
+          loopChance: 0.5,
+          crossfadeDuration: 3000,
+          mixingStyle: 'smooth',
+          variations: ['longCrossfade', 'beatMatch', 'harmonicMix']
+        },
+        'techno': {
+          tempo: { min: 0.98, max: 1.02, preferred: 1.0 },
+          pitch: { min: -1, max: 1, preferred: 0 },
+          volume: { min: 50, max: 80, preferred: 65 },
+          loopChance: 0.7,
+          crossfadeDuration: 4000,
+          mixingStyle: 'seamless',
+          variations: ['longCrossfade', 'beatMatch', 'layerBuild', 'minimalVariation']
+        },
+        'trance': {
+          tempo: { min: 0.97, max: 1.03, preferred: 1.0 },
+          pitch: { min: -3, max: 3, preferred: 0 },
+          volume: { min: 40, max: 85, preferred: 70 },
+          loopChance: 0.4,
+          crossfadeDuration: 5000,
+          mixingStyle: 'epic',
+          variations: ['buildUp', 'drop', 'longCrossfade', 'pitchShift']
+        },
+        'dubstep': {
+          tempo: { min: 0.9, max: 1.1, preferred: 1.0 },
+          pitch: { min: -4, max: 4, preferred: 0 },
+          volume: { min: 55, max: 90, preferred: 75 },
+          loopChance: 0.3,
+          crossfadeDuration: 2000,
+          mixingStyle: 'aggressive',
+          variations: ['quickCut', 'drop', 'pitchShift', 'volumeSpike']
+        },
+        'drumandbass': {
+          tempo: { min: 0.95, max: 1.05, preferred: 1.0 },
+          pitch: { min: -2, max: 2, preferred: 0 },
+          volume: { min: 50, max: 80, preferred: 70 },
+          loopChance: 0.6,
+          crossfadeDuration: 2500,
+          mixingStyle: 'energetic',
+          variations: ['quickCut', 'beatMatch', 'layerBuild', 'tempoMatch']
+        },
+        'hiphop': {
+          tempo: { min: 0.85, max: 1.15, preferred: 1.0 },
+          pitch: { min: -6, max: 6, preferred: 0 },
+          volume: { min: 45, max: 85, preferred: 65 },
+          loopChance: 0.8,
+          crossfadeDuration: 1500,
+          mixingStyle: 'creative',
+          variations: ['scratch', 'quickCut', 'pitchShift', 'loopMash']
+        },
+        'edm': {
+          tempo: { min: 0.92, max: 1.08, preferred: 1.0 },
+          pitch: { min: -3, max: 3, preferred: 0 },
+          volume: { min: 50, max: 90, preferred: 75 },
+          loopChance: 0.4,
+          crossfadeDuration: 3000,
+          mixingStyle: 'festival',
+          variations: ['buildUp', 'drop', 'longCrossfade', 'volumeSpike']
+        },
+        'pop': {
+          tempo: { min: 0.9, max: 1.1, preferred: 1.0 },
+          pitch: { min: -2, max: 2, preferred: 0 },
+          volume: { min: 40, max: 80, preferred: 60 },
+          loopChance: 0.2,
+          crossfadeDuration: 2000,
+          mixingStyle: 'smooth',
+          variations: ['smoothCrossfade', 'fadeOut', 'simpleTransition']
+        },
+        'rock': {
+          tempo: { min: 0.9, max: 1.1, preferred: 1.0 },
+          pitch: { min: -3, max: 3, preferred: 0 },
+          volume: { min: 55, max: 90, preferred: 75 },
+          loopChance: 0.1,
+          crossfadeDuration: 2000,
+          mixingStyle: 'powerful',
+          variations: ['hardCut', 'volumeSpike', 'fadeOut']
+        },
+        'reggae': {
+          tempo: { min: 0.95, max: 1.05, preferred: 1.0 },
+          pitch: { min: -1, max: 1, preferred: 0 },
+          volume: { min: 45, max: 70, preferred: 55 },
+          loopChance: 0.6,
+          crossfadeDuration: 4000,
+          mixingStyle: 'laidback',
+          variations: ['longCrossfade', 'smoothTransition', 'beatMatch']
+        },
+        'jazz': {
+          tempo: { min: 0.9, max: 1.1, preferred: 1.0 },
+          pitch: { min: -2, max: 2, preferred: 0 },
+          volume: { min: 40, max: 70, preferred: 55 },
+          loopChance: 0.3,
+          crossfadeDuration: 5000,
+          mixingStyle: 'smooth',
+          variations: ['longCrossfade', 'harmonicMix', 'smoothTransition']
+        },
+        'classical': {
+          tempo: { min: 0.95, max: 1.05, preferred: 1.0 },
+          pitch: { min: -1, max: 1, preferred: 0 },
+          volume: { min: 35, max: 65, preferred: 50 },
+          loopChance: 0.1,
+          crossfadeDuration: 6000,
+          mixingStyle: 'elegant',
+          variations: ['longCrossfade', 'fadeOut', 'smoothTransition']
+        },
+        'ambient': {
+          tempo: { min: 0.95, max: 1.05, preferred: 1.0 },
+          pitch: { min: -2, max: 2, preferred: 0 },
+          volume: { min: 30, max: 60, preferred: 45 },
+          loopChance: 0.9,
+          crossfadeDuration: 8000,
+          mixingStyle: 'atmospheric',
+          variations: ['longCrossfade', 'layerBuild', 'smoothTransition']
+        },
+        'country': {
+          tempo: { min: 0.9, max: 1.1, preferred: 1.0 },
+          pitch: { min: -2, max: 2, preferred: 0 },
+          volume: { min: 45, max: 75, preferred: 60 },
+          loopChance: 0.2,
+          crossfadeDuration: 2500,
+          mixingStyle: 'natural',
+          variations: ['smoothCrossfade', 'fadeOut', 'simpleTransition']
+        },
+        'r&b': {
+          tempo: { min: 0.92, max: 1.08, preferred: 1.0 },
+          pitch: { min: -3, max: 3, preferred: 0 },
+          volume: { min: 45, max: 75, preferred: 60 },
+          loopChance: 0.5,
+          crossfadeDuration: 3000,
+          mixingStyle: 'smooth',
+          variations: ['smoothCrossfade', 'harmonicMix', 'beatMatch']
+        },
+        'electronic': { // Default fallback
+          tempo: { min: 0.95, max: 1.05, preferred: 1.0 },
+          pitch: { min: -2, max: 2, preferred: 0 },
+          volume: { min: 45, max: 75, preferred: 60 },
+          loopChance: 0.4,
+          crossfadeDuration: 3000,
+          mixingStyle: 'balanced',
+          variations: ['smoothCrossfade', 'beatMatch', 'harmonicMix']
+        }
+      };
+    }
+
+    // Initialize genre profiles on load
+    initializeGenreProfiles();
 
     function displayResults(data) {
       const resultsDiv = document.getElementById('results');
@@ -603,7 +989,24 @@
 
       const limitedItems = data.items.slice(0, 4);
       videoData = limitedItems;
+      
+      // Clean up all loops before resetting players
+      Object.keys(loopIntervals).forEach(index => {
+        stopLoop(parseInt(index));
+      });
+      
       players = [];
+      trackLoops = {};
+      loopIntervals = {};
+      loopStartTimes = {};
+      loopEndTimes = {};
+      trackPitch = {};
+      trackGenres = {};
+      
+      // Detect genres for all tracks
+      limitedItems.forEach((item, index) => {
+        trackGenres[index] = detectGenre(item);
+      });
 
       if (!ytApiReady && typeof YT === 'undefined') {
         resultsDiv.innerHTML = '<div class="loading">Loading...</div>';
@@ -623,11 +1026,15 @@
         videoDiv.id = `player${index}`;
         videoWrapper.appendChild(videoDiv);
         
+        // Use already detected genre
+        const detectedGenre = trackGenres[index] || 'electronic';
+        
         const videoInfo = document.createElement('div');
         videoInfo.className = 'video-info';
         videoInfo.innerHTML = `
           <div class="video-title">${item.snippet.title}</div>
           <div class="video-channel">${item.snippet.channelTitle}</div>
+          <div class="video-genre" id="genre${index}">${detectedGenre.toUpperCase()}</div>
         `;
         
         const controls = document.createElement('div');
@@ -654,14 +1061,37 @@
         speedGroup.innerHTML = `
           <span class="control-icon" title="Speed">▲</span>
           <div class="slider-container">
-            <input type="range" class="slider" id="speed${index}" min="0.25" max="2" step="0.25" value="1">
+            <input type="range" class="slider" id="speed${index}" min="0.25" max="2" step="0.05" value="1">
           </div>
           <span class="control-value" id="speedValue${index}">1.0x</span>
+        `;
+        
+        const pitchGroup = document.createElement('div');
+        pitchGroup.className = 'control-group';
+        pitchGroup.innerHTML = `
+          <span class="control-icon" title="Pitch">♪</span>
+          <div class="slider-container">
+            <input type="range" class="slider" id="pitch${index}" min="-12" max="12" step="1" value="0">
+          </div>
+          <span class="control-value" id="pitchValue${index}">0</span>
+        `;
+        
+        const loopGroup = document.createElement('div');
+        loopGroup.className = 'control-group';
+        loopGroup.style.justifyContent = 'space-between';
+        loopGroup.innerHTML = `
+          <span class="control-icon" title="Loop">⟲</span>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+            <input type="checkbox" id="loop${index}" style="cursor: pointer;">
+            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Loop</span>
+          </label>
         `;
         
         controls.appendChild(playButton);
         controls.appendChild(volumeGroup);
         controls.appendChild(speedGroup);
+        controls.appendChild(pitchGroup);
+        controls.appendChild(loopGroup);
         
         videoCard.appendChild(videoWrapper);
         videoCard.appendChild(videoInfo);
@@ -673,53 +1103,123 @@
           const cardWidth = videoCard.offsetWidth || 280;
           const cardHeight = Math.round(cardWidth * 0.5625); // 16:9 aspect ratio
           
-          try {
-            players[index] = new YT.Player(videoDiv.id, {
-              height: cardHeight.toString(),
-              width: cardWidth.toString(),
-              videoId: item.id.videoId,
-              playerVars: {
-                modestbranding: 1,
-                rel: 0,
-                showinfo: 0,
-                playsinline: 1,
-                enablejsapi: 1
-              },
-              events: {
-                'onReady': function(event) {
-                  event.target.setVolume(50);
-                  setupControls(index);
-                  readyPlayers.push(index);
-                  
-                  // Resize iframe to fill container
-                  const iframe = videoDiv.querySelector('iframe');
-                  if (iframe) {
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
-                  }
-                  
-                  // Start auto-play sequence when all players are ready
-                  if (readyPlayers.length === limitedItems.length && autoPlayActive && !userInteracted) {
-                    startAutoPlaySequence();
-                  }
-                },
-                'onStateChange': function(event) {
-                  updatePlayButton(index, event.data);
-                  
-                  // Auto-advance to next video when current ends
-                  if (autoPlayActive && !userInteracted && event.data === YT.PlayerState.ENDED) {
-                    autoAdvanceToNext(index);
-                  }
-                },
-                'onError': function(event) {
-                  console.error('YouTube player error:', event.data);
-                  videoCard.style.opacity = '0.5';
-                }
-              }
-            });
-          } catch (error) {
-            console.error('Error creating YouTube player:', error);
+          // Verify videoId exists
+          const videoId = item.id?.videoId || item.id;
+          if (!videoId) {
+            console.error('No video ID found for item:', item);
+            return;
           }
+          
+          // Function to create player
+          const createPlayer = () => {
+            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+              console.log('YouTube API not ready, retrying...');
+              setTimeout(createPlayer, 200);
+              return;
+            }
+            
+            try {
+              players[index] = new YT.Player(videoDiv.id, {
+                height: cardHeight.toString(),
+                width: cardWidth.toString(),
+                videoId: videoId,
+                playerVars: {
+                  modestbranding: 1,
+                  rel: 0,
+                  showinfo: 0,
+                  playsinline: 1,
+                  enablejsapi: 1
+                },
+                events: {
+                  'onReady': function(event) {
+                    event.target.setVolume(50);
+                    setupControls(index);
+                    readyPlayers.push(index);
+                    
+                    // Resize iframe to fill container and set permissions
+                    const iframe = videoDiv.querySelector('iframe');
+                    if (iframe) {
+                      iframe.style.width = '100%';
+                      iframe.style.height = '100%';
+                      // Add permissions policy to iframe
+                      iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; accelerometer; gyroscope; clipboard-write; web-share');
+                      iframe.setAttribute('allowfullscreen', 'true');
+                    }
+                    
+                    // Start auto-play sequence when all players are ready
+                    if (readyPlayers.length === limitedItems.length && autoPlayActive && !userInteracted) {
+                      startAutoPlaySequence();
+                    }
+                  },
+                  'onStateChange': function(event) {
+                    updatePlayButton(index, event.data);
+                    
+                    // Start loop if enabled and track is playing
+                    if (event.data === YT.PlayerState.PLAYING && trackLoops[index]) {
+                      startLoop(index);
+                    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                      stopLoop(index);
+                    }
+                    
+                    // Auto-advance to next video when current ends
+                    if (autoPlayActive && !userInteracted && event.data === YT.PlayerState.ENDED) {
+                      autoAdvanceToNext(index);
+                    }
+                  },
+                  'onError': function(event) {
+                    const errorCode = event.data;
+                    console.error('YouTube player error:', errorCode);
+                    
+                    // YouTube error codes:
+                    // 2 = Invalid parameter value
+                    // 5 = HTML5 player error
+                    // 100 = Video not found
+                    // 101 = Not allowed to play in embedded players
+                    // 150 = Not allowed to play in embedded players
+                    // 153 = Not allowed to play in embedded players (specific format)
+                    
+                    let errorMessage = 'Video unavailable';
+                    if (errorCode === 100 || errorCode === 101 || errorCode === 150 || errorCode === 153) {
+                      errorMessage = 'Video cannot be embedded';
+                    } else if (errorCode === 2) {
+                      errorMessage = 'Invalid video';
+                    } else if (errorCode === 5) {
+                      errorMessage = 'Playback error';
+                    }
+                    
+                    // Show error message on card
+                    const videoInfo = videoCard.querySelector('.video-info');
+                    if (videoInfo) {
+                      const errorDiv = document.createElement('div');
+                      errorDiv.style.cssText = 'color: #ff6b6b; font-size: 11px; margin-top: 4px; padding: 4px; background: rgba(255, 107, 107, 0.1); border-radius: 4px;';
+                      errorDiv.textContent = errorMessage;
+                      videoInfo.appendChild(errorDiv);
+                    }
+                    
+                    videoCard.style.opacity = '0.6';
+                    videoCard.style.pointerEvents = 'none';
+                    
+                    // Disable controls
+                    const playButton = document.getElementById(`playBtn${index}`);
+                    if (playButton) playButton.disabled = true;
+                    const volumeSlider = document.getElementById(`volume${index}`);
+                    if (volumeSlider) volumeSlider.disabled = true;
+                    const speedSlider = document.getElementById(`speed${index}`);
+                    if (speedSlider) speedSlider.disabled = true;
+                    const pitchSlider = document.getElementById(`pitch${index}`);
+                    if (pitchSlider) pitchSlider.disabled = true;
+                    const loopCheckbox = document.getElementById(`loop${index}`);
+                    if (loopCheckbox) loopCheckbox.disabled = true;
+                  }
+                }
+              });
+            } catch (error) {
+              console.error('Error creating YouTube player:', error);
+            }
+          };
+          
+          // Start creating player
+          createPlayer();
         }, 100);
       });
 
@@ -822,6 +1322,10 @@
       const player = players[index];
       if (!player) return;
 
+      // Initialize loop state
+      trackLoops[index] = false;
+      trackPitch[index] = 0;
+
       const volumeSlider = document.getElementById(`volume${index}`);
       const volumeValue = document.getElementById(`volumeValue${index}`);
       
@@ -851,10 +1355,64 @@
           }
           
           const speed = parseFloat(this.value);
-          player.setPlaybackRate(speed);
+          // Apply pitch adjustment if any
+          const pitchMultiplier = Math.pow(2, trackPitch[index] / 12);
+          player.setPlaybackRate(speed * pitchMultiplier);
           speedValue.textContent = speed.toFixed(2) + 'x';
         }
       });
+
+      const pitchSlider = document.getElementById(`pitch${index}`);
+      const pitchValue = document.getElementById(`pitchValue${index}`);
+      
+      if (pitchSlider && pitchValue) {
+        pitchSlider.addEventListener('input', function() {
+          if (!this.disabled) {
+            // User interaction - stop auto-play
+            if (autoPlayActive && !userInteracted) {
+              userInteracted = true;
+              autoPlayActive = false;
+            }
+            
+            const pitchSemitones = parseInt(this.value);
+            trackPitch[index] = pitchSemitones;
+            
+            // Calculate pitch multiplier (2^(semitones/12))
+            const pitchMultiplier = Math.pow(2, pitchSemitones / 12);
+            const currentSpeed = parseFloat(speedSlider.value);
+            player.setPlaybackRate(currentSpeed * pitchMultiplier);
+            
+            // Display pitch
+            if (pitchSemitones === 0) {
+              pitchValue.textContent = '0';
+            } else if (pitchSemitones > 0) {
+              pitchValue.textContent = '+' + pitchSemitones;
+            } else {
+              pitchValue.textContent = pitchSemitones.toString();
+            }
+          }
+        });
+      }
+
+      const loopCheckbox = document.getElementById(`loop${index}`);
+      if (loopCheckbox) {
+        loopCheckbox.addEventListener('change', function() {
+          if (!this.disabled) {
+            // User interaction - stop auto-play
+            if (autoPlayActive && !userInteracted) {
+              userInteracted = true;
+              autoPlayActive = false;
+            }
+            
+            trackLoops[index] = this.checked;
+            if (this.checked) {
+              startLoop(index);
+            } else {
+              stopLoop(index);
+            }
+          }
+        });
+      }
     }
 
     function togglePlay(index) {
@@ -891,12 +1449,16 @@
       
       if (state === YT.PlayerState.PLAYING) {
         player.pauseVideo();
+        stopLoop(index);
         playButton.textContent = 'Play';
         playButton.classList.remove('playing');
         videoCard.classList.remove('playing');
         currentPlayingIndex = -1;
       } else {
         player.playVideo();
+        if (trackLoops[index]) {
+          setTimeout(() => startLoop(index), 500);
+        }
         playButton.textContent = 'Pause';
         playButton.classList.add('playing');
         videoCard.classList.add('playing');
@@ -967,22 +1529,37 @@
       } else if (trackCount === 1) {
         const currentIndex = playingTracks[0];
         const currentState = trackStates[0];
+        const currentGenre = trackGenres[currentIndex] || 'electronic';
+        const currentProfile = genreProfiles[currentGenre] || genreProfiles['electronic'];
         
-        // More sophisticated decision tree
-        if (decision < 0.4) {
-          // 40% - Crossfade to new track
-          const nextIndex = selectNextTrack([currentIndex]);
+        // Genre-aware decision tree with more variations
+        const variations = currentProfile.variations || ['smoothCrossfade', 'beatMatch'];
+        const variationType = variations[Math.floor(Math.random() * variations.length)];
+        
+        if (decision < 0.35) {
+          // 35% - Crossfade to new track (genre-aware)
+          const nextIndex = selectNextTrack([currentIndex], currentGenre);
           crossfadeTracks(currentIndex, nextIndex, mixIntensity);
-        } else if (decision < 0.65) {
-          // 25% - Enhance current track with dynamic effects
+        } else if (decision < 0.55) {
+          // 20% - Enhance current track with genre-specific effects
           enhanceTrackAdvanced(currentIndex, currentState);
-        } else if (decision < 0.85) {
+        } else if (decision < 0.75) {
           // 20% - Add second track for layering
-          const layerIndex = selectNextTrack([currentIndex]);
+          const layerIndex = selectNextTrack([currentIndex], currentGenre);
           layerTracks(currentIndex, layerIndex);
-        } else {
-          // 15% - Create build-up effect
+        } else if (decision < 0.85) {
+          // 10% - Create build-up effect (genre-specific)
           createBuildUp(currentIndex);
+        } else if (decision < 0.92) {
+          // 7% - Genre-specific variation
+          applyGenreVariation(currentIndex, variationType);
+        } else {
+          // 8% - Quick cut (for aggressive genres)
+          if (currentProfile.mixingStyle === 'aggressive' || currentProfile.mixingStyle === 'energetic') {
+            quickCutToNext(currentIndex);
+          } else {
+            createBuildUp(currentIndex);
+          }
         }
       } else if (trackCount === 2) {
         // Two tracks playing - balance and mix
@@ -1010,24 +1587,54 @@
       lastMixTime = now;
     }
 
-    function selectNextTrack(excludeIndices = []) {
-      // Smart track selection - avoid recently played
+    function selectNextTrack(excludeIndices = [], currentGenre = null) {
+      // Smart track selection - avoid recently played, consider genre compatibility
       const available = players.map((_, i) => i).filter(i => !excludeIndices.includes(i));
       
-      // Prefer tracks that haven't been played recently
+      // Genre compatibility groups
+      const compatibleGenres = [
+        ['house', 'techno', 'trance', 'edm'],
+        ['dubstep', 'drumandbass', 'edm'],
+        ['hiphop', 'r&b', 'pop'],
+        ['rock', 'metal'],
+        ['jazz', 'ambient', 'classical'],
+        ['reggae', 'dancehall'],
+        ['country', 'folk']
+      ];
+      
+      // Prefer tracks that haven't been played recently and are genre-compatible
       const scored = available.map(index => {
         const playCount = trackPlayCount[index] || 0;
         const lastPlayed = trackHistory.filter(h => h.index === index);
         const timeSincePlay = lastPlayed.length > 0 ? Date.now() - lastPlayed[lastPlayed.length - 1].time : Infinity;
         
-        // Lower score = better (less played, longer ago)
-        const score = playCount * 10 - (timeSincePlay / 1000);
-        return { index, score };
+        const trackGenre = trackGenres[index] || 'electronic';
+        
+        // Genre compatibility bonus
+        let genreBonus = 0;
+        if (currentGenre) {
+          const isSameGenre = trackGenre === currentGenre;
+          const isCompatible = compatibleGenres.some(group => 
+            group.includes(currentGenre) && group.includes(trackGenre)
+          );
+          
+          if (isSameGenre) {
+            genreBonus = -5; // Prefer same genre
+          } else if (isCompatible) {
+            genreBonus = -2; // Prefer compatible genres
+          } else {
+            genreBonus = 3; // Slight penalty for incompatible genres (but still allow variety)
+          }
+        }
+        
+        // Lower score = better (less played, longer ago, genre-compatible)
+        const score = playCount * 10 - (timeSincePlay / 1000) + genreBonus;
+        return { index, score, genre: trackGenre };
       });
       
-      // Sort by score and pick from top 2 (adds some randomness)
+      // Sort by score and pick from top 3 (adds more randomness while maintaining quality)
       scored.sort((a, b) => a.score - b.score);
-      const topTracks = scored.slice(0, Math.min(2, scored.length));
+      const topTracks = scored.slice(0, Math.min(3, scored.length));
       const selected = topTracks[Math.floor(Math.random() * topTracks.length)];
       
       return selected ? selected.index : available[Math.floor(Math.random() * available.length)];
@@ -1048,26 +1655,89 @@
       const player = players[index];
       if (!player) return;
 
-      // Dynamic volume based on mix intensity
-      const baseVolume = 40 + mixIntensity * 30; // 40-70%
-      const initialVolume = baseVolume + (Math.random() - 0.5) * 15;
+      // Get genre profile
+      const genre = trackGenres[index] || 'electronic';
+      const profile = genreProfiles[genre] || genreProfiles['electronic'];
       
-      // Smart speed selection - prefer normal tempo with slight variation
-      const initialSpeed = 0.95 + Math.random() * 0.1; // 0.95-1.05x
+      // Genre-based volume
+      const volumeRange = profile.volume.max - profile.volume.min;
+      const baseVolume = profile.volume.preferred + (mixIntensity - 0.5) * volumeRange * 0.5;
+      const initialVolume = Math.max(profile.volume.min, Math.min(profile.volume.max, 
+        baseVolume + (Math.random() - 0.5) * volumeRange * 0.3));
+      
+      // Genre-based speed/tempo
+      const tempoRange = profile.tempo.max - profile.tempo.min;
+      const initialSpeed = profile.tempo.preferred + (Math.random() - 0.5) * tempoRange;
+      
+      // Genre-based pitch
+      const pitchRange = profile.pitch.max - profile.pitch.min;
+      const initialPitch = profile.pitch.preferred + Math.floor((Math.random() - 0.5) * pitchRange);
+      trackPitch[index] = initialPitch;
+      
+      // Apply pitch to speed
+      const pitchMultiplier = Math.pow(2, initialPitch / 12);
+      const finalSpeed = initialSpeed * pitchMultiplier;
       
       player.setVolume(0);
-      player.setPlaybackRate(initialSpeed);
+      player.setPlaybackRate(finalSpeed);
       
-      // Smooth fade in with acceleration
-      fadeInTrackAdvanced(index, initialVolume);
+      // Update UI
+      const speedSlider = document.getElementById(`speed${index}`);
+      const speedValue = document.getElementById(`speedValue${index}`);
+      const pitchSlider = document.getElementById(`pitch${index}`);
+      const pitchValue = document.getElementById(`pitchValue${index}`);
+      
+      if (speedSlider) speedSlider.value = initialSpeed;
+      if (speedValue) speedValue.textContent = initialSpeed.toFixed(2) + 'x';
+      if (pitchSlider) pitchSlider.value = initialPitch;
+      if (pitchValue) {
+        if (initialPitch === 0) {
+          pitchValue.textContent = '0';
+        } else if (initialPitch > 0) {
+          pitchValue.textContent = '+' + initialPitch;
+        } else {
+          pitchValue.textContent = initialPitch.toString();
+        }
+      }
+      
+      // Genre-appropriate fade in
+      const fadeStyle = profile.mixingStyle === 'aggressive' ? 'quick' : 
+                       profile.mixingStyle === 'atmospheric' ? 'slow' : 'normal';
+      fadeInTrackAdvanced(index, initialVolume, fadeStyle);
       
       updateTrackUI(index, initialVolume, initialSpeed);
       
       player.playVideo();
       currentPlayingIndex = index;
       
+      // Genre-based loop chance
+      if (Math.random() < profile.loopChance) {
+        trackLoops[index] = true;
+        const loopCheckbox = document.getElementById(`loop${index}`);
+        if (loopCheckbox) {
+          loopCheckbox.checked = true;
+        }
+        // Set loop points after video starts
+        setTimeout(() => {
+          try {
+            const duration = player.getDuration();
+            const currentTime = player.getCurrentTime();
+            const loopStart = Math.max(0, currentTime);
+            // Genre-appropriate loop length
+            const loopLength = genre === 'ambient' ? 60 + Math.random() * 40 :
+                               genre === 'techno' ? 32 + Math.random() * 16 :
+                               genre === 'hiphop' ? 16 + Math.random() * 16 :
+                               30 + Math.random() * 20;
+            const loopEnd = Math.min(duration, currentTime + loopLength);
+            setLoopPoints(index, loopStart, loopEnd);
+          } catch (e) {
+            console.error('Error setting loop points:', e);
+          }
+        }, 2000);
+      }
+      
       // Track history
-      trackHistory.push({ index, time: Date.now() });
+      trackHistory.push({ index, time: Date.now(), genre });
       trackPlayCount[index] = (trackPlayCount[index] || 0) + 1;
     }
 
@@ -1076,26 +1746,122 @@
       const toPlayer = players[toIndex];
       if (!fromPlayer || !toPlayer) return;
 
-      // Dynamic fade duration based on intensity
-      const fadeDuration = 2000 + (1 - intensity) * 3000; // 2-5 seconds
+      // Get genre profiles
+      const fromGenre = trackGenres[fromIndex] || 'electronic';
+      const toGenre = trackGenres[toIndex] || 'electronic';
+      const fromProfile = genreProfiles[fromGenre] || genreProfiles['electronic'];
+      const toProfile = genreProfiles[toGenre] || genreProfiles['electronic'];
+      
+      // Genre-aware fade duration
+      const baseFadeDuration = (fromProfile.crossfadeDuration + toProfile.crossfadeDuration) / 2;
+      const fadeDuration = baseFadeDuration + (1 - intensity) * (baseFadeDuration * 0.5);
       const steps = 40;
       const stepDuration = fadeDuration / steps;
       let step = 0;
 
       const fromVolume = fromPlayer.getVolume();
-      const baseVolume = 45 + intensity * 25; // 45-70%
-      const targetVolume = baseVolume + (Math.random() - 0.5) * 10;
       
-      // Beat matching - try to match speeds
+      // Genre-based target volume
+      const toVolumeRange = toProfile.volume.max - toProfile.volume.min;
+      const baseVolume = toProfile.volume.preferred + (intensity - 0.5) * toVolumeRange * 0.5;
+      const targetVolume = Math.max(toProfile.volume.min, Math.min(toProfile.volume.max,
+        baseVolume + (Math.random() - 0.5) * toVolumeRange * 0.3));
+      
+      // Genre-aware beat matching
       const fromSpeed = fromPlayer.getPlaybackRate();
-      const targetSpeed = fromSpeed + (Math.random() - 0.5) * 0.15; // Stay close to current speed
-      const clampedSpeed = Math.max(0.8, Math.min(1.2, targetSpeed));
+      const fromPitch = trackPitch[fromIndex] || 0;
+      
+      // Harmonic mixing: match genres prefer similar pitch, different genres can vary more
+      const genresMatch = fromGenre === toGenre;
+      let pitchVariation;
+      if (genresMatch) {
+        // Same genre: stay close to current pitch
+        pitchVariation = fromPitch + Math.floor((Math.random() - 0.5) * 2);
+      } else {
+        // Different genres: can vary more but still consider compatibility
+        const compatibleGenres = [
+          ['house', 'techno', 'trance'],
+          ['dubstep', 'drumandbass', 'edm'],
+          ['hiphop', 'r&b', 'pop'],
+          ['rock', 'metal'],
+          ['jazz', 'ambient', 'classical']
+        ];
+        const isCompatible = compatibleGenres.some(group => 
+          group.includes(fromGenre) && group.includes(toGenre)
+        );
+        if (isCompatible) {
+          pitchVariation = fromPitch + Math.floor((Math.random() - 0.5) * 4);
+        } else {
+          pitchVariation = toProfile.pitch.preferred + Math.floor((Math.random() - 0.5) * toProfile.pitch.max - toProfile.pitch.min);
+        }
+      }
+      
+      const targetPitch = Math.max(toProfile.pitch.min, Math.min(toProfile.pitch.max, pitchVariation));
+      trackPitch[toIndex] = targetPitch;
+      
+      // Genre-based speed matching
+      const toTempoRange = toProfile.tempo.max - toProfile.tempo.min;
+      let targetSpeed;
+      if (genresMatch) {
+        // Same genre: match tempo closely
+        targetSpeed = fromSpeed + (Math.random() - 0.5) * 0.1;
+      } else {
+        // Different genre: use genre's preferred tempo
+        targetSpeed = toProfile.tempo.preferred + (Math.random() - 0.5) * toTempoRange;
+      }
+      const clampedSpeed = Math.max(toProfile.tempo.min, Math.min(toProfile.tempo.max, targetSpeed));
+      const pitchMultiplier = Math.pow(2, targetPitch / 12);
+      const finalSpeed = clampedSpeed * pitchMultiplier;
       
       toPlayer.setVolume(0);
-      toPlayer.setPlaybackRate(clampedSpeed);
+      toPlayer.setPlaybackRate(finalSpeed);
       toPlayer.playVideo();
       
+      // Update UI
+      const speedSlider = document.getElementById(`speed${toIndex}`);
+      const speedValue = document.getElementById(`speedValue${toIndex}`);
+      const pitchSlider = document.getElementById(`pitch${toIndex}`);
+      const pitchValue = document.getElementById(`pitchValue${toIndex}`);
+      
+      if (speedSlider) speedSlider.value = clampedSpeed;
+      if (speedValue) speedValue.textContent = clampedSpeed.toFixed(2) + 'x';
+      if (pitchSlider) pitchSlider.value = targetPitch;
+      if (pitchValue) {
+        if (targetPitch === 0) {
+          pitchValue.textContent = '0';
+        } else if (targetPitch > 0) {
+          pitchValue.textContent = '+' + targetPitch;
+        } else {
+          pitchValue.textContent = targetPitch.toString();
+        }
+      }
+      
       updateTrackUI(toIndex, targetVolume, clampedSpeed);
+      
+      // Genre-based loop chance
+      if (Math.random() < toProfile.loopChance) {
+        trackLoops[toIndex] = true;
+        const loopCheckbox = document.getElementById(`loop${toIndex}`);
+        if (loopCheckbox) {
+          loopCheckbox.checked = true;
+        }
+        setTimeout(() => {
+          try {
+            const duration = toPlayer.getDuration();
+            const currentTime = toPlayer.getCurrentTime();
+            const loopStart = Math.max(0, currentTime);
+            // Genre-appropriate loop length
+            const loopLength = toGenre === 'ambient' ? 60 + Math.random() * 40 :
+                               toGenre === 'techno' ? 32 + Math.random() * 16 :
+                               toGenre === 'hiphop' ? 16 + Math.random() * 16 :
+                               25 + Math.random() * 15;
+            const loopEnd = Math.min(duration, currentTime + loopLength);
+            setLoopPoints(toIndex, loopStart, loopEnd);
+          } catch (e) {
+            console.error('Error setting loop points:', e);
+          }
+        }, 2000);
+      }
 
       // Advanced crossfade with easing curve
       const fadeInterval = setInterval(() => {
@@ -1122,7 +1888,7 @@
           currentPlayingIndex = toIndex;
           
           // Track history
-          trackHistory.push({ index: toIndex, time: Date.now() });
+          trackHistory.push({ index: toIndex, time: Date.now(), genre: toGenre });
           trackPlayCount[toIndex] = (trackPlayCount[toIndex] || 0) + 1;
         }
       }, stepDuration);
@@ -1132,43 +1898,181 @@
       const player = players[index];
       if (!player) return;
 
+      const genre = trackGenres[index] || 'electronic';
+      const profile = genreProfiles[genre] || genreProfiles['electronic'];
+      
       const currentVolume = trackState.volume;
       const currentSpeed = trackState.speed;
+      const currentPitch = trackPitch[index] || 0;
       
-      // More intelligent adjustments
-      const volumeDirection = currentVolume < 50 ? 1 : (currentVolume > 70 ? -1 : (Math.random() > 0.5 ? 1 : -1));
-      const volumeChange = (5 + mixIntensity * 10) * volumeDirection;
-      const newVolume = Math.max(25, Math.min(85, currentVolume + volumeChange));
+      // Genre-aware volume adjustments
+      const volumeRange = profile.volume.max - profile.volume.min;
+      const volumeDirection = currentVolume < profile.volume.preferred ? 1 : 
+                            (currentVolume > profile.volume.preferred ? -1 : (Math.random() > 0.5 ? 1 : -1));
+      const volumeChange = (3 + mixIntensity * 8) * volumeDirection;
+      const newVolume = Math.max(profile.volume.min, Math.min(profile.volume.max, currentVolume + volumeChange));
       
-      // Speed adjustments - prefer staying close to 1.0x
-      const speedBias = 1.0 - currentSpeed; // Pull towards 1.0
-      const speedChange = speedBias * 0.05 + (Math.random() - 0.5) * 0.08;
-      const newSpeed = Math.max(0.7, Math.min(1.3, currentSpeed + speedChange));
+      // Genre-aware speed adjustments - pull towards genre preferred tempo
+      const speedBias = profile.tempo.preferred - currentSpeed;
+      const speedChange = speedBias * 0.03 + (Math.random() - 0.5) * (profile.tempo.max - profile.tempo.min) * 0.1;
+      const newSpeed = Math.max(profile.tempo.min, Math.min(profile.tempo.max, currentSpeed + speedChange));
+      
+      // Genre-aware pitch adjustments
+      const pitchChange = Math.random() < 0.3 ? Math.floor((Math.random() - 0.5) * (profile.pitch.max - profile.pitch.min) * 0.3) : 0;
+      const newPitch = Math.max(profile.pitch.min, Math.min(profile.pitch.max, currentPitch + pitchChange));
+      trackPitch[index] = newPitch;
+      
+      // Apply pitch to speed
+      const pitchMultiplier = Math.pow(2, newPitch / 12);
+      const finalSpeed = newSpeed * pitchMultiplier;
+      
+      // Genre-appropriate transition speed
+      const transitionDuration = profile.mixingStyle === 'aggressive' ? 300 : 
+                                profile.mixingStyle === 'atmospheric' ? 800 : 500;
       
       // Smooth transition
-      animateVolumeChange(index, currentVolume, newVolume, 500);
-      animateSpeedChange(index, currentSpeed, newSpeed, 500);
+      animateVolumeChange(index, currentVolume, newVolume, transitionDuration);
+      animateSpeedChangeWithPitch(index, currentSpeed, newSpeed, currentPitch, newPitch, transitionDuration);
+      
+      // Update pitch UI
+      const pitchSlider = document.getElementById(`pitch${index}`);
+      const pitchValue = document.getElementById(`pitchValue${index}`);
+      if (pitchSlider) pitchSlider.value = newPitch;
+      if (pitchValue) {
+        if (newPitch === 0) {
+          pitchValue.textContent = '0';
+        } else if (newPitch > 0) {
+          pitchValue.textContent = '+' + newPitch;
+        } else {
+          pitchValue.textContent = newPitch.toString();
+        }
+      }
     }
 
     function createBuildUp(index) {
       const player = players[index];
       if (!player) return;
 
+      const genre = trackGenres[index] || 'electronic';
+      const profile = genreProfiles[genre] || genreProfiles['electronic'];
+      
       const currentVolume = player.getVolume();
       const currentSpeed = player.getPlaybackRate();
       
-      // Build up: increase volume and speed
-      const targetVolume = Math.min(90, currentVolume + 15);
-      const targetSpeed = Math.min(1.15, currentSpeed + 0.05);
+      // Genre-appropriate build-up intensity
+      const buildIntensity = profile.mixingStyle === 'epic' ? 20 : 
+                            profile.mixingStyle === 'aggressive' ? 25 : 15;
+      const targetVolume = Math.min(profile.volume.max, currentVolume + buildIntensity);
+      const targetSpeed = Math.min(profile.tempo.max, currentSpeed + 0.05);
       
-      animateVolumeChange(index, currentVolume, targetVolume, 2000);
-      animateSpeedChange(index, currentSpeed, targetSpeed, 2000);
+      const buildDuration = profile.mixingStyle === 'epic' ? 3000 : 2000;
+      animateVolumeChange(index, currentVolume, targetVolume, buildDuration);
+      animateSpeedChange(index, currentSpeed, targetSpeed, buildDuration);
       
       // Then drop back down after a moment
       setTimeout(() => {
-        animateVolumeChange(index, targetVolume, currentVolume, 1500);
-        animateSpeedChange(index, targetSpeed, currentSpeed, 1500);
-      }, 3000);
+        animateVolumeChange(index, targetVolume, currentVolume, buildDuration * 0.75);
+        animateSpeedChange(index, targetSpeed, currentSpeed, buildDuration * 0.75);
+      }, buildDuration + 1000);
+    }
+
+    function applyGenreVariation(index, variationType) {
+      const player = players[index];
+      if (!player) return;
+      
+      const genre = trackGenres[index] || 'electronic';
+      const profile = genreProfiles[genre] || genreProfiles['electronic'];
+      
+      switch(variationType) {
+        case 'pitchShift':
+          // Dramatic pitch shift
+          const currentPitch = trackPitch[index] || 0;
+          const pitchShift = Math.floor((Math.random() - 0.5) * 8); // -4 to +4
+          const newPitch = Math.max(profile.pitch.min, Math.min(profile.pitch.max, currentPitch + pitchShift));
+          trackPitch[index] = newPitch;
+          
+          const currentSpeed = parseFloat(document.getElementById(`speed${index}`).value);
+          const pitchMultiplier = Math.pow(2, newPitch / 12);
+          player.setPlaybackRate(currentSpeed * pitchMultiplier);
+          
+          const pitchSlider = document.getElementById(`pitch${index}`);
+          const pitchValue = document.getElementById(`pitchValue${index}`);
+          if (pitchSlider) pitchSlider.value = newPitch;
+          if (pitchValue) {
+            pitchValue.textContent = newPitch === 0 ? '0' : (newPitch > 0 ? '+' + newPitch : newPitch.toString());
+          }
+          break;
+          
+        case 'volumeSpike':
+          // Quick volume spike
+          const currentVol = player.getVolume();
+          const spikeVol = Math.min(95, currentVol + 20);
+          animateVolumeChange(index, currentVol, spikeVol, 300);
+          setTimeout(() => {
+            animateVolumeChange(index, spikeVol, currentVol, 500);
+          }, 500);
+          break;
+          
+        case 'tempoMatch':
+          // Match tempo to genre standard
+          const targetTempo = profile.tempo.preferred;
+          const currentTempo = parseFloat(document.getElementById(`speed${index}`).value);
+          animateSpeedChange(index, currentTempo, targetTempo, 1000);
+          break;
+          
+        case 'minimalVariation':
+          // Very subtle changes (for techno/minimal)
+          const vol = player.getVolume();
+          const newVol = vol + (Math.random() - 0.5) * 5;
+          animateVolumeChange(index, vol, Math.max(profile.volume.min, Math.min(profile.volume.max, newVol)), 2000);
+          break;
+          
+        case 'loopMash':
+          // Quick loop activation
+          if (!trackLoops[index]) {
+            trackLoops[index] = true;
+            const loopCheckbox = document.getElementById(`loop${index}`);
+            if (loopCheckbox) loopCheckbox.checked = true;
+            startLoop(index);
+          }
+          break;
+          
+        default:
+          enhanceTrackAdvanced(index, {
+            volume: player.getVolume(),
+            speed: player.getPlaybackRate(),
+            playTime: Date.now()
+          });
+      }
+    }
+
+    function quickCutToNext(currentIndex) {
+      const currentGenre = trackGenres[currentIndex] || 'electronic';
+      const nextIndex = selectNextTrack([currentIndex], currentGenre);
+      const currentPlayer = players[currentIndex];
+      const nextPlayer = players[nextIndex];
+      
+      if (!currentPlayer || !nextPlayer) return;
+      
+      // Instant cut - no fade
+      currentPlayer.pauseVideo();
+      stopLoop(currentIndex);
+      
+      const genre = trackGenres[nextIndex] || 'electronic';
+      const profile = genreProfiles[genre] || genreProfiles['electronic'];
+      
+      const targetVolume = profile.volume.preferred + (Math.random() - 0.5) * 10;
+      const targetSpeed = profile.tempo.preferred + (Math.random() - 0.5) * (profile.tempo.max - profile.tempo.min) * 0.3;
+      
+      nextPlayer.setVolume(targetVolume);
+      nextPlayer.setPlaybackRate(targetSpeed);
+      nextPlayer.playVideo();
+      
+      updateTrackUI(nextIndex, targetVolume, targetSpeed);
+      currentPlayingIndex = nextIndex;
+      
+      trackHistory.push({ index: nextIndex, time: Date.now(), genre });
+      trackPlayCount[nextIndex] = (trackPlayCount[nextIndex] || 0) + 1;
     }
 
     function layerTracks(mainIndex, layerIndex) {
@@ -1213,6 +2117,26 @@
         const speedAdjust = (Math.random() - 0.5) * 0.06;
         const newSpeed = Math.max(0.85, Math.min(1.15, state.speed + speedAdjust));
         
+        // Slight pitch adjustments for harmonic mixing
+        const currentPitch = trackPitch[state.index] || 0;
+        const pitchAdjust = Math.random() < 0.2 ? Math.floor((Math.random() - 0.5) * 3) : 0; // 20% chance
+        const newPitch = Math.max(-12, Math.min(12, currentPitch + pitchAdjust));
+        trackPitch[state.index] = newPitch;
+        
+        // Update pitch UI
+        const pitchSlider = document.getElementById(`pitch${state.index}`);
+        const pitchValue = document.getElementById(`pitchValue${state.index}`);
+        if (pitchSlider) pitchSlider.value = newPitch;
+        if (pitchValue) {
+          if (newPitch === 0) {
+            pitchValue.textContent = '0';
+          } else if (newPitch > 0) {
+            pitchValue.textContent = '+' + newPitch;
+          } else {
+            pitchValue.textContent = newPitch.toString();
+          }
+        }
+        
         animateVolumeChange(state.index, state.volume, newVolume, 800);
         animateSpeedChange(state.index, state.speed, newSpeed, 800);
       });
@@ -1244,6 +2168,9 @@
       const player = players[index];
       if (!player) return;
 
+      const currentPitch = trackPitch[index] || 0;
+      const pitchMultiplier = Math.pow(2, currentPitch / 12);
+
       const steps = 15;
       const stepSize = (to - from) / steps;
       const stepDuration = duration / steps;
@@ -1252,39 +2179,90 @@
       const interval = setInterval(() => {
         step++;
         const currentSpeed = from + (stepSize * step);
-        player.setPlaybackRate(Math.max(0.5, Math.min(2, currentSpeed)));
+        const finalSpeed = currentSpeed * pitchMultiplier;
+        player.setPlaybackRate(Math.max(0.5, Math.min(2, finalSpeed)));
         
         if (step >= steps) {
           clearInterval(interval);
-          player.setPlaybackRate(to);
+          player.setPlaybackRate(to * pitchMultiplier);
           updateTrackUI(index, player.getVolume(), to);
         }
       }, stepDuration);
     }
 
-    function fadeInTrackAdvanced(index, targetVolume) {
+    function animateSpeedChangeWithPitch(index, fromSpeed, toSpeed, fromPitch, toPitch, duration) {
       const player = players[index];
       if (!player) return;
 
-      const fadeSteps = 20;
-      const stepSize = targetVolume / fadeSteps;
+      const steps = 15;
+      const stepDuration = duration / steps;
       let step = 0;
 
+      const interval = setInterval(() => {
+        step++;
+        const progress = step / steps;
+        
+        // Interpolate speed
+        const currentSpeed = fromSpeed + (toSpeed - fromSpeed) * progress;
+        
+        // Interpolate pitch
+        const currentPitch = fromPitch + (toPitch - fromPitch) * progress;
+        trackPitch[index] = Math.round(currentPitch);
+        
+        // Apply pitch to speed
+        const pitchMultiplier = Math.pow(2, currentPitch / 12);
+        const finalSpeed = currentSpeed * pitchMultiplier;
+        
+        player.setPlaybackRate(Math.max(0.5, Math.min(2, finalSpeed)));
+        
+        if (step >= steps) {
+          clearInterval(interval);
+          const finalPitchMultiplier = Math.pow(2, toPitch / 12);
+          player.setPlaybackRate(toSpeed * finalPitchMultiplier);
+          trackPitch[index] = toPitch;
+          updateTrackUI(index, player.getVolume(), toSpeed);
+        }
+      }, stepDuration);
+    }
+
+    function fadeInTrackAdvanced(index, targetVolume, style = 'normal') {
+      const player = players[index];
+      if (!player) return;
+
+      let fadeSteps, stepDuration, easing;
+      
+      switch(style) {
+        case 'quick':
+          fadeSteps = 10;
+          stepDuration = 50;
+          easing = (p) => p; // Linear for quick
+          break;
+        case 'slow':
+          fadeSteps = 40;
+          stepDuration = 100;
+          easing = (p) => 1 - Math.pow(1 - p, 4); // Very smooth
+          break;
+        default: // normal
+          fadeSteps = 20;
+          stepDuration = 80;
+          easing = (p) => 1 - Math.pow(1 - p, 3); // Standard exponential
+      }
+
+      let step = 0;
       player.setVolume(0);
       player.playVideo();
 
       const fadeInterval = setInterval(() => {
         step++;
-        // Exponential fade in for smoother start
         const progress = step / fadeSteps;
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        const easedProgress = easing(progress);
         player.setVolume(targetVolume * easedProgress);
         
         if (step >= fadeSteps) {
           clearInterval(fadeInterval);
           player.setVolume(targetVolume);
         }
-      }, 80);
+      }, stepDuration);
     }
 
     function updateTrackUI(index, volume, speed) {
@@ -1299,9 +2277,69 @@
       if (speedValue) speedValue.textContent = speed.toFixed(2) + 'x';
     }
 
+    function startLoop(index) {
+      const player = players[index];
+      if (!player) return;
+      
+      stopLoop(index); // Clear any existing loop
+      
+      // Get current position and video duration
+      const currentTime = player.getCurrentTime();
+      const duration = player.getDuration();
+      
+      // Set loop points (default: loop from current position to end, or last 30 seconds)
+      if (!loopStartTimes[index]) {
+        loopStartTimes[index] = Math.max(0, currentTime - 5); // Start 5 seconds before current
+      }
+      if (!loopEndTimes[index]) {
+        loopEndTimes[index] = Math.min(duration, currentTime + 30); // Loop 30 seconds or to end
+      }
+      
+      const startTime = loopStartTimes[index];
+      const endTime = loopEndTimes[index];
+      
+      // Check if we're near the end of the loop
+      const checkLoop = () => {
+        if (!trackLoops[index] || !player) return;
+        
+        try {
+          const current = player.getCurrentTime();
+          if (current >= endTime - 0.5) {
+            // Jump back to start of loop
+            player.seekTo(startTime, true);
+          }
+        } catch (e) {
+          console.error('Loop check error:', e);
+        }
+      };
+      
+      // Check every 100ms
+      loopIntervals[index] = setInterval(checkLoop, 100);
+    }
+
+    function stopLoop(index) {
+      if (loopIntervals[index]) {
+        clearInterval(loopIntervals[index]);
+        loopIntervals[index] = null;
+      }
+      loopStartTimes[index] = null;
+      loopEndTimes[index] = null;
+    }
+
+    function setLoopPoints(index, startTime, endTime) {
+      loopStartTimes[index] = startTime;
+      loopEndTimes[index] = endTime;
+      if (trackLoops[index]) {
+        startLoop(index);
+      }
+    }
+
     function fadeOutTrack(index) {
       const player = players[index];
       if (!player) return;
+
+      // Stop loop when fading out
+      stopLoop(index);
 
       const fadeSteps = 20;
       const currentVolume = player.getVolume();
@@ -1315,6 +2353,7 @@
         if (step >= fadeSteps) {
           clearInterval(fadeInterval);
           player.pauseVideo();
+          stopLoop(index); // Ensure loop is stopped
         }
       }, 100);
     }
@@ -1371,6 +2410,14 @@
           if (speedSlider) {
             speedSlider.disabled = true;
           }
+          const pitchSlider = document.getElementById(`pitch${index}`);
+          if (pitchSlider) {
+            pitchSlider.disabled = true;
+          }
+          const loopCheckbox = document.getElementById(`loop${index}`);
+          if (loopCheckbox) {
+            loopCheckbox.disabled = true;
+          }
         });
         
         // Dynamic interval based on mix intensity
@@ -1390,6 +2437,11 @@
         button.textContent = 'DJ VEE';
         body.classList.remove('copilot-active');
         
+        // Stop all loops when copilot is disabled
+        players.forEach((player, index) => {
+          stopLoop(index);
+        });
+        
         // Re-enable all controls
         players.forEach((player, index) => {
           const card = document.getElementById(`card${index}`);
@@ -1407,6 +2459,14 @@
           const speedSlider = document.getElementById(`speed${index}`);
           if (speedSlider) {
             speedSlider.disabled = false;
+          }
+          const pitchSlider = document.getElementById(`pitch${index}`);
+          if (pitchSlider) {
+            pitchSlider.disabled = false;
+          }
+          const loopCheckbox = document.getElementById(`loop${index}`);
+          if (loopCheckbox) {
+            loopCheckbox.disabled = false;
           }
         });
         
