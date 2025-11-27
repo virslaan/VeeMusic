@@ -1222,6 +1222,15 @@
       </div>
     </div>
 
+    <div class="sound-effects-section" id="soundEffectsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7); margin-right: 8px;">Sound Effects:</span>
+        <button id="truckSoundBtn" class="sound-effect-btn" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #ffffff; cursor: pointer;">🚚 Truck</button>
+        <button id="fireStationSoundBtn" class="sound-effect-btn" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #ffffff; cursor: pointer;">🚨 Fire Station</button>
+        <button id="bowBowBowBtn" class="sound-effect-btn" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #ffffff; cursor: pointer;">🔊 BOW BOW BOW</button>
+      </div>
+    </div>
+
   <div id="results"></div>
 
   <div class="add-more-section" id="addMoreSection" style="display: none;">
@@ -1278,6 +1287,103 @@
     let voiceStream = null;
     let ttsVoices = [];
     let selectedVoice = null;
+    let audioContext = null;
+    
+    // Initialize AudioContext for sound effects
+    function initAudioContext() {
+      if (!audioContext) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+          console.error('Error initializing AudioContext:', e);
+        }
+      }
+      return audioContext;
+    }
+    
+    // Sound effect functions
+    function playTruckSound() {
+      const ctx = initAudioContext();
+      if (!ctx) return;
+      
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      // Truck horn sound - low frequency with modulation
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.setValueAtTime(80, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.3);
+      oscillator.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.6);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.7);
+      
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.7);
+    }
+    
+    function playFireStationSound() {
+      const ctx = initAudioContext();
+      if (!ctx) return;
+      
+      // Fire station siren - alternating high/low tones
+      for (let i = 0; i < 4; i++) {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        const startTime = ctx.currentTime + (i * 0.3);
+        const freq = i % 2 === 0 ? 800 : 1200;
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, startTime);
+        
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.6, startTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, startTime + 0.25);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.3);
+      }
+    }
+    
+    function playBowBowBow() {
+      const ctx = initAudioContext();
+      if (!ctx) return;
+      
+      // BOW BOW BOW - deep bass hits
+      for (let i = 0; i < 3; i++) {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        oscillator.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        const startTime = ctx.currentTime + (i * 0.2);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(40, startTime);
+        oscillator.frequency.exponentialRampToValueAtTime(30, startTime + 0.15);
+        
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(200, startTime);
+        
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(1.0, startTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.2);
+      }
+    }
     let ttsQueue = [];
     let isTTSPlaying = false;
     let videoData = [];
@@ -1566,6 +1672,8 @@
         `;
         document.getElementById('copilotButton').style.display = 'none';
         document.getElementById('beatDropButton').style.display = 'none';
+        document.getElementById('ttsSection').style.display = 'none';
+        document.getElementById('soundEffectsSection').style.display = 'none';
         return;
       }
 
@@ -1889,6 +1997,7 @@
         document.getElementById('beatDropButton').style.display = 'block';
         document.getElementById('addMoreSection').style.display = 'block';
         document.getElementById('ttsSection').style.display = 'block';
+        document.getElementById('soundEffectsSection').style.display = 'block';
       }
       
       // Reset auto-play state
@@ -3267,22 +3376,46 @@
 
     function handleCueButton(index, cueNumber) {
       const player = players[index];
-      if (!player) return;
+      if (!player) {
+        console.log('No player for index:', index);
+        return;
+      }
       
       try {
         if (!cuePoints[index]) {
           cuePoints[index] = {};
         }
         
-        // If cue point already exists, jump to it
-        if (cuePoints[index][cueNumber]) {
-          player.seekTo(cuePoints[index][cueNumber], true);
-          console.log(`Jumped to cue ${cueNumber} at ${cuePoints[index][cueNumber].toFixed(2)}s`);
+        // Check if cue point already exists
+        if (cuePoints[index][cueNumber] !== undefined && cuePoints[index][cueNumber] !== null) {
+          // Jump to existing cue point
+          const cueTime = cuePoints[index][cueNumber];
+          player.seekTo(cueTime, true);
+          console.log(`Jumped to cue ${cueNumber} at ${cueTime.toFixed(2)}s`);
         } else {
           // Set new cue point at current position
-          const currentTime = player.getCurrentTime();
-          cuePoints[index][cueNumber] = currentTime;
-          console.log(`Cue ${cueNumber} set at ${currentTime.toFixed(2)}s for track ${index}`);
+          try {
+            const currentTime = player.getCurrentTime();
+            if (currentTime !== undefined && !isNaN(currentTime) && currentTime >= 0) {
+              cuePoints[index][cueNumber] = currentTime;
+              console.log(`Cue ${cueNumber} set at ${currentTime.toFixed(2)}s for track ${index}`);
+              
+              // Update button to show it has a cue point
+              const cueButton = document.getElementById(`cueBtn${index}_${cueNumber}`);
+              if (cueButton) {
+                cueButton.style.background = 'rgba(58, 134, 255, 0.3)';
+                cueButton.style.borderColor = '#3a86ff';
+              }
+            } else {
+              // Player not ready, set cue at 0
+              cuePoints[index][cueNumber] = 0;
+              console.log(`Cue ${cueNumber} set at 0s (player not ready) for track ${index}`);
+            }
+          } catch (timeError) {
+            // If getCurrentTime fails, set cue at 0
+            cuePoints[index][cueNumber] = 0;
+            console.log(`Cue ${cueNumber} set at 0s (error getting time) for track ${index}`);
+          }
         }
         
         // Visual feedback
@@ -4236,6 +4369,41 @@
         }
       }
     });
+
+    // Sound effects button event listeners
+    const truckSoundBtn = document.getElementById('truckSoundBtn');
+    const fireStationSoundBtn = document.getElementById('fireStationSoundBtn');
+    const bowBowBowBtn = document.getElementById('bowBowBowBtn');
+    
+    if (truckSoundBtn) {
+      truckSoundBtn.addEventListener('click', function() {
+        playTruckSound();
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+        }, 200);
+      });
+    }
+    
+    if (fireStationSoundBtn) {
+      fireStationSoundBtn.addEventListener('click', function() {
+        playFireStationSound();
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+        }, 200);
+      });
+    }
+    
+    if (bowBowBowBtn) {
+      bowBowBowBtn.addEventListener('click', function() {
+        playBowBowBow();
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+        }, 200);
+      });
+    }
 
     // Voice recording and playback functions
     async function toggleVoice() {
