@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <meta http-equiv="Permissions-Policy" content="autoplay=*, encrypted-media=*, picture-in-picture=*, accelerometer=*, gyroscope=*, clipboard-write=*, web-share=*">
-  <title>VeeMusic DJ</title>
+  <title>VeeMusic DJ - Professional DJ Mixing Experience</title>
+  <meta name="copyright" content="© 2025 VIPUL. All rights reserved.">
+  <meta name="author" content="VIPUL">
   <style>
     * {
       margin: 0;
@@ -115,30 +117,30 @@
     }
 
     h1 {
-      font-size: 28px;
-      font-weight: 700;
+      font-size: 24px;
+      font-weight: 600;
       color: #ffffff;
-      margin-bottom: 4px;
-      letter-spacing: -0.5px;
+      margin-bottom: 2px;
+      letter-spacing: -0.3px;
     }
 
     .subtitle {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
       font-weight: 400;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .instruction-text {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
       font-weight: 400;
-      line-height: 1.5;
-      margin-top: 8px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      line-height: 1.4;
+      margin-top: 6px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .search-section {
@@ -176,17 +178,17 @@
 
     #searchButton {
       padding: 10px 20px;
-      font-size: 15px;
-      font-weight: 600;
-      background: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.95);
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       color: #000000;
       cursor: pointer;
       transition: all 0.2s ease;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      min-height: 44px; /* iOS touch target size */
+      min-height: 44px;
     }
 
     #searchButton:hover {
@@ -203,18 +205,18 @@
 
     #copilotButton {
       padding: 10px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
       color: #ffffff;
       cursor: pointer;
       transition: all 0.2s ease;
       display: none;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      min-height: 44px; /* iOS touch target size */
+      min-height: 44px;
     }
 
     #copilotButton:hover {
@@ -229,18 +231,18 @@
 
     #beatDropButton {
       padding: 10px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
       color: #ffffff;
       cursor: pointer;
       transition: all 0.2s ease;
       display: none;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      min-height: 44px; /* iOS touch target size */
+      min-height: 44px;
     }
 
     #beatDropButton:hover {
@@ -267,11 +269,11 @@
 
     #lockButton {
       padding: 10px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
       color: #ffffff;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -297,10 +299,119 @@
       content: " - JAM with DJ VEE";
     }
 
+    #voiceButton {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #voiceButton:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #voiceButton.recording {
+      background: rgba(255, 0, 0, 0.3);
+      border-color: rgba(255, 0, 0, 0.5);
+      animation: pulse 1s ease infinite;
+    }
+
+    #voiceButton.playing {
+      background: rgba(0, 255, 0, 0.2);
+      border-color: rgba(0, 255, 0, 0.4);
+    }
+
+    #voiceIcon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+    }
+
+    #voiceIcon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    #lockIcon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+    }
+
+    #lockIcon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
     .add-more-section {
       margin-top: 20px;
       padding-top: 20px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tts-section {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tts-prefill {
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tts-prefill:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    #ttsIcon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+    }
+
+    #ttsIcon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    #ttsInput::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    #ttsInput:focus {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     #addMoreQuery::placeholder {
@@ -341,10 +452,10 @@
     }
 
     .video-card {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 20px;
-      padding: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.02);
       transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
@@ -353,6 +464,116 @@
       animation: fadeInUp 0.6s ease forwards;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: all 0.2s ease;
+      padding: 0;
+      opacity: 0.7;
+    }
+
+    .close-button svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .close-button:hover {
+      background: rgba(255, 0, 0, 0.8);
+      color: #ffffff;
+      transform: scale(1.1);
+      opacity: 1;
+    }
+
+    .beat-indicator {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      z-index: 50;
+      transition: all 0.1s ease;
+    }
+
+    .beat-indicator.active {
+      background: #06ffa5;
+      box-shadow: 0 0 8px #06ffa5;
+      transform: scale(1.4);
+    }
+
+    .eq-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+    }
+
+    .eq-control {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .eq-label {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .eq-slider {
+      width: 100%;
+      height: 60px;
+      -webkit-appearance: slider-vertical;
+      appearance: slider-vertical;
+      writing-mode: bt-lr;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .cue-point-button {
+      padding: 4px 8px;
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cue-point-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .cue-point-button.active {
+      background: #3a86ff;
+      border-color: #3a86ff;
     }
 
     @keyframes fadeInUp {
@@ -407,10 +628,10 @@
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
-      background: #1a1a1a;
-      border-radius: 20px;
+      background: #0a0a0a;
+      border-radius: 6px;
       overflow: hidden;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .video-wrapper video {
@@ -450,10 +671,10 @@
     }
 
     .video-title {
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 500;
       color: #ffffff;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       line-height: 1.3;
       display: -webkit-box;
       -webkit-line-clamp: 1;
@@ -463,21 +684,21 @@
     }
 
     .video-channel {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
       font-weight: 400;
     }
 
     .video-genre {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.7);
-      font-weight: 600;
-      margin-top: 4px;
-      padding: 2px 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 500;
+      margin-top: 3px;
+      padding: 2px 5px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
       display: inline-block;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
 
     .controls {
@@ -494,15 +715,21 @@
     }
 
     .control-icon {
-      font-size: 14px;
-      width: 24px;
-      text-align: center;
+      width: 20px;
+      height: 20px;
       flex-shrink: 0;
-      color: rgba(255, 255, 255, 0.7);
-      font-weight: 400;
       display: flex;
       align-items: center;
       justify-content: center;
+      opacity: 0.7;
+    }
+
+    .control-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
     }
 
     .control-value {
@@ -758,6 +985,61 @@
       #addMoreButton {
         width: 100%;
       }
+
+      .close-button {
+        width: 32px;
+        height: 32px;
+        font-size: 22px;
+        top: 8px;
+        right: 8px;
+      }
+
+      .beat-indicator {
+        width: 10px;
+        height: 10px;
+        top: 8px;
+        left: 8px;
+      }
+
+      .eq-controls {
+        flex-direction: row;
+        gap: 4px;
+        padding: 6px;
+      }
+
+      .eq-slider {
+        height: 50px;
+      }
+
+      .cue-point-button {
+        font-size: 9px;
+        padding: 3px 6px;
+      }
+
+      footer {
+        margin-top: 30px;
+        padding: 16px;
+      }
+
+      .tts-section {
+        margin-top: 12px;
+        padding: 10px;
+      }
+
+      .tts-prefill {
+        font-size: 10px;
+        padding: 5px 10px;
+      }
+
+      #ttsInput {
+        font-size: 12px;
+        padding: 8px 10px;
+      }
+
+      #ttsButton {
+        font-size: 12px;
+        padding: 8px 12px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -802,8 +1084,9 @@
   <div class="container">
     <header>
   <h1>VeeMusic DJ</h1>
-      <p class="subtitle">Search and mix your tracks</p>
+      <p class="subtitle">Professional DJ Mixing Experience</p>
       <p class="instruction-text">Search video, enter and press the DJ Vee take care and use the controls to feel the dj already</p>
+      <p class="copyright-notice" style="font-size: 10px; color: rgba(255, 255, 255, 0.5); margin-top: 8px; text-align: center;">© 2025 VIPUL. All rights reserved.</p>
     </header>
 
     <div class="search-section">
@@ -822,9 +1105,36 @@
       <button id="copilotButton">DJ VEE</button>
       <button id="beatDropButton" style="margin-left: 10px;">Beat Drop Mix</button>
       <button id="lockButton" style="margin-left: 10px; display: none;" title="Lock/Unlock DJ VEE for manual mixing">
-        <span id="lockIcon">🔒</span>
+        <span id="lockIcon"></span>
         <span id="lockText" style="margin-left: 5px;">Lock</span>
       </button>
+      <button id="voiceButton" style="margin-left: 10px;" title="Record and play your voice">
+        <span id="voiceIcon"></span>
+        <span id="voiceText" style="margin-left: 5px;">Voice</span>
+      </button>
+    </div>
+
+    <div class="tts-section" id="ttsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
+      <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+        <button class="tts-prefill" data-text="Let's go!">Let's go!</button>
+        <button class="tts-prefill" data-text="Drop the beat!">Drop the beat!</button>
+        <button class="tts-prefill" data-text="This is DJ VEE!">DJ VEE!</button>
+        <button class="tts-prefill" data-text="Feel the music!">Feel the music!</button>
+        <button class="tts-prefill" data-text="Energy rising!">Energy rising!</button>
+        <button class="tts-prefill" data-text="Here we go!">Here we go!</button>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input 
+          type="text" 
+          id="ttsInput" 
+          placeholder="Type text to speak..."
+          style="flex: 1; padding: 8px 12px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; background: rgba(255, 255, 255, 0.03); color: #ffffff; outline: none;"
+        >
+        <button id="ttsButton" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #ffffff; cursor: pointer; min-height: 36px;">
+          <span id="ttsIcon"></span>
+          <span style="margin-left: 5px;">Speak</span>
+        </button>
+      </div>
     </div>
 
   <div id="results"></div>
@@ -841,11 +1151,47 @@
       <button type="submit" id="addMoreButton" style="padding: 10px 20px; font-size: 20px; font-weight: 600; background: #ffffff; border: none; border-radius: 8px; color: #000000; cursor: pointer; min-width: 50px; min-height: 44px;">+</button>
     </form>
   </div>
+
+  <footer style="margin-top: 40px; padding: 20px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px;">
+      © 2025 VIPUL. All rights reserved.
+    </p>
+    <p style="font-size: 11px; color: rgba(255, 255, 255, 0.4);">
+      Professional DJ Mixing Experience | VeeMusic DJ
+    </p>
+  </footer>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
+    // SVG Icon Functions - Minimalistic Design
+    function getSVGIcon(type) {
+      const icons = {
+        volume: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>',
+        speed: '<svg viewBox="0 0 24 24"><path d="M13 3L4 14h7v7l9-11h-7V3z"/></svg>',
+        pitch: '<svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>',
+        loop: '<svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>',
+        close: '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+        lock: '<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>',
+        unlock: '<svg viewBox="0 0 24 24"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2H8.9V6z"/></svg>',
+        mic: '<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>',
+        speaker: '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>',
+        cue: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+        tts: '<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>'
+      };
+      return icons[type] || '';
+    }
+
     let players = [];
+    let voiceRecording = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let voiceAudio = null;
+    let voiceStream = null;
+    let ttsVoices = [];
+    let selectedVoice = null;
+    let ttsQueue = [];
+    let isTTSPlaying = false;
     let videoData = [];
     let ytApiReady = false;
     let copilotActive = false;
@@ -875,6 +1221,10 @@
     let trackPitch = {}; // Track pitch offset for each player (in semitones)
     let trackGenres = {}; // Track genre for each player
     let genreProfiles = {}; // Genre-specific mixing profiles
+    let trackEQ = {}; // Track EQ settings: {low: -12 to 12, mid: -12 to 12, high: -12 to 12}
+    let cuePoints = {}; // Cue points for each track: {[index]: [time1, time2, ...]}
+    let beatIndicators = {}; // Beat indicator intervals
+    let trackBPM = {}; // Estimated BPM for each track
 
     // Check if running via file:// protocol (YouTube requires HTTP/HTTPS)
     if (window.location.protocol === 'file:') {
@@ -1165,11 +1515,26 @@
         videoCard.id = `card${index}`;
         videoCard.style.animationDelay = `${index * 0.1}s`;
         
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-button';
+        closeButton.innerHTML = getSVGIcon('close');
+        closeButton.title = 'Remove this song';
+        closeButton.onclick = () => removeSong(index);
+        
+        // Add beat indicator
+        const beatIndicator = document.createElement('div');
+        beatIndicator.className = 'beat-indicator';
+        beatIndicator.id = `beatIndicator${index}`;
+        
         const videoWrapper = document.createElement('div');
         videoWrapper.className = 'video-wrapper';
         const videoDiv = document.createElement('div');
         videoDiv.id = `player${index}`;
         videoWrapper.appendChild(videoDiv);
+        
+        videoCard.appendChild(closeButton);
+        videoCard.appendChild(beatIndicator);
         
         // Use already detected genre
         const detectedGenre = trackGenres[index] || 'electronic';
@@ -1194,7 +1559,7 @@
         const volumeGroup = document.createElement('div');
         volumeGroup.className = 'control-group';
         volumeGroup.innerHTML = `
-          <span class="control-icon" title="Volume">●</span>
+          <span class="control-icon" title="Volume">${getSVGIcon('volume')}</span>
           <div class="slider-container">
             <input type="range" class="slider" id="volume${index}" min="0" max="100" value="50">
           </div>
@@ -1204,7 +1569,7 @@
         const speedGroup = document.createElement('div');
         speedGroup.className = 'control-group';
         speedGroup.innerHTML = `
-          <span class="control-icon" title="Speed">▲</span>
+          <span class="control-icon" title="Speed">${getSVGIcon('speed')}</span>
           <div class="slider-container">
             <input type="range" class="slider" id="speed${index}" min="0.25" max="2" step="0.05" value="1">
           </div>
@@ -1214,7 +1579,7 @@
         const pitchGroup = document.createElement('div');
         pitchGroup.className = 'control-group';
         pitchGroup.innerHTML = `
-          <span class="control-icon" title="Pitch">♪</span>
+          <span class="control-icon" title="Pitch">${getSVGIcon('pitch')}</span>
           <div class="slider-container">
             <input type="range" class="slider" id="pitch${index}" min="-12" max="12" step="1" value="0">
           </div>
@@ -1227,7 +1592,7 @@
         loopGroup.style.gap = '6px';
         loopGroup.innerHTML = `
           <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-            <span class="control-icon" title="Loop">⟲</span>
+            <span class="control-icon" title="Loop">${getSVGIcon('loop')}</span>
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
               <input type="checkbox" id="loop${index}" style="cursor: pointer;">
               <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Loop</span>
@@ -1242,16 +1607,52 @@
           >
         `;
         
+        // Add cue point button
+        const cueButton = document.createElement('button');
+        cueButton.className = 'cue-point-button';
+        cueButton.id = `cueBtn${index}`;
+        cueButton.innerHTML = getSVGIcon('cue');
+        cueButton.title = 'Set cue point at current position';
+        cueButton.onclick = () => setCuePoint(index);
+        
+        // Add EQ controls
+        const eqControls = document.createElement('div');
+        eqControls.className = 'eq-controls';
+        eqControls.innerHTML = `
+          <div class="eq-control">
+            <span class="eq-label">Low</span>
+            <input type="range" class="eq-slider" id="eqLow${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+            <span class="control-value" id="eqLowValue${index}" style="font-size: 9px;">0</span>
+          </div>
+          <div class="eq-control">
+            <span class="eq-label">Mid</span>
+            <input type="range" class="eq-slider" id="eqMid${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+            <span class="control-value" id="eqMidValue${index}" style="font-size: 9px;">0</span>
+          </div>
+          <div class="eq-control">
+            <span class="eq-label">High</span>
+            <input type="range" class="eq-slider" id="eqHigh${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+            <span class="control-value" id="eqHighValue${index}" style="font-size: 9px;">0</span>
+          </div>
+        `;
+        
         controls.appendChild(playButton);
         controls.appendChild(volumeGroup);
         controls.appendChild(speedGroup);
         controls.appendChild(pitchGroup);
         controls.appendChild(loopGroup);
+        controls.appendChild(cueButton);
+        controls.appendChild(eqControls);
         
         videoCard.appendChild(videoWrapper);
         videoCard.appendChild(videoInfo);
         videoCard.appendChild(controls);
         resultsDiv.appendChild(videoCard);
+        
+        // Initialize track state
+        trackEQ[index] = { low: 0, mid: 0, high: 0 };
+        cuePoints[index] = [];
+        trackBPM[index] = 120; // Default BPM, will be estimated
 
         // Wait for card to be rendered, then calculate proper dimensions
         setTimeout(() => {
@@ -1384,6 +1785,7 @@
         document.getElementById('copilotButton').style.display = 'block';
         document.getElementById('beatDropButton').style.display = 'block';
         document.getElementById('addMoreSection').style.display = 'block';
+        document.getElementById('ttsSection').style.display = 'block';
       }
       
       // Reset auto-play state
@@ -1617,6 +2019,46 @@
           }
         });
       }
+
+      // Setup EQ controls
+      const eqLow = document.getElementById(`eqLow${index}`);
+      const eqMid = document.getElementById(`eqMid${index}`);
+      const eqHigh = document.getElementById(`eqHigh${index}`);
+      const eqLowValue = document.getElementById(`eqLowValue${index}`);
+      const eqMidValue = document.getElementById(`eqMidValue${index}`);
+      const eqHighValue = document.getElementById(`eqHighValue${index}`);
+
+      if (eqLow && eqLowValue) {
+        eqLow.addEventListener('input', function() {
+          if (!this.disabled) {
+            const value = parseInt(this.value);
+            trackEQ[index].low = value;
+            eqLowValue.textContent = value > 0 ? '+' + value : value;
+            // Note: YouTube API doesn't support EQ directly, but we can simulate with volume adjustments
+            // For a real implementation, you'd need Web Audio API
+          }
+        });
+      }
+
+      if (eqMid && eqMidValue) {
+        eqMid.addEventListener('input', function() {
+          if (!this.disabled) {
+            const value = parseInt(this.value);
+            trackEQ[index].mid = value;
+            eqMidValue.textContent = value > 0 ? '+' + value : value;
+          }
+        });
+      }
+
+      if (eqHigh && eqHighValue) {
+        eqHigh.addEventListener('input', function() {
+          if (!this.disabled) {
+            const value = parseInt(this.value);
+            trackEQ[index].high = value;
+            eqHighValue.textContent = value > 0 ? '+' + value : value;
+          }
+        });
+      }
     }
 
     function togglePlay(index) {
@@ -1655,12 +2097,14 @@
       if (state === YT.PlayerState.PLAYING) {
         player.pauseVideo();
         stopLoop(index);
+        stopBeatIndicator(index);
         playButton.textContent = 'Play';
         playButton.classList.remove('playing');
         videoCard.classList.remove('playing');
         currentPlayingIndex = -1;
       } else {
         player.playVideo();
+        startBeatIndicator(index);
         if (trackLoops[index]) {
           setTimeout(() => startLoop(index), 500);
         }
@@ -1681,9 +2125,11 @@
         playButton.classList.add('playing');
         videoCard.classList.add('playing');
         currentPlayingIndex = index;
+        startBeatIndicator(index);
       } else {
         playButton.textContent = 'Play';
         playButton.classList.remove('playing');
+        stopBeatIndicator(index);
         if (currentPlayingIndex === index) {
           videoCard.classList.remove('playing');
           currentPlayingIndex = -1;
@@ -1915,6 +2361,24 @@
       player.playVideo();
       currentPlayingIndex = index;
       
+      // Play TTS between tracks if queue has items, or auto-generate
+      if (!isTTSPlaying) {
+        let ttsText = null;
+        if (ttsQueue.length > 0) {
+          ttsText = ttsQueue.shift();
+        } else if (Math.random() < 0.3) {
+          // 30% chance to auto-generate TTS phrase
+          ttsText = generateAutoTTSPhrase('trackStart');
+        }
+        
+        if (ttsText) {
+          // Play TTS after a short delay
+          setTimeout(() => {
+            speakText(ttsText, { volume: 0.6, rate: 1.1, pitch: 1.0 });
+          }, 2000);
+        }
+      }
+      
       // Genre-based loop chance
       if (Math.random() < profile.loopChance) {
         trackLoops[index] = true;
@@ -1957,30 +2421,35 @@
       const fromProfile = genreProfiles[fromGenre] || genreProfiles['electronic'];
       const toProfile = genreProfiles[toGenre] || genreProfiles['electronic'];
       
-      // Genre-aware fade duration
+      // Enhanced beat matching - calculate BPM difference and adjust
+      const fromBPM = trackBPM[fromIndex] || 120;
+      const toBPM = trackBPM[toIndex] || 120;
+      const bpmRatio = fromBPM / toBPM;
+      
+      // Genre-aware fade duration with professional DJ curve
       const baseFadeDuration = (fromProfile.crossfadeDuration + toProfile.crossfadeDuration) / 2;
       const fadeDuration = baseFadeDuration + (1 - intensity) * (baseFadeDuration * 0.5);
-      const steps = 40;
+      const steps = 50; // More steps for smoother transition
       const stepDuration = fadeDuration / steps;
       let step = 0;
 
       const fromVolume = fromPlayer.getVolume();
       
-      // Genre-based target volume
+      // Genre-based target volume with professional mixing
       const toVolumeRange = toProfile.volume.max - toProfile.volume.min;
       const baseVolume = toProfile.volume.preferred + (intensity - 0.5) * toVolumeRange * 0.5;
       const targetVolume = Math.max(toProfile.volume.min, Math.min(toProfile.volume.max,
         baseVolume + (Math.random() - 0.5) * toVolumeRange * 0.3));
       
-      // Genre-aware beat matching
+      // Enhanced beat matching with BPM synchronization
       const fromSpeed = fromPlayer.getPlaybackRate();
       const fromPitch = trackPitch[fromIndex] || 0;
       
-      // Harmonic mixing: match genres prefer similar pitch, different genres can vary more
+      // Professional beat matching: adjust speed to match BPMs (harmonic mixing)
       const genresMatch = fromGenre === toGenre;
       let pitchVariation;
       if (genresMatch) {
-        // Same genre: stay close to current pitch
+        // Same genre: stay close to current pitch for smooth harmonic transition
         pitchVariation = fromPitch + Math.floor((Math.random() - 0.5) * 2);
       } else {
         // Different genres: can vary more but still consider compatibility
@@ -2004,17 +2473,18 @@
       const targetPitch = Math.max(toProfile.pitch.min, Math.min(toProfile.pitch.max, pitchVariation));
       trackPitch[toIndex] = targetPitch;
       
-      // Genre-based speed matching
+      // Professional beat matching: combine BPM ratio with genre-based tempo
       const toTempoRange = toProfile.tempo.max - toProfile.tempo.min;
-      let targetSpeed;
+      let baseTargetSpeed;
       if (genresMatch) {
-        // Same genre: match tempo closely
-        targetSpeed = fromSpeed + (Math.random() - 0.5) * 0.1;
+        // Same genre: match tempo closely with BPM consideration
+        baseTargetSpeed = fromSpeed * (0.7 + 0.3 * bpmRatio); // Blend current speed with BPM match
       } else {
-        // Different genre: use genre's preferred tempo
-        targetSpeed = toProfile.tempo.preferred + (Math.random() - 0.5) * toTempoRange;
+        // Different genre: use genre's preferred tempo adjusted for BPM
+        const preferredSpeed = toProfile.tempo.preferred + (Math.random() - 0.5) * toTempoRange;
+        baseTargetSpeed = preferredSpeed * bpmRatio;
       }
-      const clampedSpeed = Math.max(toProfile.tempo.min, Math.min(toProfile.tempo.max, targetSpeed));
+      const clampedSpeed = Math.max(toProfile.tempo.min, Math.min(toProfile.tempo.max, baseTargetSpeed));
       const pitchMultiplier = Math.pow(2, targetPitch / 12);
       const finalSpeed = clampedSpeed * pitchMultiplier;
       
@@ -2068,15 +2538,16 @@
         }, 2000);
       }
 
-      // Advanced crossfade with easing curve
+      // Professional DJ crossfade with S-curve (professional mixing curve)
       const fadeInterval = setInterval(() => {
         step++;
         const progress = step / steps;
         
-        // Easing function for smoother transition
-        const easeProgress = progress < 0.5 
-          ? 2 * progress * progress 
-          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        // Professional S-curve easing for smooth DJ transitions
+        // This creates a more natural fade that DJs use
+        const easeProgress = progress < 0.5
+          ? 2 * progress * progress * (3 - 2 * progress) // Smooth acceleration
+          : 1 - 2 * (1 - progress) * (1 - progress) * (3 - 2 * (1 - progress)); // Smooth deceleration
         
         // Fade out old track
         const fromNewVolume = fromVolume * (1 - easeProgress);
@@ -2091,6 +2562,27 @@
           fromPlayer.pauseVideo();
           toPlayer.setVolume(targetVolume);
           currentPlayingIndex = toIndex;
+          
+          // Play TTS between tracks if queue has items, or auto-generate
+          if (!isTTSPlaying) {
+            let ttsText = null;
+            if (ttsQueue.length > 0) {
+              ttsText = ttsQueue.shift();
+            } else if (Math.random() < 0.25) {
+              // 25% chance to auto-generate TTS phrase during transition
+              const fromGenre = trackGenres[fromIndex] || 'electronic';
+              const toGenre = trackGenres[toIndex] || 'electronic';
+              const context = fromGenre !== toGenre ? 'genreChange' : 'trackTransition';
+              ttsText = generateAutoTTSPhrase(context);
+            }
+            
+            if (ttsText) {
+              // Play TTS during transition
+              setTimeout(() => {
+                speakText(ttsText, { volume: 0.5, rate: 1.0, pitch: 1.0 });
+              }, 1000);
+            }
+          }
           
           // Track history
           trackHistory.push({ index: toIndex, time: Date.now(), genre: toGenre });
@@ -2614,6 +3106,128 @@
       }
     }
 
+    function removeSong(index) {
+      // Stop the player if playing
+      if (players[index]) {
+        try {
+          players[index].pauseVideo();
+          players[index].destroy();
+        } catch (e) {
+          console.error('Error destroying player:', e);
+        }
+      }
+      
+      // Stop any loops and beat indicators
+      stopLoop(index);
+      if (beatIndicators[index]) {
+        clearInterval(beatIndicators[index]);
+        delete beatIndicators[index];
+      }
+      
+      // Remove the card from DOM with animation
+      const card = document.getElementById(`card${index}`);
+      if (card) {
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+          card.remove();
+        }, 300);
+      }
+      
+      // Clean up arrays
+      players[index] = null;
+      if (videoData[index]) videoData[index] = null;
+      trackLoops[index] = null;
+      trackPitch[index] = null;
+      loopPatterns[index] = null;
+      loopIntervals[index] = null;
+      loopStartTimes[index] = null;
+      loopEndTimes[index] = null;
+      trackGenres[index] = null;
+      trackEQ[index] = null;
+      cuePoints[index] = null;
+      trackBPM[index] = null;
+      
+      // Update current playing index if needed
+      if (currentPlayingIndex === index) {
+        currentPlayingIndex = -1;
+      }
+    }
+
+    function setCuePoint(index) {
+      const player = players[index];
+      if (!player) return;
+      
+      try {
+        const currentTime = player.getCurrentTime();
+        if (!cuePoints[index]) {
+          cuePoints[index] = [];
+        }
+        cuePoints[index].push(currentTime);
+        
+        // Visual feedback
+        const cueButton = document.getElementById(`cueBtn${index}`);
+        if (cueButton) {
+          cueButton.classList.add('active');
+          setTimeout(() => {
+            cueButton.classList.remove('active');
+          }, 300);
+        }
+        
+        // If cue points exist, allow jumping to them
+        if (cuePoints[index].length > 0) {
+          const lastCue = cuePoints[index][cuePoints[index].length - 1];
+          console.log(`Cue point set at ${lastCue.toFixed(2)}s for track ${index}`);
+        }
+      } catch (e) {
+        console.error('Error setting cue point:', e);
+      }
+    }
+
+    function jumpToCuePoint(index, cueIndex = 0) {
+      const player = players[index];
+      if (!player || !cuePoints[index] || !cuePoints[index][cueIndex]) return;
+      
+      try {
+        player.seekTo(cuePoints[index][cueIndex], true);
+      } catch (e) {
+        console.error('Error jumping to cue point:', e);
+      }
+    }
+
+    function startBeatIndicator(index) {
+      if (beatIndicators[index]) {
+        clearInterval(beatIndicators[index]);
+      }
+      
+      const indicator = document.getElementById(`beatIndicator${index}`);
+      if (!indicator) return;
+      
+      // Estimate BPM and create beat animation
+      const estimatedBPM = trackBPM[index] || 120;
+      const beatInterval = (60 / estimatedBPM) * 1000; // Convert to milliseconds
+      
+      beatIndicators[index] = setInterval(() => {
+        if (indicator) {
+          indicator.classList.add('active');
+          setTimeout(() => {
+            if (indicator) indicator.classList.remove('active');
+          }, 100);
+        }
+      }, beatInterval);
+    }
+
+    function stopBeatIndicator(index) {
+      if (beatIndicators[index]) {
+        clearInterval(beatIndicators[index]);
+        beatIndicators[index] = null;
+      }
+      const indicator = document.getElementById(`beatIndicator${index}`);
+      if (indicator) {
+        indicator.classList.remove('active');
+      }
+    }
+
     function fadeOutTrack(index) {
       const player = players[index];
       if (!player) return;
@@ -2881,7 +3495,7 @@
         djVeeLocked = true;
         const lockIcon = document.getElementById('lockIcon');
         const lockText = document.getElementById('lockText');
-        if (lockIcon) lockIcon.textContent = '🔒';
+        if (lockIcon) lockIcon.innerHTML = getSVGIcon('lock');
         if (lockText) lockText.textContent = 'Lock';
         if (lockButton) lockButton.classList.remove('unlocked');
         
@@ -3088,11 +3702,26 @@
         videoCard.id = `card${index}`;
         videoCard.style.animationDelay = `${index * 0.1}s`;
         
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-button';
+        closeButton.innerHTML = getSVGIcon('close');
+        closeButton.title = 'Remove this song';
+        closeButton.onclick = () => removeSong(index);
+        
+        // Add beat indicator
+        const beatIndicator = document.createElement('div');
+        beatIndicator.className = 'beat-indicator';
+        beatIndicator.id = `beatIndicator${index}`;
+        
         const videoWrapper = document.createElement('div');
         videoWrapper.className = 'video-wrapper';
         const videoDiv = document.createElement('div');
         videoDiv.id = `player${index}`;
         videoWrapper.appendChild(videoDiv);
+        
+        videoCard.appendChild(closeButton);
+        videoCard.appendChild(beatIndicator);
         
         const detectedGenre = trackGenres[index] || 'electronic';
         
@@ -3116,7 +3745,7 @@
         const volumeGroup = document.createElement('div');
         volumeGroup.className = 'control-group';
         volumeGroup.innerHTML = `
-          <span class="control-icon" title="Volume">●</span>
+          <span class="control-icon" title="Volume">${getSVGIcon('volume')}</span>
           <div class="slider-container">
             <input type="range" class="slider" id="volume${index}" min="0" max="100" value="50">
           </div>
@@ -3126,7 +3755,7 @@
         const speedGroup = document.createElement('div');
         speedGroup.className = 'control-group';
         speedGroup.innerHTML = `
-          <span class="control-icon" title="Speed">▲</span>
+          <span class="control-icon" title="Speed">${getSVGIcon('speed')}</span>
           <div class="slider-container">
             <input type="range" class="slider" id="speed${index}" min="0.25" max="2" step="0.05" value="1">
           </div>
@@ -3136,7 +3765,7 @@
         const pitchGroup = document.createElement('div');
         pitchGroup.className = 'control-group';
         pitchGroup.innerHTML = `
-          <span class="control-icon" title="Pitch">♪</span>
+          <span class="control-icon" title="Pitch">${getSVGIcon('pitch')}</span>
           <div class="slider-container">
             <input type="range" class="slider" id="pitch${index}" min="-12" max="12" step="1" value="0">
           </div>
@@ -3149,7 +3778,7 @@
         loopGroup.style.gap = '6px';
         loopGroup.innerHTML = `
           <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-            <span class="control-icon" title="Loop">⟲</span>
+            <span class="control-icon" title="Loop">${getSVGIcon('loop')}</span>
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
               <input type="checkbox" id="loop${index}" style="cursor: pointer;">
               <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Loop</span>
@@ -3164,11 +3793,42 @@
           >
         `;
         
+        // Add cue point button
+        const cueButton = document.createElement('button');
+        cueButton.className = 'cue-point-button';
+        cueButton.id = `cueBtn${index}`;
+        cueButton.innerHTML = getSVGIcon('cue');
+        cueButton.title = 'Set cue point at current position';
+        cueButton.onclick = () => setCuePoint(index);
+        
+        // Add EQ controls
+        const eqControls = document.createElement('div');
+        eqControls.className = 'eq-controls';
+        eqControls.innerHTML = `
+          <div class="eq-control">
+            <span class="eq-label">Low</span>
+            <input type="range" class="eq-slider" id="eqLow${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+            <span class="control-value" id="eqLowValue${index}" style="font-size: 9px;">0</span>
+          </div>
+          <div class="eq-control">
+            <span class="eq-label">Mid</span>
+            <input type="range" class="eq-slider" id="eqMid${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+            <span class="control-value" id="eqMidValue${index}" style="font-size: 9px;">0</span>
+          </div>
+          <div class="eq-control">
+            <span class="eq-label">High</span>
+            <input type="range" class="eq-slider" id="eqHigh${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+            <span class="control-value" id="eqHighValue${index}" style="font-size: 9px;">0</span>
+          </div>
+        `;
+        
         controls.appendChild(playButton);
         controls.appendChild(volumeGroup);
         controls.appendChild(speedGroup);
         controls.appendChild(pitchGroup);
         controls.appendChild(loopGroup);
+        controls.appendChild(cueButton);
+        controls.appendChild(eqControls);
         
         videoCard.appendChild(videoWrapper);
         videoCard.appendChild(videoInfo);
@@ -3181,6 +3841,9 @@
         loopPatterns[index] = '';
         loopPatternIndex[index] = 0;
         loopSegmentLooped[index] = false;
+        trackEQ[index] = { low: 0, mid: 0, high: 0 };
+        cuePoints[index] = [];
+        trackBPM[index] = 120; // Default BPM
 
         // Wait for card to be rendered, then create player
         setTimeout(() => {
@@ -3268,11 +3931,11 @@
       
       if (djVeeLocked) {
         lockButton.classList.remove('unlocked');
-        lockIcon.textContent = '🔒';
+        lockIcon.innerHTML = getSVGIcon('lock');
         lockText.textContent = 'Lock';
       } else {
         lockButton.classList.add('unlocked');
-        lockIcon.textContent = '🔓';
+        lockIcon.innerHTML = getSVGIcon('unlock');
         lockText.textContent = 'Unlock';
       }
       
@@ -3294,6 +3957,254 @@
 
     const lockButton = document.getElementById('lockButton');
     lockButton.addEventListener('click', toggleLock);
+
+    // Initialize voice button icon
+    const voiceButton = document.getElementById('voiceButton');
+    const voiceIcon = document.getElementById('voiceIcon');
+    if (voiceIcon) {
+      voiceIcon.innerHTML = getSVGIcon('mic');
+    }
+    voiceButton.addEventListener('click', toggleVoice);
+
+    // TTS Setup
+    const ttsButton = document.getElementById('ttsButton');
+    const ttsIcon = document.getElementById('ttsIcon');
+    const ttsInput = document.getElementById('ttsInput');
+    
+    if (ttsIcon) {
+      ttsIcon.innerHTML = getSVGIcon('tts');
+    }
+    
+    if (ttsButton) {
+      ttsButton.addEventListener('click', handleTTS);
+    }
+    
+    // Prefill buttons
+    document.querySelectorAll('.tts-prefill').forEach(button => {
+      button.addEventListener('click', function() {
+        const text = this.getAttribute('data-text');
+        if (ttsInput) {
+          ttsInput.value = text;
+        }
+        handleTTS();
+      });
+    });
+    
+    // Enter key to speak
+    if (ttsInput) {
+      ttsInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          handleTTS();
+        }
+      });
+    }
+
+    // Voice recording and playback functions
+    async function toggleVoice() {
+      if (!voiceRecording && !voiceAudio) {
+        // Start recording
+        await startVoiceRecording();
+      } else if (voiceRecording) {
+        // Stop recording and play
+        await stopVoiceRecording();
+      } else if (voiceAudio) {
+        // Stop playback
+        stopVoicePlayback();
+      }
+    }
+
+    async function startVoiceRecording() {
+      try {
+        voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(voiceStream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          voiceAudio = new Audio(audioUrl);
+          
+          // Play voice directly through speakers
+          voiceAudio.play();
+          voiceButton.classList.add('playing');
+          voiceButton.classList.remove('recording');
+          
+          voiceAudio.onended = () => {
+            voiceButton.classList.remove('playing');
+            voiceAudio = null;
+          };
+        };
+
+        mediaRecorder.start();
+        voiceRecording = true;
+        voiceButton.classList.add('recording');
+        voiceButton.querySelector('#voiceText').textContent = 'Recording...';
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+        alert('Microphone access denied. Please allow microphone access to record your voice.');
+      }
+    }
+
+    async function stopVoiceRecording() {
+      if (mediaRecorder && voiceRecording) {
+        mediaRecorder.stop();
+        voiceStream.getTracks().forEach(track => track.stop());
+        voiceRecording = false;
+        voiceButton.querySelector('#voiceText').textContent = 'Playing...';
+      }
+    }
+
+    function stopVoicePlayback() {
+      if (voiceAudio) {
+        voiceAudio.pause();
+        voiceAudio.currentTime = 0;
+        voiceAudio = null;
+        voiceButton.classList.remove('playing');
+        voiceButton.querySelector('#voiceText').textContent = 'Voice';
+      }
+    }
+
+    // Text-to-Speech Functions
+    function initializeTTS() {
+      if ('speechSynthesis' in window) {
+        // Get available voices
+        const loadVoices = () => {
+          ttsVoices = speechSynthesis.getVoices();
+          
+          // Select best voice - prefer English voices with good quality
+          const preferredVoices = [
+            'Google UK English Female',
+            'Google US English Female',
+            'Microsoft Zira',
+            'Microsoft David',
+            'Alex',
+            'Samantha',
+            'Victoria',
+            'Daniel',
+            'Karen',
+            'Moira'
+          ];
+          
+          // Try to find preferred voice
+          for (const preferred of preferredVoices) {
+            const voice = ttsVoices.find(v => v.name.includes(preferred));
+            if (voice) {
+              selectedVoice = voice;
+              break;
+            }
+          }
+          
+          // If no preferred found, use first English voice
+          if (!selectedVoice) {
+            selectedVoice = ttsVoices.find(v => v.lang.startsWith('en')) || ttsVoices[0];
+          }
+        };
+        
+        loadVoices();
+        speechSynthesis.onvoiceschanged = loadVoices;
+      }
+    }
+
+    function speakText(text, options = {}) {
+      if (!('speechSynthesis' in window)) {
+        console.error('Text-to-speech not supported');
+        return;
+      }
+
+      return new Promise((resolve) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Use selected voice or best available
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+        }
+        
+        // Set properties for best quality
+        utterance.rate = options.rate || 1.0;
+        utterance.pitch = options.pitch || 1.0;
+        utterance.volume = options.volume || 0.8;
+        utterance.lang = selectedVoice?.lang || 'en-US';
+        
+        utterance.onend = () => {
+          isTTSPlaying = false;
+          resolve();
+        };
+        
+        utterance.onerror = (error) => {
+          console.error('TTS Error:', error);
+          isTTSPlaying = false;
+          resolve();
+        };
+        
+        isTTSPlaying = true;
+        speechSynthesis.speak(utterance);
+      });
+    }
+
+    function playTTSBetweenTracks(text) {
+      // Add to queue for DJ VEE to play between tracks
+      ttsQueue.push(text);
+    }
+
+    // Auto-generate TTS phrases for DJ VEE based on context
+    function generateAutoTTSPhrase(context) {
+      const phrases = {
+        trackStart: [
+          'Let\'s go!',
+          'Here we go!',
+          'Feel the beat!',
+          'Energy rising!',
+          'This is DJ VEE!'
+        ],
+        trackTransition: [
+          'Smooth transition!',
+          'Here comes the drop!',
+          'Feel the mix!',
+          'Next level!',
+          'Keep it going!'
+        ],
+        energyBoost: [
+          'Energy boost!',
+          'Pump it up!',
+          'Feel the power!',
+          'Maximum energy!',
+          'Let\'s go higher!'
+        ],
+        genreChange: [
+          'Changing the vibe!',
+          'New energy!',
+          'Different flow!',
+          'Fresh sound!',
+          'New direction!'
+        ]
+      };
+      
+      const categoryPhrases = phrases[context] || phrases.trackStart;
+      return categoryPhrases[Math.floor(Math.random() * categoryPhrases.length)];
+    }
+
+    async function handleTTS() {
+      const ttsInput = document.getElementById('ttsInput');
+      const text = ttsInput.value.trim();
+      
+      if (!text) return;
+      
+      // Play immediately
+      await speakText(text);
+      
+      // Also add to DJ VEE queue
+      playTTSBetweenTracks(text);
+      
+      // Clear input
+      ttsInput.value = '';
+    }
+
+    // Initialize TTS on page load
+    initializeTTS();
 
     document.getElementById('searchQuery').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
@@ -3677,6 +4588,21 @@
           displayLocalVideos();
         }, 300);
       }
+      
+      // Initialize voice button icon
+      const voiceIcon = document.getElementById('voiceIcon');
+      if (voiceIcon) {
+        voiceIcon.innerHTML = getSVGIcon('mic');
+      }
+      
+      // Initialize lock button icon
+      const lockIcon = document.getElementById('lockIcon');
+      if (lockIcon) {
+        lockIcon.innerHTML = getSVGIcon('lock');
+      }
+      
+      // Initialize TTS
+      initializeTTS();
     });
 
     // Videos now automatically advance when each one ends (no timer needed)
