@@ -1237,6 +1237,10 @@
       <button id="playAllButton" style="margin-left: 10px; display: none;" title="Play all tracks together">▶ All</button>
       <button id="shiftButton" style="margin-left: 10px; display: none;" title="Shift to next track">⇄ Shift</button>
       <button id="beatDropButton" style="margin-left: 10px; display: none;">Beat Drop</button>
+      <button id="voiceButton" style="margin-left: 10px; display: none;" title="Record and play your voice">
+        <span id="voiceIcon"></span>
+        <span id="voiceText" style="margin-left: 5px;">Voice</span>
+      </button>
     </div>
 
     <div class="tts-section" id="ttsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
@@ -2113,6 +2117,8 @@
         document.getElementById('playAllButton').style.display = 'block';
         document.getElementById('shiftButton').style.display = 'block';
         document.getElementById('beatDropButton').style.display = 'block';
+        const voiceButton = document.getElementById('voiceButton');
+        if (voiceButton) voiceButton.style.display = 'block';
         document.getElementById('addMoreSection').style.display = 'block';
         document.getElementById('ttsSection').style.display = 'block';
         document.getElementById('soundEffectsSection').style.display = 'block';
@@ -2465,7 +2471,7 @@
         playButton.classList.remove('playing');
         videoCard.classList.remove('playing');
         if (currentPlayingIndex === index) {
-          currentPlayingIndex = -1;
+        currentPlayingIndex = -1;
         }
       } else {
         player.playVideo();
@@ -4721,13 +4727,15 @@
       shiftButton.addEventListener('click', shiftToNext);
     }
 
-    // Initialize voice button icon
+    // Initialize voice button icon (if it exists)
     const voiceButton = document.getElementById('voiceButton');
-    const voiceIcon = document.getElementById('voiceIcon');
-    if (voiceIcon) {
-      voiceIcon.innerHTML = getSVGIcon('mic');
+    if (voiceButton) {
+      const voiceIcon = document.getElementById('voiceIcon');
+      if (voiceIcon) {
+        voiceIcon.innerHTML = getSVGIcon('mic');
+      }
+      voiceButton.addEventListener('click', toggleVoice);
     }
-    voiceButton.addEventListener('click', toggleVoice);
 
     // TTS Setup
     const ttsButton = document.getElementById('ttsButton');
@@ -4858,41 +4866,78 @@
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (event) => {
-          audioChunks.push(event.data);
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
         };
 
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          if (audioChunks.length === 0) {
+            console.error('No audio data recorded');
+            return;
+          }
+          
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
           const audioUrl = URL.createObjectURL(audioBlob);
           voiceAudio = new Audio(audioUrl);
           
           // Play voice directly through speakers
-          voiceAudio.play();
-          voiceButton.classList.add('playing');
-          voiceButton.classList.remove('recording');
+          try {
+            await voiceAudio.play();
+            const voiceButton = document.getElementById('voiceButton');
+            if (voiceButton) {
+              voiceButton.classList.add('playing');
+              voiceButton.classList.remove('recording');
+              const voiceText = voiceButton.querySelector('#voiceText');
+              if (voiceText) voiceText.textContent = 'Playing...';
+            }
+          } catch (playError) {
+            console.error('Error playing audio:', playError);
+            alert('Error playing recorded audio. Please try again.');
+          }
           
           voiceAudio.onended = () => {
-            voiceButton.classList.remove('playing');
+            const voiceButton = document.getElementById('voiceButton');
+            if (voiceButton) {
+              voiceButton.classList.remove('playing');
+              const voiceText = voiceButton.querySelector('#voiceText');
+              if (voiceText) voiceText.textContent = 'Voice';
+            }
             voiceAudio = null;
           };
         };
 
         mediaRecorder.start();
         voiceRecording = true;
-        voiceButton.classList.add('recording');
-        voiceButton.querySelector('#voiceText').textContent = 'Recording...';
+        const voiceButton = document.getElementById('voiceButton');
+        if (voiceButton) {
+          voiceButton.classList.add('recording');
+          const voiceText = voiceButton.querySelector('#voiceText');
+          if (voiceText) voiceText.textContent = 'Recording...';
+        }
       } catch (error) {
         console.error('Error accessing microphone:', error);
         alert('Microphone access denied. Please allow microphone access to record your voice.');
+        voiceRecording = false;
       }
     }
 
     async function stopVoiceRecording() {
       if (mediaRecorder && voiceRecording) {
-        mediaRecorder.stop();
-        voiceStream.getTracks().forEach(track => track.stop());
-        voiceRecording = false;
-        voiceButton.querySelector('#voiceText').textContent = 'Playing...';
+        try {
+          mediaRecorder.stop();
+          if (voiceStream) {
+            voiceStream.getTracks().forEach(track => track.stop());
+          }
+          voiceRecording = false;
+          const voiceButton = document.getElementById('voiceButton');
+          if (voiceButton) {
+            const voiceText = voiceButton.querySelector('#voiceText');
+            if (voiceText) voiceText.textContent = 'Processing...';
+          }
+        } catch (error) {
+          console.error('Error stopping recording:', error);
+        }
       }
     }
 
@@ -4901,8 +4946,12 @@
         voiceAudio.pause();
         voiceAudio.currentTime = 0;
         voiceAudio = null;
-        voiceButton.classList.remove('playing');
-        voiceButton.querySelector('#voiceText').textContent = 'Voice';
+        const voiceButton = document.getElementById('voiceButton');
+        if (voiceButton) {
+          voiceButton.classList.remove('playing');
+          const voiceText = voiceButton.querySelector('#voiceText');
+          if (voiceText) voiceText.textContent = 'Voice';
+        }
       }
     }
 
@@ -4962,11 +5011,22 @@
     function speakText(text, options = {}) {
       if (!('speechSynthesis' in window)) {
         console.error('Text-to-speech not supported');
-        return;
+        alert('Text-to-speech is not supported in your browser.');
+        return Promise.resolve();
+      }
+
+      // Cancel any ongoing speech
+      if (isTTSPlaying) {
+        speechSynthesis.cancel();
       }
 
       return new Promise((resolve) => {
-        const utterance = new SpeechSynthesisUtterance(text);
+        if (!text || text.trim() === '') {
+          resolve();
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text.trim());
         
         // Use selected voice or best available
         if (selectedVoice) {
@@ -5000,6 +5060,10 @@
           }
         }
         
+        utterance.onstart = () => {
+          isTTSPlaying = true;
+        };
+        
         utterance.onend = () => {
           isTTSPlaying = false;
           resolve();
@@ -5011,8 +5075,14 @@
           resolve();
         };
         
-        isTTSPlaying = true;
-        speechSynthesis.speak(utterance);
+        try {
+          speechSynthesis.speak(utterance);
+        } catch (error) {
+          console.error('Error starting speech synthesis:', error);
+          alert('Error starting text-to-speech. Please try again.');
+          isTTSPlaying = false;
+          resolve();
+        }
       });
     }
 
@@ -5069,22 +5139,42 @@
 
     async function handleTTS() {
       const ttsInput = document.getElementById('ttsInput');
+      if (!ttsInput) {
+        console.error('TTS input not found');
+        return;
+      }
+      
       const text = ttsInput.value.trim();
       
-      if (!text) return;
+      if (!text) {
+        alert('Please enter text to speak');
+        return;
+      }
       
-      // Play immediately - LOUD and MELODIOUS
-      await speakText(text, {
-        volume: 1.0,  // MAXIMUM volume - LOUD
-        rate: 0.92,  // Slower for more melodic, musical effect
-        pitch: 1.2   // Higher pitch (1.2) for energetic, melodious DJ voice
-      });
+      // Initialize TTS if not already done
+      if (ttsVoices.length === 0) {
+        initializeTTS();
+        // Wait a bit for voices to load
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
       
-      // Also add to DJ VEEX20 queue
-      playTTSBetweenTracks(text);
-      
-      // Clear input
-      ttsInput.value = '';
+      try {
+        // Play immediately - LOUD and MELODIOUS
+        await speakText(text, {
+          volume: 1.0,  // MAXIMUM volume - LOUD
+          rate: 0.92,  // Slower for more melodic, musical effect
+          pitch: 1.2   // Higher pitch (1.2) for energetic, melodious DJ voice
+        });
+        
+        // Also add to DJ VEEX20 queue
+        playTTSBetweenTracks(text);
+        
+        // Clear input
+        ttsInput.value = '';
+      } catch (error) {
+        console.error('Error in handleTTS:', error);
+        alert('Error speaking text. Please try again.');
+      }
     }
 
     // Initialize TTS on page load
