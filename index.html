@@ -196,6 +196,9 @@
     .copilot-section {
       flex-shrink: 0;
       margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
 
     #copilotButton {
@@ -222,6 +225,91 @@
       background: #ffffff;
       color: #000000;
       border-color: #ffffff;
+    }
+
+    #beatDropButton {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px; /* iOS touch target size */
+    }
+
+    #beatDropButton:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #beatDropButton.active {
+      background: linear-gradient(135deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%);
+      color: #ffffff;
+      border-color: transparent;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 0, 110, 0.7);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px 5px rgba(255, 0, 110, 0.4);
+      }
+    }
+
+    #lockButton {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #lockButton:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #lockButton.unlocked {
+      background: linear-gradient(135deg, #06ffa5 0%, #3a86ff 100%);
+      border-color: transparent;
+      animation: pulse 2s ease infinite;
+    }
+
+    #lockButton.unlocked #lockText::after {
+      content: " - JAM with DJ VEE";
+    }
+
+    .add-more-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #addMoreQuery::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    #addMoreQuery:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     #results {
@@ -635,11 +723,40 @@
 
       .copilot-section {
         margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
       #copilotButton {
         width: 100%;
         padding: 12px;
+      }
+
+      #beatDropButton {
+        width: 100%;
+        padding: 12px;
+        margin-left: 0 !important;
+      }
+
+      #lockButton {
+        width: 100%;
+        padding: 12px;
+        margin-left: 0 !important;
+      }
+
+      .add-more-section {
+        margin-top: 16px;
+        padding-top: 16px;
+      }
+
+      #addMoreForm {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #addMoreButton {
+        width: 100%;
       }
     }
 
@@ -703,9 +820,27 @@
 
     <div class="copilot-section">
       <button id="copilotButton">DJ VEE</button>
+      <button id="beatDropButton" style="margin-left: 10px;">Beat Drop Mix</button>
+      <button id="lockButton" style="margin-left: 10px; display: none;" title="Lock/Unlock DJ VEE for manual mixing">
+        <span id="lockIcon">🔒</span>
+        <span id="lockText" style="margin-left: 5px;">Lock</span>
+      </button>
     </div>
 
   <div id="results"></div>
+
+  <div class="add-more-section" id="addMoreSection" style="display: none;">
+    <form id="addMoreForm" style="display: flex; gap: 10px; align-items: center;">
+      <input 
+        type="text" 
+        id="addMoreQuery" 
+        placeholder="Search more songs to add..."
+        autocomplete="off"
+        style="flex: 1; padding: 10px 14px; font-size: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #ffffff; outline: none;"
+      >
+      <button type="submit" id="addMoreButton" style="padding: 10px 20px; font-size: 20px; font-weight: 600; background: #ffffff; border: none; border-radius: 8px; color: #000000; cursor: pointer; min-width: 50px; min-height: 44px;">+</button>
+    </form>
+  </div>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -715,6 +850,9 @@
     let ytApiReady = false;
     let copilotActive = false;
     let copilotInterval = null;
+    let beatDropActive = false;
+    let beatDropInterval = null;
+    let djVeeLocked = true; // Lock state for DJ VEE (locked = no manual mixing, unlocked = allow manual mixing)
     let currentPlayingIndex = -1;
     let trackHistory = [];
     let trackPlayCount = {};
@@ -731,6 +869,9 @@
     let loopIntervals = {}; // Store loop interval IDs
     let loopStartTimes = {}; // Store loop start times
     let loopEndTimes = {}; // Store loop end times
+    let loopPatterns = {}; // Store loop patterns for each player (e.g., "x xx xxx")
+    let loopPatternIndex = {}; // Current position in pattern
+    let loopSegmentLooped = {}; // Track if current segment has looped back
     let trackPitch = {}; // Track pitch offset for each player (in semitones)
     let trackGenres = {}; // Track genre for each player
     let genreProfiles = {}; // Genre-specific mixing profiles
@@ -984,6 +1125,7 @@
           </div>
         `;
         document.getElementById('copilotButton').style.display = 'none';
+        document.getElementById('beatDropButton').style.display = 'none';
         return;
       }
 
@@ -1000,6 +1142,9 @@
       loopIntervals = {};
       loopStartTimes = {};
       loopEndTimes = {};
+      loopPatterns = {};
+      loopPatternIndex = {};
+      loopSegmentLooped = {};
       trackPitch = {};
       trackGenres = {};
       
@@ -1078,13 +1223,23 @@
         
         const loopGroup = document.createElement('div');
         loopGroup.className = 'control-group';
-        loopGroup.style.justifyContent = 'space-between';
+        loopGroup.style.flexDirection = 'column';
+        loopGroup.style.gap = '6px';
         loopGroup.innerHTML = `
-          <span class="control-icon" title="Loop">⟲</span>
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
-            <input type="checkbox" id="loop${index}" style="cursor: pointer;">
-            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Loop</span>
-          </label>
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <span class="control-icon" title="Loop">⟲</span>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+              <input type="checkbox" id="loop${index}" style="cursor: pointer;">
+              <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Loop</span>
+            </label>
+          </div>
+          <input 
+            type="text" 
+            id="loopPattern${index}" 
+            placeholder="x xx xxx xxxxxx" 
+            style="width: 100%; padding: 4px 8px; font-size: 11px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #ffffff; outline: none; font-family: monospace;"
+            title="Loop pattern: each 'x' = 1 second, spaces separate segments"
+          >
         `;
         
         controls.appendChild(playButton);
@@ -1210,6 +1365,8 @@
                     if (pitchSlider) pitchSlider.disabled = true;
                     const loopCheckbox = document.getElementById(`loop${index}`);
                     if (loopCheckbox) loopCheckbox.disabled = true;
+                    const loopPatternInput = document.getElementById(`loopPattern${index}`);
+                    if (loopPatternInput) loopPatternInput.disabled = true;
                   }
                 }
               });
@@ -1225,6 +1382,8 @@
 
       if (limitedItems.length > 0) {
         document.getElementById('copilotButton').style.display = 'block';
+        document.getElementById('beatDropButton').style.display = 'block';
+        document.getElementById('addMoreSection').style.display = 'block';
       }
       
       // Reset auto-play state
@@ -1325,6 +1484,9 @@
       // Initialize loop state
       trackLoops[index] = false;
       trackPitch[index] = 0;
+      loopPatterns[index] = ''; // Default: no pattern (use default loop)
+      loopPatternIndex[index] = 0;
+      loopSegmentLooped[index] = false;
 
       const volumeSlider = document.getElementById(`volume${index}`);
       const volumeValue = document.getElementById(`volumeValue${index}`);
@@ -1375,12 +1537,30 @@
             }
             
             const pitchSemitones = parseInt(this.value);
+            
+            // Update stored pitch value
             trackPitch[index] = pitchSemitones;
+            
+            // Get base speed from slider (this is the speed without pitch adjustment)
+            const baseSpeed = parseFloat(speedSlider.value) || 1.0;
             
             // Calculate pitch multiplier (2^(semitones/12))
             const pitchMultiplier = Math.pow(2, pitchSemitones / 12);
-            const currentSpeed = parseFloat(speedSlider.value);
-            player.setPlaybackRate(currentSpeed * pitchMultiplier);
+            
+            // Apply pitch to base speed
+            const newPlaybackRate = baseSpeed * pitchMultiplier;
+            
+            // Clamp to YouTube's supported range (0.25 to 2.0)
+            const clampedRate = Math.max(0.25, Math.min(2.0, newPlaybackRate));
+            
+            // Apply the new playback rate to the player
+            try {
+              if (player && typeof player.setPlaybackRate === 'function') {
+                player.setPlaybackRate(clampedRate);
+              }
+            } catch (e) {
+              console.error('Error setting playback rate for pitch:', e);
+            }
             
             // Display pitch
             if (pitchSemitones === 0) {
@@ -1413,10 +1593,35 @@
           }
         });
       }
+
+      const loopPatternInput = document.getElementById(`loopPattern${index}`);
+      if (loopPatternInput) {
+        loopPatternInput.addEventListener('input', function() {
+          if (!this.disabled) {
+            // User interaction - stop auto-play
+            if (autoPlayActive && !userInteracted) {
+              userInteracted = true;
+              autoPlayActive = false;
+            }
+            
+            const pattern = this.value.trim();
+            loopPatterns[index] = pattern;
+            loopPatternIndex[index] = 0; // Reset pattern position
+            loopSegmentLooped[index] = false; // Reset loop tracking
+            
+            // If loop is active, restart with new pattern
+            if (trackLoops[index]) {
+              stopLoop(index);
+              setTimeout(() => startLoop(index), 100);
+            }
+          }
+        });
+      }
     }
 
     function togglePlay(index) {
-      if (copilotActive) return; // Don't allow manual play when copilot is active
+      // Allow manual play when DJ VEE is active but unlocked (JAM mode)
+      if (copilotActive && djVeeLocked) return; // Don't allow manual play when copilot is active and locked
       
       // User has interacted - stop auto-play
       if (autoPlayActive && !userInteracted) {
@@ -2277,6 +2482,18 @@
       if (speedValue) speedValue.textContent = speed.toFixed(2) + 'x';
     }
 
+    // Parse loop pattern into segments (e.g., "x xx xxx" -> [1, 2, 3])
+    function parseLoopPattern(pattern) {
+      if (!pattern || !pattern.trim()) return null;
+      
+      const segments = pattern.trim().split(/\s+/).filter(s => s.length > 0);
+      return segments.map(segment => {
+        // Count 'x' characters (case insensitive, also count 'X')
+        const xCount = (segment.match(/x/gi) || []).length;
+        return xCount > 0 ? xCount : 1; // Default to 1 if no 'x' found
+      });
+    }
+
     function startLoop(index) {
       const player = players[index];
       if (!player) return;
@@ -2287,34 +2504,97 @@
       const currentTime = player.getCurrentTime();
       const duration = player.getDuration();
       
-      // Set loop points (default: loop from current position to end, or last 30 seconds)
-      if (!loopStartTimes[index]) {
-        loopStartTimes[index] = Math.max(0, currentTime - 5); // Start 5 seconds before current
-      }
-      if (!loopEndTimes[index]) {
-        loopEndTimes[index] = Math.min(duration, currentTime + 30); // Loop 30 seconds or to end
-      }
+      // Check if pattern-based looping is enabled
+      const pattern = loopPatterns[index] || '';
+      const patternSegments = parseLoopPattern(pattern);
       
-      const startTime = loopStartTimes[index];
-      const endTime = loopEndTimes[index];
-      
-      // Check if we're near the end of the loop
-      const checkLoop = () => {
-        if (!trackLoops[index] || !player) return;
-        
-        try {
-          const current = player.getCurrentTime();
-          if (current >= endTime - 0.5) {
-            // Jump back to start of loop
-            player.seekTo(startTime, true);
-          }
-        } catch (e) {
-          console.error('Loop check error:', e);
+      if (patternSegments && patternSegments.length > 0) {
+        // Pattern-based looping
+        const segmentLengths = patternSegments; // Each number represents seconds
+        let currentSegmentIndex = loopPatternIndex[index] || 0;
+        if (currentSegmentIndex >= segmentLengths.length) {
+          currentSegmentIndex = 0;
+          loopPatternIndex[index] = 0;
         }
-      };
-      
-      // Check every 100ms
-      loopIntervals[index] = setInterval(checkLoop, 100);
+        
+        // Calculate loop points based on current pattern segment
+        const segmentLength = segmentLengths[currentSegmentIndex];
+        const startTime = Math.max(0, currentTime);
+        const endTime = Math.min(duration, startTime + segmentLength);
+        
+        loopStartTimes[index] = startTime;
+        loopEndTimes[index] = endTime;
+        loopSegmentLooped[index] = false; // Reset loop tracking for new segment
+        
+        // Check if we're near the end of the current segment
+        const checkPatternLoop = () => {
+          if (!trackLoops[index] || !player) return;
+          
+          try {
+            const current = player.getCurrentTime();
+            const currentStartTime = loopStartTimes[index];
+            const currentEndTime = loopEndTimes[index];
+            
+            if (current >= currentEndTime - 0.3) {
+              if (!loopSegmentLooped[index]) {
+                // First time reaching end: jump back to start of current segment
+                player.seekTo(currentStartTime, true);
+                loopSegmentLooped[index] = true;
+              } else {
+                // Already looped back once, now move to next segment
+                let nextSegmentIndex = (currentSegmentIndex + 1) % segmentLengths.length;
+                loopPatternIndex[index] = nextSegmentIndex;
+                loopSegmentLooped[index] = false; // Reset for new segment
+                
+                // Calculate new loop segment starting from current position
+                const newSegmentLength = segmentLengths[nextSegmentIndex];
+                const newCurrentTime = player.getCurrentTime();
+                const newStartTime = Math.max(0, newCurrentTime);
+                const newEndTime = Math.min(duration, newStartTime + newSegmentLength);
+                
+                loopStartTimes[index] = newStartTime;
+                loopEndTimes[index] = newEndTime;
+              }
+            }
+          } catch (e) {
+            console.error('Pattern loop check error:', e);
+          }
+        };
+        
+        // Check every 100ms
+        loopIntervals[index] = setInterval(checkPatternLoop, 100);
+      } else {
+        // Default looping behavior - continuous repeat from start to end
+        // If loop points are manually set, use them; otherwise loop entire track
+        if (!loopStartTimes[index]) {
+          loopStartTimes[index] = 0; // Start from beginning
+        }
+        if (!loopEndTimes[index]) {
+          loopEndTimes[index] = duration; // Loop to end
+        }
+        
+        const startTime = loopStartTimes[index];
+        const endTime = loopEndTimes[index];
+        
+        // Check if we're near the end of the loop - jump back to start continuously
+        const checkLoop = () => {
+          if (!trackLoops[index] || !player) return;
+          
+          try {
+            const current = player.getCurrentTime();
+            // Check if we're at or past the end time (with small buffer)
+            if (current >= endTime - 0.3 || current >= duration - 0.3) {
+              // Jump back to start of loop - repeat again and again
+              player.seekTo(startTime, true);
+            }
+          } catch (e) {
+            console.error('Loop check error:', e);
+          }
+        };
+        
+        // Check every 100ms for smooth looping
+        loopIntervals[index] = setInterval(checkLoop, 100);
+      }
     }
 
     function stopLoop(index) {
@@ -2382,43 +2662,197 @@
     }
 
 
+    function beatDropMix() {
+      if (players.length < 2) return;
+      
+      // Find currently playing track
+      const playingTracks = [];
+      players.forEach((player, index) => {
+        if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
+          playingTracks.push(index);
+        }
+      });
+      
+      if (playingTracks.length === 0) {
+        // No track playing, start first one
+        if (players[0]) {
+          players[0].playVideo();
+          players[0].setVolume(70);
+          return;
+        }
+      }
+      
+      // Get current playing track
+      const currentIndex = playingTracks[0] || currentPlayingIndex;
+      if (currentIndex === -1 || !players[currentIndex]) return;
+      
+      // Find next track to mix in
+      const nextIndex = (currentIndex + 1) % players.length;
+      const currentPlayer = players[currentIndex];
+      const nextPlayer = players[nextIndex];
+      
+      if (!currentPlayer || !nextPlayer) return;
+      
+      // Get current track info
+      const currentVolume = currentPlayer.getVolume();
+      const currentSpeed = currentPlayer.getPlaybackRate();
+      const currentPitch = trackPitch[currentIndex] || 0;
+      
+      // Prepare next track - match tempo and pitch for seamless transition
+      const nextPitch = trackPitch[nextIndex] || 0;
+      const pitchMultiplier = Math.pow(2, nextPitch / 12);
+      nextPlayer.setPlaybackRate(currentSpeed * pitchMultiplier);
+      nextPlayer.setVolume(0);
+      
+      // Update UI for next track
+      const nextSpeedSlider = document.getElementById(`speed${nextIndex}`);
+      const nextPitchSlider = document.getElementById(`pitch${nextIndex}`);
+      if (nextSpeedSlider) nextSpeedSlider.value = currentSpeed;
+      if (nextPitchSlider) nextPitchSlider.value = nextPitch;
+      
+      // Start next track
+      nextPlayer.playVideo();
+      
+      // Seamless crossfade - smooth volume transition
+      const fadeDuration = 2000; // 2 seconds for smooth transition
+      const steps = 40;
+      const stepDuration = fadeDuration / steps;
+      let step = 0;
+      
+      const crossfadeInterval = setInterval(() => {
+        step++;
+        const progress = step / steps;
+        
+        // Smooth easing curve
+        const easeProgress = progress < 0.5 
+          ? 2 * progress * progress 
+          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        
+        // Fade out current track
+        const newCurrentVolume = currentVolume * (1 - easeProgress);
+        currentPlayer.setVolume(Math.max(0, newCurrentVolume));
+        
+        // Fade in next track
+        const newNextVolume = 70 * easeProgress;
+        nextPlayer.setVolume(newNextVolume);
+        
+        if (step >= steps) {
+          clearInterval(crossfadeInterval);
+          // Complete the transition
+          currentPlayer.pauseVideo();
+          nextPlayer.setVolume(70);
+          currentPlayingIndex = nextIndex;
+          
+          // Update play buttons
+          const currentPlayBtn = document.getElementById(`playBtn${currentIndex}`);
+          const nextPlayBtn = document.getElementById(`playBtn${nextIndex}`);
+          if (currentPlayBtn) {
+            currentPlayBtn.textContent = 'Play';
+            currentPlayBtn.classList.remove('playing');
+          }
+          if (nextPlayBtn) {
+            nextPlayBtn.textContent = 'Pause';
+            nextPlayBtn.classList.add('playing');
+          }
+          
+          // Update card states
+          const currentCard = document.getElementById(`card${currentIndex}`);
+          const nextCard = document.getElementById(`card${nextIndex}`);
+          if (currentCard) currentCard.classList.remove('playing');
+          if (nextCard) nextCard.classList.add('playing');
+        }
+      }, stepDuration);
+    }
+
+    function toggleBeatDropMix() {
+      beatDropActive = !beatDropActive;
+      const button = document.getElementById('beatDropButton');
+      
+      // Stop copilot if active
+      if (copilotActive) {
+        toggleCopilot();
+      }
+      
+      if (beatDropActive) {
+        button.classList.add('active');
+        button.textContent = 'Stop Beat Drop';
+        
+        // Start beat drop mixing
+        beatDropMix(); // Initial mix
+        
+        // Continue mixing every 8-12 seconds
+        beatDropInterval = setInterval(() => {
+          if (beatDropActive) {
+            beatDropMix();
+          }
+        }, 8000 + Math.random() * 4000); // Random interval between 8-12 seconds
+      } else {
+        button.classList.remove('active');
+        button.textContent = 'Beat Drop Mix';
+        
+        // Stop mixing
+        if (beatDropInterval) {
+          clearInterval(beatDropInterval);
+          beatDropInterval = null;
+        }
+      }
+    }
+
+    function updateControlsForLockState() {
+      players.forEach((player, index) => {
+        const card = document.getElementById(`card${index}`);
+        const playButton = document.getElementById(`playBtn${index}`);
+        const volumeSlider = document.getElementById(`volume${index}`);
+        const speedSlider = document.getElementById(`speed${index}`);
+        const pitchSlider = document.getElementById(`pitch${index}`);
+        const loopCheckbox = document.getElementById(`loop${index}`);
+        const loopPatternInput = document.getElementById(`loopPattern${index}`);
+        
+        if (djVeeLocked) {
+          // Locked: disable all manual controls
+          if (card) card.classList.add('disabled');
+          if (playButton) playButton.disabled = true;
+          if (volumeSlider) volumeSlider.disabled = true;
+          if (speedSlider) speedSlider.disabled = true;
+          if (pitchSlider) pitchSlider.disabled = true;
+          if (loopCheckbox) loopCheckbox.disabled = true;
+          if (loopPatternInput) loopPatternInput.disabled = true;
+        } else {
+          // Unlocked: enable controls for manual mixing (JAM mode)
+          if (card) card.classList.remove('disabled');
+          if (playButton) playButton.disabled = false;
+          if (volumeSlider) volumeSlider.disabled = false;
+          if (speedSlider) speedSlider.disabled = false;
+          if (pitchSlider) pitchSlider.disabled = false;
+          if (loopCheckbox) loopCheckbox.disabled = false;
+          if (loopPatternInput) loopPatternInput.disabled = false;
+        }
+      });
+    }
+
     function toggleCopilot() {
       copilotActive = !copilotActive;
       const button = document.getElementById('copilotButton');
       const body = document.body;
+      
+      // Stop beat drop mix if active
+      if (beatDropActive) {
+        toggleBeatDropMix();
+      }
       
       if (copilotActive) {
         button.classList.add('active');
         button.textContent = 'Stop DJ VEE';
         body.classList.add('copilot-active');
         
-        // Disable all controls
-        players.forEach((player, index) => {
-          const card = document.getElementById(`card${index}`);
-          if (card) {
-            card.classList.add('disabled');
-          }
-          const playButton = document.getElementById(`playBtn${index}`);
-          if (playButton) {
-            playButton.disabled = true;
-          }
-          const volumeSlider = document.getElementById(`volume${index}`);
-          if (volumeSlider) {
-            volumeSlider.disabled = true;
-          }
-          const speedSlider = document.getElementById(`speed${index}`);
-          if (speedSlider) {
-            speedSlider.disabled = true;
-          }
-          const pitchSlider = document.getElementById(`pitch${index}`);
-          if (pitchSlider) {
-            pitchSlider.disabled = true;
-          }
-          const loopCheckbox = document.getElementById(`loop${index}`);
-          if (loopCheckbox) {
-            loopCheckbox.disabled = true;
-          }
-        });
+        // Show lock button
+        const lockButton = document.getElementById('lockButton');
+        if (lockButton) {
+          lockButton.style.display = 'flex';
+        }
+        
+        // Update controls based on lock state
+        updateControlsForLockState();
         
         // Dynamic interval based on mix intensity
         const baseInterval = 6000 + (1 - mixIntensity) * 4000; // 6-10 seconds
@@ -2436,6 +2870,20 @@
         button.classList.remove('active');
         button.textContent = 'DJ VEE';
         body.classList.remove('copilot-active');
+        
+        // Hide lock button
+        const lockButton = document.getElementById('lockButton');
+        if (lockButton) {
+          lockButton.style.display = 'none';
+        }
+        
+        // Reset lock state
+        djVeeLocked = true;
+        const lockIcon = document.getElementById('lockIcon');
+        const lockText = document.getElementById('lockText');
+        if (lockIcon) lockIcon.textContent = '🔒';
+        if (lockText) lockText.textContent = 'Lock';
+        if (lockButton) lockButton.classList.remove('unlocked');
         
         // Stop all loops when copilot is disabled
         players.forEach((player, index) => {
@@ -2467,6 +2915,10 @@
           const loopCheckbox = document.getElementById(`loop${index}`);
           if (loopCheckbox) {
             loopCheckbox.disabled = false;
+          }
+          const loopPatternInput = document.getElementById(`loopPattern${index}`);
+          if (loopPatternInput) {
+            loopPatternInput.disabled = false;
           }
         });
         
@@ -2561,11 +3013,287 @@
       request.send();
     }
 
+    function handleAddMoreSubmit(event) {
+      event.preventDefault();
+      const searchQuery = document.getElementById('addMoreQuery').value.trim();
+      
+      if (!searchQuery) {
+        return;
+      }
+
+      // Stop beat drop mix if active
+      if (beatDropActive) {
+        toggleBeatDropMix();
+      }
+
+      const resultsDiv = document.getElementById('results');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'loading';
+      loadingDiv.textContent = 'Adding songs...';
+      resultsDiv.appendChild(loadingDiv);
+
+      const request = new XMLHttpRequest();
+      const apiKey = 'AIzaSyAEzhGEyJJgZpoN6ahBTvnZyr4g5FV5s9s';
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=4&q=${encodeURIComponent(searchQuery)}&key=${apiKey}&type=video`;
+
+      request.open('GET', url, true);
+
+      request.onload = function() {
+        if (request.status >= 200 && request.status < 400) {
+          const data = JSON.parse(request.responseText);
+          if (data.items && data.items.length > 0) {
+            // Remove loading indicator
+            loadingDiv.remove();
+            // Add new items to existing videoData
+            const newItems = data.items.slice(0, 4);
+            const startIndex = videoData.length;
+            videoData = videoData.concat(newItems);
+            
+            // Detect genres for new tracks
+            newItems.forEach((item, idx) => {
+              const index = startIndex + idx;
+              trackGenres[index] = detectGenre(item);
+            });
+            
+            // Create players for new items
+            createPlayersForItems(newItems, startIndex);
+            
+            // Clear the search input
+            document.getElementById('addMoreQuery').value = '';
+          } else {
+            loadingDiv.textContent = 'No additional results found.';
+            setTimeout(() => loadingDiv.remove(), 2000);
+          }
+        } else {
+          loadingDiv.textContent = 'Error fetching videos.';
+          setTimeout(() => loadingDiv.remove(), 2000);
+        }
+      };
+
+      request.onerror = function() {
+        loadingDiv.textContent = 'Network error.';
+        setTimeout(() => loadingDiv.remove(), 2000);
+      };
+
+      request.send();
+    }
+
+    function createPlayersForItems(items, startIndex) {
+      items.forEach((item, relativeIndex) => {
+        const index = startIndex + relativeIndex;
+        const resultsDiv = document.getElementById('results');
+        
+        const videoCard = document.createElement('div');
+        videoCard.className = 'video-card';
+        videoCard.id = `card${index}`;
+        videoCard.style.animationDelay = `${index * 0.1}s`;
+        
+        const videoWrapper = document.createElement('div');
+        videoWrapper.className = 'video-wrapper';
+        const videoDiv = document.createElement('div');
+        videoDiv.id = `player${index}`;
+        videoWrapper.appendChild(videoDiv);
+        
+        const detectedGenre = trackGenres[index] || 'electronic';
+        
+        const videoInfo = document.createElement('div');
+        videoInfo.className = 'video-info';
+        videoInfo.innerHTML = `
+          <div class="video-title">${item.snippet.title}</div>
+          <div class="video-channel">${item.snippet.channelTitle}</div>
+          <div class="video-genre" id="genre${index}">${detectedGenre.toUpperCase()}</div>
+        `;
+        
+        const controls = document.createElement('div');
+        controls.className = 'controls';
+        
+        const playButton = document.createElement('button');
+        playButton.className = 'play-button';
+        playButton.id = `playBtn${index}`;
+        playButton.textContent = 'Play';
+        playButton.onclick = () => togglePlay(index);
+        
+        const volumeGroup = document.createElement('div');
+        volumeGroup.className = 'control-group';
+        volumeGroup.innerHTML = `
+          <span class="control-icon" title="Volume">●</span>
+          <div class="slider-container">
+            <input type="range" class="slider" id="volume${index}" min="0" max="100" value="50">
+          </div>
+          <span class="control-value" id="volumeValue${index}">50%</span>
+        `;
+        
+        const speedGroup = document.createElement('div');
+        speedGroup.className = 'control-group';
+        speedGroup.innerHTML = `
+          <span class="control-icon" title="Speed">▲</span>
+          <div class="slider-container">
+            <input type="range" class="slider" id="speed${index}" min="0.25" max="2" step="0.05" value="1">
+          </div>
+          <span class="control-value" id="speedValue${index}">1.0x</span>
+        `;
+        
+        const pitchGroup = document.createElement('div');
+        pitchGroup.className = 'control-group';
+        pitchGroup.innerHTML = `
+          <span class="control-icon" title="Pitch">♪</span>
+          <div class="slider-container">
+            <input type="range" class="slider" id="pitch${index}" min="-12" max="12" step="1" value="0">
+          </div>
+          <span class="control-value" id="pitchValue${index}">0</span>
+        `;
+        
+        const loopGroup = document.createElement('div');
+        loopGroup.className = 'control-group';
+        loopGroup.style.flexDirection = 'column';
+        loopGroup.style.gap = '6px';
+        loopGroup.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <span class="control-icon" title="Loop">⟲</span>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+              <input type="checkbox" id="loop${index}" style="cursor: pointer;">
+              <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Loop</span>
+            </label>
+          </div>
+          <input 
+            type="text" 
+            id="loopPattern${index}" 
+            placeholder="x xx xxx xxxxxx" 
+            style="width: 100%; padding: 4px 8px; font-size: 11px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #ffffff; outline: none; font-family: monospace;"
+            title="Loop pattern: each 'x' = 1 second, spaces separate segments"
+          >
+        `;
+        
+        controls.appendChild(playButton);
+        controls.appendChild(volumeGroup);
+        controls.appendChild(speedGroup);
+        controls.appendChild(pitchGroup);
+        controls.appendChild(loopGroup);
+        
+        videoCard.appendChild(videoWrapper);
+        videoCard.appendChild(videoInfo);
+        videoCard.appendChild(controls);
+        resultsDiv.appendChild(videoCard);
+
+        // Initialize track state
+        trackLoops[index] = false;
+        trackPitch[index] = 0;
+        loopPatterns[index] = '';
+        loopPatternIndex[index] = 0;
+        loopSegmentLooped[index] = false;
+
+        // Wait for card to be rendered, then create player
+        setTimeout(() => {
+          const cardWidth = videoCard.offsetWidth || 280;
+          const cardHeight = Math.round(cardWidth * 0.5625);
+          
+          const videoId = item.id?.videoId || item.id;
+          if (!videoId) {
+            console.error('No video ID found for item:', item);
+            return;
+          }
+          
+          const createPlayer = () => {
+            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+              setTimeout(createPlayer, 200);
+              return;
+            }
+            
+            try {
+              players[index] = new YT.Player(videoDiv.id, {
+                height: cardHeight.toString(),
+                width: cardWidth.toString(),
+                videoId: videoId,
+                playerVars: {
+                  modestbranding: 1,
+                  rel: 0,
+                  showinfo: 0,
+                  playsinline: 1,
+                  enablejsapi: 1
+                },
+                events: {
+                  'onReady': function(event) {
+                    event.target.setVolume(50);
+                    setupControls(index);
+                    readyPlayers.push(index);
+                    
+                    const iframe = videoDiv.querySelector('iframe');
+                    if (iframe) {
+                      iframe.style.width = '100%';
+                      iframe.style.height = '100%';
+                      iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; accelerometer; gyroscope; clipboard-write; web-share');
+                      iframe.setAttribute('allowfullscreen', 'true');
+                    }
+                  },
+                  'onStateChange': function(event) {
+                    updatePlayButton(index, event.data);
+                    
+                    if (event.data === YT.PlayerState.PLAYING && trackLoops[index]) {
+                      startLoop(index);
+                    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                      stopLoop(index);
+                    }
+                  },
+                  'onError': function(event) {
+                    console.error('YouTube player error:', event.data);
+                    const videoInfo = videoCard.querySelector('.video-info');
+                    if (videoInfo) {
+                      const errorDiv = document.createElement('div');
+                      errorDiv.style.cssText = 'color: #ff6b6b; font-size: 11px; margin-top: 4px; padding: 4px; background: rgba(255, 107, 107, 0.1); border-radius: 4px;';
+                      errorDiv.textContent = 'Video unavailable';
+                      videoInfo.appendChild(errorDiv);
+                    }
+                    videoCard.style.opacity = '0.6';
+                    videoCard.style.pointerEvents = 'none';
+                  }
+                }
+              });
+            } catch (error) {
+              console.error('Error creating YouTube player:', error);
+            }
+          };
+          
+          createPlayer();
+        }, 100);
+      });
+    }
+
+    function toggleLock() {
+      if (!copilotActive) return; // Only allow locking when DJ VEE is active
+      
+      djVeeLocked = !djVeeLocked;
+      const lockButton = document.getElementById('lockButton');
+      const lockIcon = document.getElementById('lockIcon');
+      const lockText = document.getElementById('lockText');
+      
+      if (djVeeLocked) {
+        lockButton.classList.remove('unlocked');
+        lockIcon.textContent = '🔒';
+        lockText.textContent = 'Lock';
+      } else {
+        lockButton.classList.add('unlocked');
+        lockIcon.textContent = '🔓';
+        lockText.textContent = 'Unlock';
+      }
+      
+      // Update controls based on new lock state
+      updateControlsForLockState();
+    }
+
     const searchForm = document.getElementById('searchForm');
     searchForm.addEventListener('submit', handleFormSubmit);
 
+    const addMoreForm = document.getElementById('addMoreForm');
+    addMoreForm.addEventListener('submit', handleAddMoreSubmit);
+
     const copilotButton = document.getElementById('copilotButton');
     copilotButton.addEventListener('click', toggleCopilot);
+
+    const beatDropButton = document.getElementById('beatDropButton');
+    beatDropButton.addEventListener('click', toggleBeatDropMix);
+
+    const lockButton = document.getElementById('lockButton');
+    lockButton.addEventListener('click', toggleLock);
 
     document.getElementById('searchQuery').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
