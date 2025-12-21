@@ -2166,14 +2166,24 @@
                     readyPlayers.push(index);
                     
                     // Wait for iframe to be created with retry logic
-                    waitForIframe(videoDiv, 20).then((iframe) => {
-                      iframe.style.width = '100%';
-                      iframe.style.height = '100%';
-                      iframe.style.border = 'none';
-                      iframe.style.display = 'block';
-                    }).catch((error) => {
-                      console.warn(`Iframe not found for player${index} after 20 attempts, but player may still work`);
-                    });
+                    // YouTube players create iframes asynchronously, so we wait with multiple checks
+                    let iframeCheckAttempts = 0;
+                    const maxIframeChecks = 30;
+                    const checkForIframe = setInterval(() => {
+                      iframeCheckAttempts++;
+                      const iframe = videoDiv.querySelector('iframe');
+                      if (iframe) {
+                        clearInterval(checkForIframe);
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                        iframe.style.border = 'none';
+                        iframe.style.display = 'block';
+                      } else if (iframeCheckAttempts >= maxIframeChecks) {
+                        clearInterval(checkForIframe);
+                        // Player may still work without iframe being immediately accessible
+                        // YouTube API handles this internally
+                      }
+                    }, 150);
                     
                     // If this is the primary video, move player div to primary panel
                     if (primaryVideoIndex === index) {
@@ -2347,6 +2357,7 @@
       
       const playButton = document.getElementById(`playBtn${index}`);
       const videoCard = document.getElementById(`card${index}`);
+      const trackCard = document.getElementById(`trackCard${index}`);
       
       if (playButton) {
         playButton.innerHTML = getSVGIcon('pause');
@@ -2354,6 +2365,11 @@
       }
       if (videoCard) {
         videoCard.classList.add('playing');
+      }
+      if (trackCard) {
+        trackCard.classList.add('playing');
+        // Hide track card from side panel when playing
+        trackCard.style.display = 'none';
       }
       
       currentPlayingIndex = index;
@@ -2686,7 +2702,11 @@
         playButton.classList.remove('playing');
         }
         if (videoCard) videoCard.classList.remove('playing');
-        if (trackCard) trackCard.classList.remove('playing');
+        if (trackCard) {
+          trackCard.classList.remove('playing');
+          // Show track card in side panel when paused
+          trackCard.style.display = 'flex';
+        }
         if (currentPlayingIndex === index) {
         currentPlayingIndex = -1;
         }
@@ -2709,7 +2729,11 @@
         playButton.classList.add('playing');
         }
         if (videoCard) videoCard.classList.add('playing');
-        if (trackCard) trackCard.classList.add('playing');
+        if (trackCard) {
+          trackCard.classList.add('playing');
+          // Hide track card from side panel when playing
+          trackCard.style.display = 'none';
+        }
         currentPlayingIndex = index;
       }
     }
@@ -2824,14 +2848,20 @@
       }
       
       const playButton = document.getElementById(`playBtn${index}`);
+      const videoCard = document.getElementById(`card${index}`);
+      const trackCard = document.getElementById(`trackCard${index}`);
       if (playButton) {
         playButton.innerHTML = getSVGIcon('play');
         playButton.classList.remove('playing');
       }
       
-      const videoCard = document.getElementById(`card${index}`);
       if (videoCard) {
         videoCard.classList.remove('playing');
+      }
+      if (trackCard) {
+        trackCard.classList.remove('playing');
+        // Show track card in side panel when not playing
+        trackCard.style.display = 'flex';
       }
     }
     
@@ -2844,12 +2874,18 @@
             player.playVideo();
             const playButton = document.getElementById(`playBtn${index}`);
             const videoCard = document.getElementById(`card${index}`);
+            const trackCard = document.getElementById(`trackCard${index}`);
             if (playButton) {
               playButton.innerHTML = getSVGIcon('pause');
               playButton.classList.add('playing');
             }
             if (videoCard) {
               videoCard.classList.add('playing');
+            }
+            if (trackCard) {
+              trackCard.classList.add('playing');
+              // Hide track card from side panel when playing
+              trackCard.style.display = 'none';
             }
             if (trackLoops[index]) {
               setTimeout(() => startLoop(index), 500);
@@ -2892,12 +2928,18 @@
             currentPlayer.pauseVideo();
             const playButton = document.getElementById(`playBtn${currentIndex}`);
             const videoCard = document.getElementById(`card${currentIndex}`);
+            const trackCard = document.getElementById(`trackCard${currentIndex}`);
             if (playButton) {
               playButton.innerHTML = getSVGIcon('play');
               playButton.classList.remove('playing');
             }
             if (videoCard) {
               videoCard.classList.remove('playing');
+            }
+            if (trackCard) {
+              trackCard.classList.remove('playing');
+              // Show track card in side panel when paused
+              trackCard.style.display = 'flex';
             }
             
             // Fade in next track
@@ -2913,12 +2955,18 @@
                   clearInterval(fadeIn);
                   const nextPlayButton = document.getElementById(`playBtn${nextIndex}`);
                   const nextVideoCard = document.getElementById(`card${nextIndex}`);
+                  const nextTrackCard = document.getElementById(`trackCard${nextIndex}`);
                   if (nextPlayButton) {
                     nextPlayButton.innerHTML = getSVGIcon('pause');
                     nextPlayButton.classList.add('playing');
                   }
                   if (nextVideoCard) {
                     nextVideoCard.classList.add('playing');
+                  }
+                  if (nextTrackCard) {
+                    nextTrackCard.classList.add('playing');
+                    // Hide track card from side panel when playing
+                    nextTrackCard.style.display = 'none';
                   }
                   currentPlayingIndex = nextIndex;
                 }
@@ -2945,7 +2993,11 @@
           primaryPlayButton.classList.add('playing');
         }
         if (videoCard) videoCard.classList.add('playing');
-        if (trackCard) trackCard.classList.add('playing');
+        if (trackCard) {
+          trackCard.classList.add('playing');
+          // Hide track card from side panel when playing
+          trackCard.style.display = 'none';
+        }
         currentPlayingIndex = index;
       } else {
         if (playButton) {
@@ -2958,7 +3010,11 @@
         }
         if (currentPlayingIndex === index) {
           if (videoCard) videoCard.classList.remove('playing');
-          if (trackCard) trackCard.classList.remove('playing');
+          if (trackCard) {
+            trackCard.classList.remove('playing');
+            // Show track card in side panel when not playing
+            trackCard.style.display = 'flex';
+          }
           currentPlayingIndex = -1;
         }
       }
@@ -4964,14 +5020,22 @@
                     readyPlayers.push(index);
                     
                     // Wait for iframe to be created with retry logic
-                    waitForIframe(videoDiv, 20).then((iframe) => {
-                      iframe.style.width = '100%';
-                      iframe.style.height = '100%';
-                      iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; accelerometer; gyroscope; clipboard-write; web-share');
-                      iframe.setAttribute('allowfullscreen', 'true');
-                    }).catch((error) => {
-                      console.warn(`Iframe not found for player${index} after 20 attempts, but player may still work`);
-                    });
+                    let iframeCheckAttempts = 0;
+                    const maxIframeChecks = 30;
+                    const checkForIframe = setInterval(() => {
+                      iframeCheckAttempts++;
+                      const iframe = videoDiv.querySelector('iframe');
+                      if (iframe) {
+                        clearInterval(checkForIframe);
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                        iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; accelerometer; gyroscope; clipboard-write; web-share');
+                        iframe.setAttribute('allowfullscreen', 'true');
+                      } else if (iframeCheckAttempts >= maxIframeChecks) {
+                        clearInterval(checkForIframe);
+                        // Player may still work without iframe being immediately accessible
+                      }
+                    }, 150);
                   },
                   'onStateChange': function(event) {
                     updatePlayButton(index, event.data);
@@ -6217,14 +6281,22 @@
         }
         
         // Ensure iframe is properly sized
-        waitForIframe(playerDiv, 10).then((iframe) => {
-          iframe.style.width = '100%';
-          iframe.style.height = '100%';
-          iframe.style.border = 'none';
-          iframe.style.display = 'block';
-        }).catch(() => {
-          // Iframe will be styled when it appears
-        });
+        let iframeCheckAttempts = 0;
+        const maxIframeChecks = 20;
+        const checkForIframe = setInterval(() => {
+          iframeCheckAttempts++;
+          const iframe = playerDiv.querySelector('iframe');
+          if (iframe) {
+            clearInterval(checkForIframe);
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.style.display = 'block';
+          } else if (iframeCheckAttempts >= maxIframeChecks) {
+            clearInterval(checkForIframe);
+            // Iframe will be styled when it appears
+          }
+        }, 100);
         
         return true;
       };
