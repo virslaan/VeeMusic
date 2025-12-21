@@ -15,7 +15,7 @@
     }
 
     body {
-      background: #000000;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
       min-height: 100vh;
@@ -61,7 +61,7 @@
       height: 100%;
       z-index: -2;
       overflow: hidden;
-      background: #000000;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
     }
 
     /* Hide background videos on mobile - just show black background */
@@ -73,10 +73,10 @@
         display: none !important;
       }
       .background-overlay {
-        background: #000000 !important;
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%) !important;
       }
       body {
-        background: #000000 !important;
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%) !important;
       }
     }
 
@@ -613,13 +613,15 @@
     }
 
     .track-thumbnail {
-      width: 80px;
-      height: 45px;
+      width: 160px;
+      height: 90px;
       border-radius: 4px;
       overflow: hidden;
       flex-shrink: 0;
       background: #000;
       position: relative;
+      min-width: 160px;
+      min-height: 90px;
     }
 
     .track-thumbnail iframe {
@@ -627,6 +629,7 @@
       height: 100%;
       border: none;
       pointer-events: none;
+      display: block;
     }
 
     .track-info-small {
@@ -2077,33 +2080,60 @@
             }
             
             try {
-            // Create small thumbnail player
+            // Create small thumbnail player - use larger size for better visibility
               players[index] = new YT.Player(videoDiv.id, {
-              height: '45',
-              width: '80',
+              height: '90',
+              width: '160',
                 videoId: videoId,
                 playerVars: {
                   modestbranding: 1,
                   rel: 0,
                   showinfo: 0,
                   playsinline: 1,
-                  enablejsapi: 1
+                  enablejsapi: 1,
+                  controls: 0,
+                  autoplay: 0
                 },
                 events: {
                   'onReady': function(event) {
                     event.target.setVolume(50);
                     readyPlayers.push(index);
                     
-                    // Move iframe to thumbnail
-                    const iframe = videoDiv.querySelector('iframe');
-                    if (iframe) {
-                      const thumbDiv = document.getElementById(`thumb${index}`);
-                      if (thumbDiv) {
-                        thumbDiv.appendChild(iframe);
-                      iframe.style.width = '100%';
-                      iframe.style.height = '100%';
+                    // Move iframe to thumbnail - use setTimeout to ensure iframe is created
+                    setTimeout(() => {
+                      const iframe = videoDiv.querySelector('iframe');
+                      if (iframe) {
+                        const thumbDiv = document.getElementById(`thumb${index}`);
+                        if (thumbDiv) {
+                          // Clear any existing content
+                          thumbDiv.innerHTML = '';
+                          thumbDiv.appendChild(iframe);
+                          iframe.style.width = '100%';
+                          iframe.style.height = '100%';
+                          iframe.style.border = 'none';
+                          iframe.style.display = 'block';
+                        } else {
+                          console.warn(`Thumbnail div thumb${index} not found`);
+                        }
+                      } else {
+                        console.warn(`Iframe not found for player${index}`);
+                        // Retry after a bit more time
+                        setTimeout(() => {
+                          const iframe = videoDiv.querySelector('iframe');
+                          if (iframe) {
+                            const thumbDiv = document.getElementById(`thumb${index}`);
+                            if (thumbDiv) {
+                              thumbDiv.innerHTML = '';
+                              thumbDiv.appendChild(iframe);
+                              iframe.style.width = '100%';
+                              iframe.style.height = '100%';
+                              iframe.style.border = 'none';
+                              iframe.style.display = 'block';
+                            }
+                          }
+                        }, 500);
                       }
-                    }
+                    }, 100);
                     
                     // Setup controls when made primary
                     if (primaryVideoIndex === index) {
