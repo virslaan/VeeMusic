@@ -5174,19 +5174,25 @@
       updateControlsForLockState();
     }
 
-    const searchForm = document.getElementById('searchForm');
-    searchForm.addEventListener('submit', handleFormSubmit);
+    // Initialize form handlers when DOM is ready
+    function initializeFormHandlers() {
+      const searchForm = document.getElementById('searchForm');
+      if (searchForm) {
+        searchForm.addEventListener('submit', handleFormSubmit);
+      }
 
-    const addMoreForm = document.getElementById('addMoreForm');
-    if (addMoreForm) {
-    addMoreForm.addEventListener('submit', handleAddMoreSubmit);
-    }
+      const addMoreForm = document.getElementById('addMoreForm');
+      if (addMoreForm) {
+        addMoreForm.addEventListener('submit', handleAddMoreSubmit);
+      }
 
-    const copilotButton = document.getElementById('copilotButton');
-    copilotButton.addEventListener('click', toggleCopilot);
+      const copilotButton = document.getElementById('copilotButton');
+      if (copilotButton) {
+        copilotButton.addEventListener('click', toggleCopilot);
+      }
 
-    const beatDropButton = document.getElementById('beatDropButton');
-    if (beatDropButton) {
+      const beatDropButton = document.getElementById('beatDropButton');
+      if (beatDropButton) {
     beatDropButton.addEventListener('click', toggleBeatDropMix);
     }
 
@@ -5331,6 +5337,15 @@
           this.style.transform = 'scale(1)';
         }, 200);
       });
+    }
+    }
+
+    // Call initializeFormHandlers when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeFormHandlers);
+    } else {
+      // DOM already loaded
+      initializeFormHandlers();
     }
 
     // Voice recording and playback functions
@@ -5690,11 +5705,29 @@
     // Initialize TTS on page load
     initializeTTS();
 
-    document.getElementById('searchQuery').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        handleFormSubmit(e);
+    // Wait for DOM to be ready before accessing elements
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        const searchQuery = document.getElementById('searchQuery');
+        if (searchQuery) {
+          searchQuery.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              handleFormSubmit(e);
+            }
+          });
+        }
+      });
+    } else {
+      // DOM already loaded
+      const searchQuery = document.getElementById('searchQuery');
+      if (searchQuery) {
+        searchQuery.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            handleFormSubmit(e);
+          }
+        });
       }
-    });
+    }
 
 
     // Removed - YouTube only
@@ -6153,15 +6186,8 @@
     }
 
     function toggleLocalPlay(index) {
-      // Always stop all other videos first - only one plays at a time
-      localVideoElements.forEach((video, i) => {
-        if (i !== index && !video.paused) {
-          video.pause();
-          updateLocalPlayButton(i, false);
-          const card = document.getElementById(`card${i}`);
-          if (card) card.classList.remove('playing');
-        }
-      });
+      // PARALLEL PLAYBACK ENABLED: Multiple videos can play simultaneously
+      // This function only toggles the specific video - it does NOT stop other videos
       
       // User interaction - enable unmuting
       if (!userInteracted) {
@@ -6189,13 +6215,22 @@
           video.play();
         });
         updateLocalPlayButton(index, true);
-        document.getElementById(`card${index}`).classList.add('playing');
-        currentPlayingIndex = index;
+        const card = document.getElementById(`card${index}`);
+        if (card) card.classList.add('playing');
+        // Don't overwrite currentPlayingIndex - allow multiple videos to play in parallel
+        // Only set it if no video is currently tracked, or use it for primary video
+        if (currentPlayingIndex === -1 || index === 0) {
+          currentPlayingIndex = index;
+        }
       } else {
         video.pause();
         updateLocalPlayButton(index, false);
-        document.getElementById(`card${index}`).classList.remove('playing');
-        currentPlayingIndex = -1;
+        const card = document.getElementById(`card${index}`);
+        if (card) card.classList.remove('playing');
+        // Only clear currentPlayingIndex if this was the tracked video
+        if (currentPlayingIndex === index) {
+          currentPlayingIndex = -1;
+        }
       }
     }
 
@@ -6213,16 +6248,7 @@
       const video = localVideoElements[index];
       if (!video) return;
       
-      // ALWAYS stop all other videos first - only one plays at a time
-      localVideoElements.forEach((v, i) => {
-        if (i !== index) {
-          v.pause();
-          updateLocalPlayButton(i, false);
-          const card = document.getElementById(`card${i}`);
-          if (card) card.classList.remove('playing');
-        }
-      });
-      
+      // PARALLEL PLAYBACK: Allow multiple videos to play together - don't stop other videos
       // Start muted for autoplay policy compliance
       video.muted = true;
       video.volume = 0.5; // Set volume but keep muted until user interaction
@@ -6255,7 +6281,11 @@
         videoCard.classList.add('playing');
       }
       
-      currentPlayingIndex = index;
+      // Don't overwrite currentPlayingIndex - allow multiple videos to play in parallel
+      // Only set it if no video is currently tracked, or use it for primary video
+      if (currentPlayingIndex === -1 || index === 0) {
+        currentPlayingIndex = index;
+      }
     }
 
     // Auto-load background videos on page load
