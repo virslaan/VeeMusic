@@ -532,6 +532,25 @@
       padding: 0;
       min-height: 0;
     }
+    
+    /* Row layout when videos are playing */
+    #results.playing-layout {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    #results.playing-layout .tracks-panel {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    #results.playing-layout .primary-panel {
+      display: none;
+    }
 
     .tracks-panel {
       width: 300px;
@@ -1491,25 +1510,54 @@
     // These warnings occur when YouTube's widget API tries to communicate
     // but the origin check fails - this is harmless and doesn't affect playback
     const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error;
+    
     console.warn = function(...args) {
       const message = String(args[0] || '');
       // Suppress YouTube postMessage origin warnings (harmless)
-      if (message.includes('postMessage') && 
-          (message.includes('target origin') || message.includes('does not match'))) {
+      if (message.includes('postMessage') || 
+          message.includes('target origin') || 
+          message.includes('does not match') ||
+          message.includes('Failed to execute')) {
         return; // Suppress this specific warning
       }
       originalConsoleWarn.apply(console, args);
     };
     
+    console.error = function(...args) {
+      const message = String(args[0] || '');
+      // Suppress YouTube postMessage origin errors (harmless)
+      if (message.includes('postMessage') || 
+          message.includes('target origin') || 
+          message.includes('does not match') ||
+          message.includes('Failed to execute')) {
+        return; // Suppress this specific error
+      }
+      originalConsoleError.apply(console, args);
+    };
+    
     // Global error handler for YouTube API postMessage errors
     window.addEventListener('error', function(e) {
       if (e.message && 
-          e.message.includes('postMessage') && 
-          (e.message.includes('target origin') || e.message.includes('does not match'))) {
+          (e.message.includes('postMessage') || 
+           e.message.includes('target origin') || 
+           e.message.includes('does not match') ||
+           e.message.includes('Failed to execute'))) {
         e.preventDefault(); // Suppress the error
+        e.stopPropagation();
         return false;
       }
     }, true);
+    
+    // Also catch unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(e) {
+      if (e.reason && e.reason.message && 
+          (e.reason.message.includes('postMessage') || 
+           e.reason.message.includes('target origin'))) {
+        e.preventDefault();
+        return false;
+      }
+    });
     // SVG Icon Functions - Minimalistic Design
     function getSVGIcon(type) {
       const icons = {
@@ -2025,7 +2073,8 @@
       if (tracksPanel) tracksPanel.innerHTML = '';
       if (primaryVideoCard) primaryVideoCard.style.display = 'none';
       if (emptyState) emptyState.style.display = 'flex';
-      primaryVideoIndex = -1;
+      // First video (index 0) is always primary
+      primaryVideoIndex = 0;
 
       // Ensure background videos are stopped when showing search results
       stopBackgroundVideos();
@@ -2185,32 +2234,10 @@
                       }
                     }, 150);
                     
-                    // If this is the primary video, move player div to primary panel
-                    if (primaryVideoIndex === index) {
-                      setTimeout(() => {
-                        const primaryVideoWrapper = document.getElementById('primaryVideoWrapper');
-                        const playerDiv = document.getElementById(`player${index}`);
-                        if (playerDiv && primaryVideoWrapper) {
-                          primaryVideoWrapper.innerHTML = '';
-                          primaryVideoWrapper.appendChild(playerDiv);
-                          playerDiv.style.width = '100%';
-                          playerDiv.style.height = '100%';
-                          playerDiv.style.position = 'relative';
-                          if (!primaryVideoWrapper.style.height || primaryVideoWrapper.style.height === '0px') {
-                            primaryVideoWrapper.style.height = '500px';
-                          }
-                          // Resize player for larger display
-                          try {
-                            if (event.target && event.target.setSize) {
-                              const width = Math.min(window.innerWidth * 0.6, 800);
-                              event.target.setSize(width.toString(), '500');
-                            }
-                          } catch (e) {
-                            console.warn('Could not resize player:', e);
-                          }
-                        }
-                        setupPrimaryControls(index);
-                      }, 200);
+                    // First video (index 0) is always primary - set it up
+                    if (index === 0) {
+                      primaryVideoIndex = 0;
+                      makePrimary(0);
                     }
                   },
                   'onStateChange': function(event) {
@@ -2300,6 +2327,13 @@
         if (beatDropBtn) beatDropBtn.style.display = 'block';
         const voiceButton = document.getElementById('voiceButton');
         if (voiceButton) voiceButton.style.display = 'block';
+        
+        // Set first video (index 0) as primary after a short delay to ensure players are created
+        setTimeout(() => {
+          if (primaryVideoIndex === 0 && players[0]) {
+            makePrimary(0);
+          }
+        }, 1000);
         const addMoreSection = document.getElementById('addMoreSection');
         if (addMoreSection) addMoreSection.style.display = 'block';
         const ttsSection = document.getElementById('ttsSection');
@@ -2368,8 +2402,6 @@
       }
       if (trackCard) {
         trackCard.classList.add('playing');
-        // Hide track card from side panel when playing
-        trackCard.style.display = 'none';
       }
       
       currentPlayingIndex = index;
@@ -2704,8 +2736,6 @@
         if (videoCard) videoCard.classList.remove('playing');
         if (trackCard) {
           trackCard.classList.remove('playing');
-          // Show track card in side panel when paused
-          trackCard.style.display = 'flex';
         }
         if (currentPlayingIndex === index) {
         currentPlayingIndex = -1;
@@ -2731,8 +2761,6 @@
         if (videoCard) videoCard.classList.add('playing');
         if (trackCard) {
           trackCard.classList.add('playing');
-          // Hide track card from side panel when playing
-          trackCard.style.display = 'none';
         }
         currentPlayingIndex = index;
       }
@@ -2860,8 +2888,6 @@
       }
       if (trackCard) {
         trackCard.classList.remove('playing');
-        // Show track card in side panel when not playing
-        trackCard.style.display = 'flex';
       }
     }
     
@@ -2884,8 +2910,6 @@
             }
             if (trackCard) {
               trackCard.classList.add('playing');
-              // Hide track card from side panel when playing
-              trackCard.style.display = 'none';
             }
             if (trackLoops[index]) {
               setTimeout(() => startLoop(index), 500);
@@ -2938,8 +2962,6 @@
             }
             if (trackCard) {
               trackCard.classList.remove('playing');
-              // Show track card in side panel when paused
-              trackCard.style.display = 'flex';
             }
             
             // Fade in next track
@@ -2982,6 +3004,7 @@
       const primaryPlayButton = document.getElementById(`primaryPlayBtn${index}`);
       const videoCard = document.getElementById(`card${index}`);
       const trackCard = document.getElementById(`trackCard${index}`);
+      const resultsDiv = document.getElementById('results');
 
       if (state === YT.PlayerState.PLAYING) {
         if (playButton) {
@@ -2995,10 +3018,13 @@
         if (videoCard) videoCard.classList.add('playing');
         if (trackCard) {
           trackCard.classList.add('playing');
-          // Hide track card from side panel when playing
-          trackCard.style.display = 'none';
         }
         currentPlayingIndex = index;
+        
+        // Switch to row layout when any video is playing
+        if (resultsDiv) {
+          resultsDiv.classList.add('playing-layout');
+        }
       } else {
         if (playButton) {
         playButton.innerHTML = getSVGIcon('play');
@@ -3012,10 +3038,28 @@
           if (videoCard) videoCard.classList.remove('playing');
           if (trackCard) {
             trackCard.classList.remove('playing');
-            // Show track card in side panel when not playing
-            trackCard.style.display = 'flex';
           }
           currentPlayingIndex = -1;
+          
+          // Check if any video is still playing
+          let anyPlaying = false;
+          players.forEach((player, idx) => {
+            if (player) {
+              try {
+                const playerState = player.getPlayerState();
+                if (playerState === YT.PlayerState.PLAYING) {
+                  anyPlaying = true;
+                }
+              } catch (e) {
+                // Ignore errors
+              }
+            }
+          });
+          
+          // Switch back to panel layout if no videos are playing
+          if (!anyPlaying && resultsDiv) {
+            resultsDiv.classList.remove('playing-layout');
+          }
         }
       }
     }
@@ -6303,29 +6347,44 @@
       
       // Get or create player
       let player = players[index];
-      const playerDiv = document.getElementById(`player${index}`);
+      // Try to find player div in thumbnail first, then in primary panel
+      let playerDiv = document.getElementById(`player${index}`);
+      
+      // If not found, check if it's in the thumbnail div
+      if (!playerDiv) {
+        const thumbDiv = document.getElementById(`thumb${index}`);
+        if (thumbDiv) {
+          playerDiv = thumbDiv.querySelector(`#player${index}`);
+        }
+      }
       
       if (player && playerDiv) {
         // Player is ready, move it immediately
         movePlayerToPrimary(playerDiv, player);
-      } else if (player && !playerDiv) {
-        // Player exists but div not found yet, wait for it
+      } else if (player) {
+        // Player exists but div not found yet, wait for it with more attempts
         let attempts = 0;
-        const maxAttempts = 20;
+        const maxAttempts = 50; // Increased attempts
         const checkForDiv = setInterval(() => {
           attempts++;
-          const div = document.getElementById(`player${index}`);
+          let div = document.getElementById(`player${index}`);
+          if (!div) {
+            const thumbDiv = document.getElementById(`thumb${index}`);
+            if (thumbDiv) {
+              div = thumbDiv.querySelector(`#player${index}`);
+            }
+          }
           if (div) {
             clearInterval(checkForDiv);
             movePlayerToPrimary(div, player);
           } else if (attempts >= maxAttempts) {
             clearInterval(checkForDiv);
-            console.warn(`Player div not found for player ${index} after ${maxAttempts} attempts. Player may not be ready yet.`);
+            // Don't show warning - player may work without div being immediately accessible
           }
-        }, 100);
+        }, 200); // Check every 200ms
       } else {
         // Player not ready yet, will be created and moved in onReady callback
-        console.log(`Player ${index} not ready yet, will be moved when ready`);
+        // This is fine - the onReady callback will handle it
       }
       
       // Update info
