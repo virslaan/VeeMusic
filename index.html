@@ -1487,6 +1487,29 @@
   <!-- Note: True pitch shifting without speed change requires direct audio access -->
   <!-- YouTube iframes block this due to CORS, so we use playbackRate as a workaround -->
   <script>
+    // Suppress harmless postMessage origin errors from YouTube API
+    // These warnings occur when YouTube's widget API tries to communicate
+    // but the origin check fails - this is harmless and doesn't affect playback
+    const originalConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      const message = String(args[0] || '');
+      // Suppress YouTube postMessage origin warnings (harmless)
+      if (message.includes('postMessage') && 
+          (message.includes('target origin') || message.includes('does not match'))) {
+        return; // Suppress this specific warning
+      }
+      originalConsoleWarn.apply(console, args);
+    };
+    
+    // Global error handler for YouTube API postMessage errors
+    window.addEventListener('error', function(e) {
+      if (e.message && 
+          e.message.includes('postMessage') && 
+          (e.message.includes('target origin') || e.message.includes('does not match'))) {
+        e.preventDefault(); // Suppress the error
+        return false;
+      }
+    }, true);
     // SVG Icon Functions - Minimalistic Design
     function getSVGIcon(type) {
       const icons = {
@@ -1744,6 +1767,32 @@
 
     window.onYouTubeIframeAPIReady = function() {
       ytApiReady = true;
+      console.log('YouTube API ready');
+      // Trigger any pending player creations
+      if (typeof window.onYouTubeAPIReady === 'function') {
+        window.onYouTubeAPIReady();
+      }
+    }
+    
+    // Helper function to wait for iframe to be created
+    function waitForIframe(playerDiv, maxAttempts = 20, attempt = 0) {
+      return new Promise((resolve, reject) => {
+        if (attempt >= maxAttempts) {
+          reject(new Error('Iframe not found after maximum attempts'));
+          return;
+        }
+        
+        const iframe = playerDiv.querySelector('iframe');
+        if (iframe) {
+          resolve(iframe);
+        } else {
+          setTimeout(() => {
+            waitForIframe(playerDiv, maxAttempts, attempt + 1)
+              .then(resolve)
+              .catch(reject);
+          }, 100);
+        }
+      });
     }
 
     // Genre detection based on title, description, and keywords
@@ -2108,23 +2157,23 @@
                   playsinline: 1,
                   enablejsapi: 1,
                   controls: 0,
-                  autoplay: 0
+                  autoplay: 0,
+                  origin: window.location.origin
                 },
                 events: {
                   'onReady': function(event) {
                     event.target.setVolume(50);
                     readyPlayers.push(index);
                     
-                    // Player is already in thumbnail div, just ensure iframe is styled correctly
-                    setTimeout(() => {
-                    const iframe = videoDiv.querySelector('iframe');
-                    if (iframe) {
+                    // Wait for iframe to be created with retry logic
+                    waitForIframe(videoDiv, 20).then((iframe) => {
                       iframe.style.width = '100%';
                       iframe.style.height = '100%';
-                        iframe.style.border = 'none';
-                        iframe.style.display = 'block';
-                      }
-                    }, 100);
+                      iframe.style.border = 'none';
+                      iframe.style.display = 'block';
+                    }).catch((error) => {
+                      console.warn(`Iframe not found for player${index} after 20 attempts, but player may still work`);
+                    });
                     
                     // If this is the primary video, move player div to primary panel
                     if (primaryVideoIndex === index) {
@@ -4905,7 +4954,8 @@
                   rel: 0,
                   showinfo: 0,
                   playsinline: 1,
-                  enablejsapi: 1
+                  enablejsapi: 1,
+                  origin: window.location.origin
                 },
                 events: {
                   'onReady': function(event) {
@@ -4913,13 +4963,15 @@
                     setupControls(index);
                     readyPlayers.push(index);
                     
-                    const iframe = videoDiv.querySelector('iframe');
-                    if (iframe) {
+                    // Wait for iframe to be created with retry logic
+                    waitForIframe(videoDiv, 20).then((iframe) => {
                       iframe.style.width = '100%';
                       iframe.style.height = '100%';
                       iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; accelerometer; gyroscope; clipboard-write; web-share');
                       iframe.setAttribute('allowfullscreen', 'true');
-                    }
+                    }).catch((error) => {
+                      console.warn(`Iframe not found for player${index} after 20 attempts, but player may still work`);
+                    });
                   },
                   'onStateChange': function(event) {
                     updatePlayButton(index, event.data);
@@ -6139,17 +6191,10 @@
       primaryVideoWrapper.innerHTML = '';
       primaryControls.innerHTML = '';
       
-      // Get or create player
-      let player = players[index];
-      if (!player) {
-        // Player not ready yet, will be created
-        return;
-      }
-      
-      // Move player div (with iframe) to primary panel
-      const playerDiv = document.getElementById(`player${index}`);
-      if (playerDiv) {
-        // Move the entire player div to primary panel
+      // Helper function to move player to primary panel
+      const movePlayerToPrimary = (playerDiv, player) => {
+        if (!playerDiv || !primaryVideoWrapper) return false;
+        
         primaryVideoWrapper.innerHTML = '';
         primaryVideoWrapper.appendChild(playerDiv);
         playerDiv.style.width = '100%';
@@ -6172,43 +6217,43 @@
         }
         
         // Ensure iframe is properly sized
-        setTimeout(() => {
-          const iframe = playerDiv.querySelector('iframe');
-          if (iframe) {
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.border = 'none';
-            iframe.style.display = 'block';
+        waitForIframe(playerDiv, 10).then((iframe) => {
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          iframe.style.border = 'none';
+          iframe.style.display = 'block';
+        }).catch(() => {
+          // Iframe will be styled when it appears
+        });
+        
+        return true;
+      };
+      
+      // Get or create player
+      let player = players[index];
+      const playerDiv = document.getElementById(`player${index}`);
+      
+      if (player && playerDiv) {
+        // Player is ready, move it immediately
+        movePlayerToPrimary(playerDiv, player);
+      } else if (player && !playerDiv) {
+        // Player exists but div not found yet, wait for it
+        let attempts = 0;
+        const maxAttempts = 20;
+        const checkForDiv = setInterval(() => {
+          attempts++;
+          const div = document.getElementById(`player${index}`);
+          if (div) {
+            clearInterval(checkForDiv);
+            movePlayerToPrimary(div, player);
+          } else if (attempts >= maxAttempts) {
+            clearInterval(checkForDiv);
+            console.warn(`Player div not found for player ${index} after ${maxAttempts} attempts. Player may not be ready yet.`);
           }
         }, 100);
       } else {
-        console.warn(`Player div not found for player ${index}. Player may not be ready yet.`);
-        // If player exists but div not found, wait a bit and try again
-        if (player) {
-          setTimeout(() => {
-            const playerDiv = document.getElementById(`player${index}`);
-            if (playerDiv && primaryVideoWrapper) {
-              primaryVideoWrapper.innerHTML = '';
-              primaryVideoWrapper.appendChild(playerDiv);
-              playerDiv.style.width = '100%';
-              playerDiv.style.height = '100%';
-              playerDiv.style.position = 'relative';
-              if (!primaryVideoWrapper.style.height || primaryVideoWrapper.style.height === '0px') {
-                primaryVideoWrapper.style.height = '500px';
-              }
-              // Update player size
-              const player = players[index];
-              if (player && player.setSize) {
-                try {
-                  const width = Math.min(window.innerWidth * 0.6, 800);
-                  player.setSize(width.toString(), '500');
-                } catch (e) {
-                  console.warn('Could not resize player:', e);
-                }
-              }
-            }
-          }, 500);
-        }
+        // Player not ready yet, will be created and moved in onReady callback
+        console.log(`Player ${index} not ready yet, will be moved when ready`);
       }
       
       // Update info
