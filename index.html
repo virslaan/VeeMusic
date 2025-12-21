@@ -526,13 +526,145 @@
 
     #results {
       flex: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      display: flex;
       gap: 16px;
-      overflow: visible;
+      overflow: hidden;
       padding: 0;
-      padding-bottom: 20px;
       min-height: 0;
+    }
+
+    .tracks-panel {
+      width: 300px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 8px;
+    }
+
+    .tracks-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .tracks-panel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .tracks-panel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+
+    .primary-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .primary-video-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      min-height: 0;
+    }
+
+    .primary-video-wrapper {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .primary-video-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .track-card-small {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .track-card-small:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .track-card-small.active {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .track-thumbnail {
+      width: 80px;
+      height: 45px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #000;
+      position: relative;
+    }
+
+    .track-thumbnail iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: none;
+    }
+
+    .track-info-small {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .track-title-small {
+      font-size: 12px;
+      color: #ffffff;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .track-channel-small {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .move-to-primary-btn {
+      padding: 4px 8px;
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #ffffff;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .move-to-primary-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
     #results::-webkit-scrollbar {
@@ -566,6 +698,8 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       position: relative;
+      width: fit-content;
+      max-width: 100%;
     }
 
     .close-button {
@@ -603,23 +737,6 @@
       opacity: 1;
     }
 
-    .beat-indicator {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      z-index: 50;
-      transition: all 0.1s ease;
-    }
-
-    .beat-indicator.active {
-      background: #06ffa5;
-      box-shadow: 0 0 8px #06ffa5;
-      transform: scale(1.4);
-    }
 
     .eq-controls {
       display: flex;
@@ -684,8 +801,8 @@
     .eq-slider {
       width: 100%;
       height: 60px;
-      -webkit-appearance: slider-vertical;
-      appearance: slider-vertical;
+      writing-mode: vertical-lr;
+      direction: rtl;
       writing-mode: bt-lr;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 4px;
@@ -1169,13 +1286,6 @@
         right: 8px;
       }
 
-      .beat-indicator {
-        width: 10px;
-        height: 10px;
-        top: 8px;
-        left: 8px;
-      }
-
       .eq-controls {
         flex-direction: row;
         gap: 4px;
@@ -1215,6 +1325,33 @@
         font-size: 12px;
         padding: 8px 12px;
       }
+      
+      #ttsStopButton {
+        font-size: 12px;
+        padding: 6px 12px;
+      }
+    }
+    
+    /* Ensure stop button is always clickable */
+    #ttsStopButton {
+      pointer-events: auto !important;
+      opacity: 1 !important;
+      cursor: pointer !important;
+    }
+    
+    #ttsStopButton:disabled {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+    }
+    
+    #ttsStopButton:active {
+      transform: scale(0.95);
+      background: rgba(255, 0, 0, 0.4) !important;
+    }
+    
+    #ttsStopButton:hover:not(:disabled) {
+      background: rgba(255, 0, 0, 0.3) !important;
+      border-color: rgba(255, 0, 0, 0.6) !important;
     }
 
     @media (max-width: 480px) {
@@ -1272,22 +1409,15 @@
         <input 
           type="text" 
           id="searchQuery" 
-          placeholder="Search songs, artists..."
+          placeholder="Search music..."
           autocomplete="off"
         >
-    <button type="submit" id="searchButton">Search</button>
+    <button type="submit" id="searchButton">▶</button>
   </form>
     </div>
 
     <div class="copilot-section">
-      <button id="copilotButton">DJ VEEX20</button>
-      <button id="playAllButton" style="margin-left: 10px; display: none;" title="Play all tracks together">▶ All</button>
-      <button id="shiftButton" style="margin-left: 10px; display: none;" title="Shift to next track">⇄ Shift</button>
-      <button id="beatDropButton" style="margin-left: 10px; display: none;">Beat Drop</button>
-      <button id="voiceButton" style="margin-left: 10px; display: none;" title="Record and play your voice">
-        <span id="voiceIcon"></span>
-        <span id="voiceText" style="margin-left: 5px;">Voice</span>
-      </button>
+      <button id="copilotButton">Auto Mix</button>
     </div>
 
     <div class="tts-section" id="ttsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">
@@ -1310,7 +1440,7 @@
           <span id="ttsIcon"></span>
           <span style="margin-left: 5px;">Speak</span>
         </button>
-        <button id="ttsStopButton" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.4); border-radius: 6px; color: #ff6b6b; cursor: pointer; min-height: 36px;">
+        <button id="ttsStopButton" type="button" style="padding: 8px 16px; font-size: 13px; font-weight: 500; background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.4); border-radius: 6px; color: #ff6b6b; cursor: pointer; min-height: 36px; transition: all 0.2s ease;">
           <span>⏹</span>
           <span style="margin-left: 5px;">Stop</span>
         </button>
@@ -1326,29 +1456,20 @@
       </div>
     </div>
 
-  <div id="results"></div>
-
-  <div class="add-more-section" id="addMoreSection" style="display: none;">
-    <form id="addMoreForm" style="display: flex; gap: 10px; align-items: center;">
-      <input 
-        type="text" 
-        id="addMoreQuery" 
-        placeholder="Search more songs to add..."
-        autocomplete="off"
-        style="flex: 1; padding: 10px 14px; font-size: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #ffffff; outline: none;"
-      >
-      <button type="submit" id="addMoreButton" style="padding: 10px 20px; font-size: 20px; font-weight: 600; background: #ffffff; border: none; border-radius: 8px; color: #000000; cursor: pointer; min-width: 50px; min-height: 44px;">+</button>
-    </form>
+  <div id="results" class="main-content">
+    <div class="tracks-panel" id="tracksPanel"></div>
+    <div class="primary-panel" id="primaryPanel">
+      <div class="primary-video-card" id="primaryVideoCard" style="display: none;">
+        <div class="primary-video-wrapper" id="primaryVideoWrapper"></div>
+        <div class="video-info" id="primaryVideoInfo" style="margin-top: 12px;"></div>
+        <div class="controls" id="primaryControls" style="margin-top: 12px;"></div>
+      </div>
+      <div id="emptyState" style="flex: 1; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.4); font-size: 14px;">
+        Click a track on the left to make it primary
+      </div>
+    </div>
   </div>
 
-  <footer style="margin-top: 40px; padding: 20px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px;">
-      © 2025 VIPUL RULES. All rights reserved.
-    </p>
-    <p style="font-size: 11px; color: rgba(255, 255, 255, 0.4);">
-      Professional DJ Mixing Experience | VeeMusic DJ
-    </p>
-  </footer>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -1589,7 +1710,6 @@
     let genreProfiles = {}; // Genre-specific mixing profiles
     let trackEQ = {}; // Track EQ settings: {low: -12 to 12, mid: -12 to 12, high: -12 to 12}
     let cuePoints = {}; // Cue points for each track: {[index]: {1: time, 2: time, 3: time, 4: time, 5: time}}
-    let beatIndicators = {}; // Beat indicator intervals
     let trackBPM = {}; // Estimated BPM for each track
 
     // Check if running via file:// protocol (YouTube requires HTTP/HTTPS)
@@ -1827,23 +1947,35 @@
     // Initialize genre profiles on load
     initializeGenreProfiles();
 
+    let primaryVideoIndex = -1; // Track which video is in the primary panel
+
     function displayResults(data) {
-      const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '';
+      const tracksPanel = document.getElementById('tracksPanel');
+      const primaryPanel = document.getElementById('primaryPanel');
+      const primaryVideoCard = document.getElementById('primaryVideoCard');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (!tracksPanel) {
+        // Fallback if new structure doesn't exist
+        const tracksPanel = document.getElementById('tracksPanel');
+        if (tracksPanel) tracksPanel.innerHTML = '';
+        return;
+      }
+      
+      if (tracksPanel) tracksPanel.innerHTML = '';
+      if (primaryVideoCard) primaryVideoCard.style.display = 'none';
+      if (emptyState) emptyState.style.display = 'flex';
+      primaryVideoIndex = -1;
 
       // Ensure background videos are stopped when showing search results
       stopBackgroundVideos();
 
       if (!data.items || data.items.length === 0) {
-        resultsDiv.innerHTML = `
-          <div class="empty-state">
-            <p>No results found. Try a different search term.</p>
-          </div>
-        `;
-        document.getElementById('copilotButton').style.display = 'none';
-        document.getElementById('beatDropButton').style.display = 'none';
-        document.getElementById('ttsSection').style.display = 'none';
-        document.getElementById('soundEffectsSection').style.display = 'none';
+        if (tracksPanel) {
+          tracksPanel.innerHTML = '<div class="empty-state"><p>No results found. Try a different search term.</p></div>';
+        }
+        const copilotBtn = document.getElementById('copilotButton');
+        if (copilotBtn) copilotBtn.style.display = 'none';
         return;
       }
 
@@ -1872,188 +2004,63 @@
       });
 
       if (!ytApiReady && typeof YT === 'undefined') {
-        resultsDiv.innerHTML = '<div class="loading">Loading...</div>';
+        if (tracksPanel) tracksPanel.innerHTML = '<div class="loading">Loading...</div>';
         setTimeout(() => displayResults(data), 500);
         return;
       }
 
       limitedItems.forEach((item, index) => {
-        const videoCard = document.createElement('div');
-        videoCard.className = 'video-card';
-        videoCard.id = `card${index}`;
-        videoCard.style.animationDelay = `${index * 0.1}s`;
+        // Create small track card for left panel
+        const trackCard = document.createElement('div');
+        trackCard.className = 'track-card-small';
+        trackCard.id = `trackCard${index}`;
+        trackCard.dataset.index = index;
         
-        // Add close button
-        const closeButton = document.createElement('button');
-        closeButton.className = 'close-button';
-        closeButton.innerHTML = getSVGIcon('close');
-        closeButton.title = 'Remove this song';
-        closeButton.onclick = () => removeSong(index);
+        // Thumbnail
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'track-thumbnail';
+        const thumbDiv = document.createElement('div');
+        thumbDiv.id = `thumb${index}`;
+        thumbnail.appendChild(thumbDiv);
         
-        // Add beat indicator
-        const beatIndicator = document.createElement('div');
-        beatIndicator.className = 'beat-indicator';
-        beatIndicator.id = `beatIndicator${index}`;
-        
-        const videoWrapper = document.createElement('div');
-        videoWrapper.className = 'video-wrapper';
-        const videoDiv = document.createElement('div');
-        videoDiv.id = `player${index}`;
-        videoWrapper.appendChild(videoDiv);
-        
-        videoCard.appendChild(closeButton);
-        videoCard.appendChild(beatIndicator);
-        
-        // Use already detected genre
+        // Track info
+        const trackInfo = document.createElement('div');
+        trackInfo.className = 'track-info-small';
         const detectedGenre = trackGenres[index] || 'electronic';
-        
-        const videoInfo = document.createElement('div');
-        videoInfo.className = 'video-info';
-        videoInfo.innerHTML = `
-          <div class="video-title">${item.snippet.title}</div>
-          <div class="video-channel">${item.snippet.channelTitle}</div>
-          <div class="video-genre" id="genre${index}">${detectedGenre.toUpperCase()}</div>
+        trackInfo.innerHTML = `
+          <div class="track-title-small">${item.snippet.title}</div>
+          <div class="track-channel-small">${item.snippet.channelTitle}</div>
         `;
         
-        const controls = document.createElement('div');
-        controls.className = 'controls';
+        // Move to primary button
+        const moveBtn = document.createElement('button');
+        moveBtn.className = 'move-to-primary-btn';
+        moveBtn.textContent = '→';
+        moveBtn.title = 'Make primary';
+        moveBtn.onclick = (e) => {
+          e.stopPropagation();
+          makePrimary(index);
+        };
         
-        const playButton = document.createElement('button');
-        playButton.className = 'play-button';
-        playButton.id = `playBtn${index}`;
-        playButton.innerHTML = getSVGIcon('play');
-        playButton.onclick = () => togglePlay(index);
-        playButton.title = 'Play/Pause';
+        trackCard.appendChild(thumbnail);
+        trackCard.appendChild(trackInfo);
+        trackCard.appendChild(moveBtn);
         
-        // Add reverse button
-        const reverseButton = document.createElement('button');
-        reverseButton.className = 'reverse-button';
-        reverseButton.id = `reverseBtn${index}`;
-        reverseButton.innerHTML = getSVGIcon('reverse');
-        reverseButton.onclick = () => toggleReverse(index);
-        reverseButton.title = 'Play in Reverse';
-        reverseButton.style.cssText = 'padding: 6px 12px; font-size: 11px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: #ffffff; cursor: pointer; min-height: 32px; display: flex; align-items: center; justify-content: center; flex: 1;';
+        // Click to make primary
+        trackCard.onclick = () => makePrimary(index);
         
-        // Create button group for play and reverse
-        const playControlsGroup = document.createElement('div');
-        playControlsGroup.style.cssText = 'display: flex; gap: 8px; width: 100%;';
-        playControlsGroup.appendChild(playButton);
-        playControlsGroup.appendChild(reverseButton);
-        
-        const volumeGroup = document.createElement('div');
-        volumeGroup.className = 'control-group';
-        volumeGroup.innerHTML = `
-          <span class="control-icon" title="Volume">${getSVGIcon('volume')}</span>
-          <div class="slider-container">
-            <input type="range" class="slider" id="volume${index}" min="0" max="100" value="50">
-          </div>
-          <span class="control-value" id="volumeValue${index}">50%</span>
-        `;
-        
-        const speedGroup = document.createElement('div');
-        speedGroup.className = 'control-group';
-        speedGroup.innerHTML = `
-          <span class="control-icon" title="Speed">${getSVGIcon('speed')}</span>
-          <div class="slider-container">
-            <input type="range" class="slider" id="speed${index}" min="0.25" max="2" step="0.05" value="1">
-          </div>
-          <span class="control-value" id="speedValue${index}">1.0x</span>
-        `;
-        
-        const pitchGroup = document.createElement('div');
-        pitchGroup.className = 'control-group';
-        pitchGroup.innerHTML = `
-          <span class="control-icon" title="Pitch">${getSVGIcon('pitch')}</span>
-          <div class="slider-container">
-            <input type="range" class="slider" id="pitch${index}" min="-12" max="12" step="1" value="0">
-          </div>
-          <span class="control-value" id="pitchValue${index}">0</span>
-        `;
-        
-        const loopGroup = document.createElement('div');
-        loopGroup.className = 'control-group';
-        loopGroup.style.flexDirection = 'column';
-        loopGroup.style.gap = '6px';
-        loopGroup.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-            <span class="control-icon" title="Loop">${getSVGIcon('loop')}</span>
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
-            <input type="checkbox" id="loop${index}" style="cursor: pointer;">
-            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Loop</span>
-          </label>
-          </div>
-          <input 
-            type="text" 
-            id="loopPattern${index}" 
-            placeholder="x xx xxx xxxxxx" 
-            style="width: 100%; padding: 4px 8px; font-size: 11px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: #ffffff; outline: none; font-family: monospace;"
-            title="Loop pattern: each 'x' = 1 second, spaces separate segments"
-          >
-        `;
-        
-        // Add numbered cue buttons (1-5)
-        const cueButtonsGroup = document.createElement('div');
-        cueButtonsGroup.className = 'cue-buttons-group';
-        cueButtonsGroup.style.cssText = 'display: flex; gap: 4px; margin-bottom: 8px; justify-content: center;';
-        cueButtonsGroup.innerHTML = `
-          <button class="cue-number-btn" id="cueBtn${index}_1" title="Set/Jump to Cue 1">1</button>
-          <button class="cue-number-btn" id="cueBtn${index}_2" title="Set/Jump to Cue 2">2</button>
-          <button class="cue-number-btn" id="cueBtn${index}_3" title="Set/Jump to Cue 3">3</button>
-          <button class="cue-number-btn" id="cueBtn${index}_4" title="Set/Jump to Cue 4">4</button>
-          <button class="cue-number-btn" id="cueBtn${index}_5" title="Set/Jump to Cue 5">5</button>
-        `;
-        
-        // Add event listeners for cue buttons
-        for (let cueNum = 1; cueNum <= 5; cueNum++) {
-          const cueBtn = document.getElementById(`cueBtn${index}_${cueNum}`);
-          if (cueBtn) {
-            cueBtn.addEventListener('click', () => handleCueButton(index, cueNum));
-          }
-        }
-        
-        // Add EQ controls
-        const eqControls = document.createElement('div');
-        eqControls.className = 'eq-controls';
-        eqControls.innerHTML = `
-          <div class="eq-control">
-            <span class="eq-label" title="Low frequencies (Bass, Kick) - Adjust bass and low-end sounds">Low</span>
-            <input type="range" class="eq-slider" id="eqLow${index}" min="-12" max="12" step="1" value="0" orient="vertical" title="Low frequencies: Bass, kick drums">
-            <span class="control-value" id="eqLowValue${index}" style="font-size: 9px;">0</span>
-          </div>
-          <div class="eq-control">
-            <span class="eq-label" title="Mid frequencies (Vocals, Instruments) - Adjust vocals and mid-range instruments">Mid</span>
-            <input type="range" class="eq-slider" id="eqMid${index}" min="-12" max="12" step="1" value="0" orient="vertical" title="Mid frequencies: Vocals, instruments">
-            <span class="control-value" id="eqMidValue${index}" style="font-size: 9px;">0</span>
-          </div>
-          <div class="eq-control">
-            <span class="eq-label" title="High frequencies (Treble, Cymbals) - Adjust high-end sounds and clarity">High</span>
-            <input type="range" class="eq-slider" id="eqHigh${index}" min="-12" max="12" step="1" value="0" orient="vertical" title="High frequencies: Treble, cymbals">
-            <span class="control-value" id="eqHighValue${index}" style="font-size: 9px;">0</span>
-          </div>
-        `;
-        
-        controls.appendChild(playControlsGroup);
-        controls.appendChild(volumeGroup);
-        controls.appendChild(speedGroup);
-        controls.appendChild(pitchGroup);
-        controls.appendChild(loopGroup);
-        controls.appendChild(cueButtonsGroup);
-        controls.appendChild(eqControls);
-        
-        videoCard.appendChild(videoWrapper);
-        videoCard.appendChild(videoInfo);
-        videoCard.appendChild(controls);
-        resultsDiv.appendChild(videoCard);
+        tracksPanel.appendChild(trackCard);
         
         // Initialize track state
         trackEQ[index] = { low: 0, mid: 0, high: 0 };
-        cuePoints[index] = {}; // Initialize as object for numbered cues
-        trackBPM[index] = 120; // Default BPM, will be estimated
-
-        // Wait for card to be rendered, then calculate proper dimensions
-        setTimeout(() => {
-          const cardWidth = videoCard.offsetWidth || 280;
-          const cardHeight = Math.round(cardWidth * 0.5625); // 16:9 aspect ratio
+        cuePoints[index] = {};
+        trackBPM[index] = 120;
+        
+        // Create hidden player div for thumbnail
+        const videoDiv = document.createElement('div');
+        videoDiv.id = `player${index}`;
+        videoDiv.style.display = 'none';
+        document.body.appendChild(videoDiv);
           
           // Verify videoId exists
           const videoId = item.id?.videoId || item.id;
@@ -2062,18 +2069,18 @@
             return;
           }
           
-          // Function to create player
+        // Function to create player (for thumbnail)
           const createPlayer = () => {
             if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-              console.log('YouTube API not ready, retrying...');
               setTimeout(createPlayer, 200);
               return;
             }
             
             try {
+            // Create small thumbnail player
               players[index] = new YT.Player(videoDiv.id, {
-                height: cardHeight.toString(),
-                width: cardWidth.toString(),
+              height: '45',
+              width: '80',
                 videoId: videoId,
                 playerVars: {
                   modestbranding: 1,
@@ -2085,30 +2092,33 @@
                 events: {
                   'onReady': function(event) {
                     event.target.setVolume(50);
-                    setupControls(index);
                     readyPlayers.push(index);
                     
-                    // Resize iframe to fill container and set permissions
+                    // Move iframe to thumbnail
                     const iframe = videoDiv.querySelector('iframe');
                     if (iframe) {
+                      const thumbDiv = document.getElementById(`thumb${index}`);
+                      if (thumbDiv) {
+                        thumbDiv.appendChild(iframe);
                       iframe.style.width = '100%';
                       iframe.style.height = '100%';
-                      // Add permissions policy to iframe
-                      iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; accelerometer; gyroscope; clipboard-write; web-share');
-                      iframe.setAttribute('allowfullscreen', 'true');
+                      }
                     }
                     
-                    // Start auto-play sequence when all players are ready
-                    if (readyPlayers.length === limitedItems.length && autoPlayActive && !userInteracted) {
-                      startAutoPlaySequence();
+                    // Setup controls when made primary
+                    if (primaryVideoIndex === index) {
+                      setupPrimaryControls(index);
                     }
                   },
                   'onStateChange': function(event) {
                     updatePlayButton(index, event.data);
                     
                     // Start loop if enabled and track is playing
-                    if (event.data === YT.PlayerState.PLAYING && trackLoops[index]) {
-                      startLoop(index);
+                    if (event.data === YT.PlayerState.PLAYING) {
+                      if (trackLoops[index]) {
+                        // Small delay to ensure video is ready
+                        setTimeout(() => startLoop(index), 500);
+                      }
                     } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
                       stopLoop(index);
                     }
@@ -2174,7 +2184,6 @@
           
           // Start creating player
           createPlayer();
-        }, 100);
       });
 
       if (limitedItems.length > 0) {
@@ -2219,16 +2228,7 @@
       const player = players[index];
       if (!player) return;
       
-      // Stop all other videos
-      players.forEach((p, i) => {
-        if (i !== index && p && p.getPlayerState() === YT.PlayerState.PLAYING) {
-          p.pauseVideo();
-          updatePlayButton(i, YT.PlayerState.PAUSED);
-          const card = document.getElementById(`card${i}`);
-          if (card) card.classList.remove('playing');
-        }
-      });
-      
+      // Allow multiple videos to play together - don't stop other videos
       // Fade in volume for smooth start
       player.setVolume(0);
       player.playVideo();
@@ -2438,7 +2438,19 @@
             
             trackLoops[index] = this.checked;
             if (this.checked) {
+              // Only start loop if video is currently playing
+              const player = players[index];
+              if (player) {
+                try {
+                  const state = player.getPlayerState();
+                  if (state === YT.PlayerState.PLAYING) {
               startLoop(index);
+                  }
+                  // If not playing, loop will start automatically when video plays (handled in onStateChange)
+                } catch (e) {
+                  console.error('Error checking player state:', e);
+                }
+              }
             } else {
               stopLoop(index);
             }
@@ -2482,6 +2494,9 @@
         eqLow.addEventListener('input', function() {
           if (!this.disabled) {
             const value = parseInt(this.value);
+            if (!trackEQ[index]) {
+              trackEQ[index] = { low: 0, mid: 0, high: 0 };
+            }
             trackEQ[index].low = value;
             eqLowValue.textContent = value > 0 ? '+' + value : value;
             // Note: YouTube API doesn't support real-time EQ, but values are stored for reference
@@ -2494,6 +2509,9 @@
         eqMid.addEventListener('input', function() {
           if (!this.disabled) {
             const value = parseInt(this.value);
+            if (!trackEQ[index]) {
+              trackEQ[index] = { low: 0, mid: 0, high: 0 };
+            }
             trackEQ[index].mid = value;
             eqMidValue.textContent = value > 0 ? '+' + value : value;
           }
@@ -2504,6 +2522,9 @@
         eqHigh.addEventListener('input', function() {
           if (!this.disabled) {
             const value = parseInt(this.value);
+            if (!trackEQ[index]) {
+              trackEQ[index] = { low: 0, mid: 0, high: 0 };
+            }
             trackEQ[index].high = value;
             eqHighValue.textContent = value > 0 ? '+' + value : value;
           }
@@ -2533,7 +2554,6 @@
         player.pauseVideo();
         stopLoop(index);
         stopReverse(index);
-        stopBeatIndicator(index);
         playButton.innerHTML = getSVGIcon('play');
         playButton.classList.remove('playing');
         videoCard.classList.remove('playing');
@@ -2546,7 +2566,6 @@
           stopReverse(index);
         }
         player.playVideo();
-        startBeatIndicator(index);
         if (trackLoops[index]) {
           setTimeout(() => startLoop(index), 500);
         }
@@ -2694,7 +2713,6 @@
             if (videoCard) {
               videoCard.classList.add('playing');
             }
-            startBeatIndicator(index);
             if (trackLoops[index]) {
               setTimeout(() => startLoop(index), 500);
             }
@@ -2764,7 +2782,6 @@
                   if (nextVideoCard) {
                     nextVideoCard.classList.add('playing');
                   }
-                  startBeatIndicator(nextIndex);
                   currentPlayingIndex = nextIndex;
                 }
               }, 50);
@@ -2776,21 +2793,34 @@
 
     function updatePlayButton(index, state) {
       const playButton = document.getElementById(`playBtn${index}`);
+      const primaryPlayButton = document.getElementById(`primaryPlayBtn${index}`);
       const videoCard = document.getElementById(`card${index}`);
-      if (!playButton) return;
+      const trackCard = document.getElementById(`trackCard${index}`);
 
       if (state === YT.PlayerState.PLAYING) {
+        if (playButton) {
         playButton.innerHTML = getSVGIcon('pause');
         playButton.classList.add('playing');
-        videoCard.classList.add('playing');
+        }
+        if (primaryPlayButton) {
+          primaryPlayButton.innerHTML = getSVGIcon('pause');
+          primaryPlayButton.classList.add('playing');
+        }
+        if (videoCard) videoCard.classList.add('playing');
+        if (trackCard) trackCard.classList.add('playing');
         currentPlayingIndex = index;
-        startBeatIndicator(index);
       } else {
+        if (playButton) {
         playButton.innerHTML = getSVGIcon('play');
         playButton.classList.remove('playing');
-        stopBeatIndicator(index);
+        }
+        if (primaryPlayButton) {
+          primaryPlayButton.innerHTML = getSVGIcon('play');
+          primaryPlayButton.classList.remove('playing');
+        }
         if (currentPlayingIndex === index) {
-          videoCard.classList.remove('playing');
+          if (videoCard) videoCard.classList.remove('playing');
+          if (trackCard) trackCard.classList.remove('playing');
           currentPlayingIndex = -1;
         }
       }
@@ -2903,8 +2933,10 @@
       const playingTracks = [];
       const trackStates = [];
       
+      // Check YouTube players
       players.forEach((player, index) => {
         if (player) {
+          try {
           const state = player.getPlayerState();
           if (state === YT.PlayerState.PLAYING) {
             playingTracks.push(index);
@@ -2912,89 +2944,87 @@
               index: index,
               volume: player.getVolume(),
               speed: player.getPlaybackRate(),
-              playTime: now
+                playTime: now,
+                type: 'youtube'
             });
+            }
+          } catch (e) {
+            // Player might not be ready
             }
           }
         });
 
-      // Smart decision making with multiple factors
-      const decision = Math.random();
+      // Check local video players
+      Object.keys(localVideoPlayers).forEach(index => {
+        const video = localVideoPlayers[index];
+        if (video && !video.paused && !video.ended) {
+          playingTracks.push(parseInt(index));
+          trackStates.push({
+            index: parseInt(index),
+            volume: video.volume * 100,
+            speed: video.playbackRate,
+            playTime: now,
+            type: 'local'
+          });
+        }
+      });
+
+      // Improved decision making for reliable mixing
       const trackCount = playingTracks.length;
-      const totalTracks = players.length;
       
       if (trackCount === 0) {
-        // No tracks - smart selection (avoid recently played)
+        // No tracks playing - start next track
         const nextIndex = selectNextTrack();
+        if (nextIndex >= 0 && players[nextIndex]) {
         startTrackWithDJMix(nextIndex);
+        }
       } else if (trackCount === 1) {
         const currentIndex = playingTracks[0];
-        const currentState = trackStates[0];
         const currentGenre = trackGenres[currentIndex] || 'electronic';
-        const currentProfile = genreProfiles[currentGenre] || genreProfiles['electronic'];
+        const player = players[currentIndex];
         
-        // Genre-aware decision tree with more variations
-        const variations = currentProfile.variations || ['smoothCrossfade', 'beatMatch'];
-        const variationType = variations[Math.floor(Math.random() * variations.length)];
-        
-        // People Mode: Adjust decision thresholds based on energy
-        // High energy = more frequent transitions, Low energy = fewer transitions
-        let crossfadeThreshold = 0.35;
-        let enhanceThreshold = 0.55;
-        let layerThreshold = 0.75;
-        
-        if (peopleModeActive) {
-          // High energy: more transitions (40%), Low energy: fewer transitions (25%)
-          crossfadeThreshold = 0.25 + (energyLevel * 0.15);
-          enhanceThreshold = crossfadeThreshold + 0.20;
-          layerThreshold = enhanceThreshold + 0.20;
-        }
-        
-        if (decision < crossfadeThreshold) {
-          // Crossfade to new track (genre-aware, energy-adjusted)
+        if (player) {
+          try {
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+            
+            // Only mix if track has been playing for a reasonable time
+            // and we haven't mixed recently
+            if (timeSinceLastMix > 10000 && currentTime > 10 && duration > 0) {
+              // Check if we're past 60% of the track or 30 seconds, whichever is less
+              const shouldMix = currentTime > Math.min(30, duration * 0.6);
+              
+              if (shouldMix) {
           const nextIndex = selectNextTrack([currentIndex], currentGenre);
+                if (nextIndex >= 0 && players[nextIndex]) {
           crossfadeTracks(currentIndex, nextIndex, mixIntensity);
-        } else if (decision < enhanceThreshold) {
-          // Enhance current track with genre-specific effects
-          enhanceTrackAdvanced(currentIndex, currentState);
-        } else if (decision < layerThreshold) {
-          // Add second track for layering
-          const layerIndex = selectNextTrack([currentIndex], currentGenre);
-          layerTracks(currentIndex, layerIndex);
-        } else if (decision < 0.85) {
-          // 10% - Create build-up effect (genre-specific)
-          createBuildUp(currentIndex);
-        } else if (decision < 0.92) {
-          // 7% - Genre-specific variation
-          applyGenreVariation(currentIndex, variationType);
+                }
         } else {
-          // 8% - Quick cut (for aggressive genres)
-          if (currentProfile.mixingStyle === 'aggressive' || currentProfile.mixingStyle === 'energetic') {
-            quickCutToNext(currentIndex);
+                // Just balance the current track
+                adjustMixAdvanced(trackStates);
+              }
           } else {
-            createBuildUp(currentIndex);
+              // Not time to mix yet, just balance
+              adjustMixAdvanced(trackStates);
+            }
+          } catch (e) {
+            // If we can't get current time, wait longer before mixing
+            if (timeSinceLastMix > 15000) {
+              const nextIndex = selectNextTrack([currentIndex], currentGenre);
+              if (nextIndex >= 0 && players[nextIndex]) {
+                crossfadeTracks(currentIndex, nextIndex, mixIntensity);
+              }
+            }
           }
         }
       } else if (trackCount === 2) {
-        // Two tracks playing - balance and mix
-        if (decision < 0.4) {
-          // 40% - Perfect balance
-          perfectBalance(trackStates);
-        } else if (decision < 0.7) {
-          // 30% - Dynamic mix adjustment
+        // Two tracks playing - balance them
           adjustMixAdvanced(trackStates);
         } else {
-          // 30% - Remove one track smoothly
+        // Multiple tracks - remove one and balance
           const toRemove = selectTrackToRemove(trackStates);
+        if (toRemove >= 0) {
           fadeOutTrack(toRemove);
-        }
-      } else {
-        // Multiple tracks - reduce and balance
-        if (decision < 0.5) {
-          const toRemove = selectTrackToRemove(trackStates);
-          fadeOutTrack(toRemove);
-        } else {
-          adjustMixAdvanced(trackStates);
         }
       }
       
@@ -3767,13 +3797,21 @@
 
     function startLoop(index) {
       const player = players[index];
-      if (!player) return;
+      if (!player || !trackLoops[index]) return;
       
       stopLoop(index); // Clear any existing loop
       
-      // Get current position and video duration
-      const currentTime = player.getCurrentTime();
+      // Wait for video to be ready before getting duration
+      const initLoop = () => {
+        try {
       const duration = player.getDuration();
+          if (!duration || duration <= 0) {
+            // Retry after a short delay if duration not available
+            setTimeout(initLoop, 500);
+            return;
+          }
+          
+          const currentTime = player.getCurrentTime() || 0;
       
       // Check if pattern-based looping is enabled
       const pattern = loopPatterns[index] || '';
@@ -3781,23 +3819,21 @@
       
       if (patternSegments && patternSegments.length > 0) {
         // Pattern-based looping
-        const segmentLengths = patternSegments; // Each number represents seconds
+            const segmentLengths = patternSegments;
         let currentSegmentIndex = loopPatternIndex[index] || 0;
         if (currentSegmentIndex >= segmentLengths.length) {
           currentSegmentIndex = 0;
           loopPatternIndex[index] = 0;
         }
         
-        // Calculate loop points based on current pattern segment
         const segmentLength = segmentLengths[currentSegmentIndex];
         const startTime = Math.max(0, currentTime);
         const endTime = Math.min(duration, startTime + segmentLength);
         
         loopStartTimes[index] = startTime;
         loopEndTimes[index] = endTime;
-        loopSegmentLooped[index] = false; // Reset loop tracking for new segment
+            loopSegmentLooped[index] = false;
         
-        // Check if we're near the end of the current segment
         const checkPatternLoop = () => {
           if (!trackLoops[index] || !player) return;
           
@@ -3808,16 +3844,13 @@
             
             if (current >= currentEndTime - 0.3) {
               if (!loopSegmentLooped[index]) {
-                // First time reaching end: jump back to start of current segment
                 player.seekTo(currentStartTime, true);
                 loopSegmentLooped[index] = true;
               } else {
-                // Already looped back once, now move to next segment
                 let nextSegmentIndex = (currentSegmentIndex + 1) % segmentLengths.length;
                 loopPatternIndex[index] = nextSegmentIndex;
-                loopSegmentLooped[index] = false; // Reset for new segment
+                    loopSegmentLooped[index] = false;
                 
-                // Calculate new loop segment starting from current position
                 const newSegmentLength = segmentLengths[nextSegmentIndex];
                 const newCurrentTime = player.getCurrentTime();
                 const newStartTime = Math.max(0, newCurrentTime);
@@ -3832,30 +3865,25 @@
           }
         };
         
-        // Check every 100ms
         loopIntervals[index] = setInterval(checkPatternLoop, 100);
       } else {
-        // Default looping behavior - continuous repeat from start to end
-        // If loop points are manually set, use them; otherwise loop entire track
+            // Default looping - loop entire track
       if (!loopStartTimes[index]) {
-          loopStartTimes[index] = 0; // Start from beginning
+              loopStartTimes[index] = 0;
       }
       if (!loopEndTimes[index]) {
-          loopEndTimes[index] = duration; // Loop to end
+              loopEndTimes[index] = duration;
       }
       
       const startTime = loopStartTimes[index];
       const endTime = loopEndTimes[index];
       
-        // Check if we're near the end of the loop - jump back to start continuously
       const checkLoop = () => {
         if (!trackLoops[index] || !player) return;
         
         try {
           const current = player.getCurrentTime();
-            // Check if we're at or past the end time (with small buffer)
             if (current >= endTime - 0.3 || current >= duration - 0.3) {
-              // Jump back to start of loop - repeat again and again
             player.seekTo(startTime, true);
           }
         } catch (e) {
@@ -3863,9 +3891,16 @@
         }
       };
       
-        // Check every 100ms for smooth looping
       loopIntervals[index] = setInterval(checkLoop, 100);
       }
+        } catch (e) {
+          console.error('Error initializing loop:', e);
+          // Retry after delay
+          setTimeout(initLoop, 500);
+        }
+      };
+      
+      initLoop();
     }
 
     function stopLoop(index) {
@@ -3899,10 +3934,6 @@
       // Stop any loops, reverse, and beat indicators
       stopLoop(index);
       stopReverse(index);
-      if (beatIndicators[index]) {
-        clearInterval(beatIndicators[index]);
-        delete beatIndicators[index];
-      }
       
       // Remove the card from DOM with animation
       const card = document.getElementById(`card${index}`);
@@ -4073,8 +4104,6 @@
         if (videoCard) videoCard.classList.add('playing');
         currentPlayingIndex = targetIndex;
         currentFocusedIndex = targetIndex;
-        startBeatIndicator(targetIndex);
-        
         // Start with low volume and fade up
         let currentVolume = 0;
         volumeSlider.value = 0;
@@ -4106,38 +4135,6 @@
       }
     }
 
-    function startBeatIndicator(index) {
-      if (beatIndicators[index]) {
-        clearInterval(beatIndicators[index]);
-      }
-      
-      const indicator = document.getElementById(`beatIndicator${index}`);
-      if (!indicator) return;
-      
-      // Estimate BPM and create beat animation
-      const estimatedBPM = trackBPM[index] || 120;
-      const beatInterval = (60 / estimatedBPM) * 1000; // Convert to milliseconds
-      
-      beatIndicators[index] = setInterval(() => {
-        if (indicator) {
-          indicator.classList.add('active');
-          setTimeout(() => {
-            if (indicator) indicator.classList.remove('active');
-          }, 100);
-        }
-      }, beatInterval);
-    }
-
-    function stopBeatIndicator(index) {
-      if (beatIndicators[index]) {
-        clearInterval(beatIndicators[index]);
-        beatIndicators[index] = null;
-      }
-      const indicator = document.getElementById(`beatIndicator${index}`);
-      if (indicator) {
-        indicator.classList.remove('active');
-      }
-    }
 
     function fadeOutTrack(index) {
       const player = players[index];
@@ -4516,8 +4513,10 @@
       autoPlayActive = true;
       readyPlayers = [];
 
-      const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
+      const tracksPanel = document.getElementById('tracksPanel');
+      if (tracksPanel) {
+        tracksPanel.innerHTML = '<div class="loading">Searching...</div>';
+      }
 
       const request = new XMLHttpRequest();
       const apiKey = 'AIzaSyAEzhGEyJJgZpoN6ahBTvnZyr4g5FV5s9s';
@@ -4530,21 +4529,19 @@
           const data = JSON.parse(request.responseText);
           displayResults(data);
         } else {
-          resultsDiv.innerHTML = `
-            <div class="empty-state">
-              <p>Error fetching videos. Please try again.</p>
-            </div>
-          `;
+          const tracksPanel = document.getElementById('tracksPanel');
+          if (tracksPanel) {
+            tracksPanel.innerHTML = '<div class="empty-state"><p>Error fetching videos. Please try again.</p></div>';
+          }
           console.error('Error fetching data from YouTube.');
         }
       };
 
       request.onerror = function() {
-        resultsDiv.innerHTML = `
-          <div class="empty-state">
-            <p>Network error. Please check your connection.</p>
-          </div>
-        `;
+        const tracksPanel = document.getElementById('tracksPanel');
+        if (tracksPanel) {
+          tracksPanel.innerHTML = '<div class="empty-state"><p>Network error. Please check your connection.</p></div>';
+        }
         console.error('Network error.');
       };
 
@@ -4564,11 +4561,12 @@
         toggleBeatDropMix();
       }
 
-      const resultsDiv = document.getElementById('results');
+      const tracksPanel = document.getElementById('tracksPanel');
+      if (!tracksPanel) return;
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'loading';
       loadingDiv.textContent = 'Adding songs...';
-      resultsDiv.appendChild(loadingDiv);
+      tracksPanel.appendChild(loadingDiv);
 
       const request = new XMLHttpRequest();
       const apiKey = 'AIzaSyAEzhGEyJJgZpoN6ahBTvnZyr4g5FV5s9s';
@@ -4619,7 +4617,8 @@
     function createPlayersForItems(items, startIndex) {
       items.forEach((item, relativeIndex) => {
         const index = startIndex + relativeIndex;
-        const resultsDiv = document.getElementById('results');
+        const tracksPanel = document.getElementById('tracksPanel');
+        if (!tracksPanel) return;
         
         const videoCard = document.createElement('div');
         videoCard.className = 'video-card';
@@ -4633,11 +4632,6 @@
         closeButton.title = 'Remove this song';
         closeButton.onclick = () => removeSong(index);
         
-        // Add beat indicator
-        const beatIndicator = document.createElement('div');
-        beatIndicator.className = 'beat-indicator';
-        beatIndicator.id = `beatIndicator${index}`;
-        
         const videoWrapper = document.createElement('div');
         videoWrapper.className = 'video-wrapper';
         const videoDiv = document.createElement('div');
@@ -4645,7 +4639,6 @@
         videoWrapper.appendChild(videoDiv);
         
         videoCard.appendChild(closeButton);
-        videoCard.appendChild(beatIndicator);
         
         const detectedGenre = trackGenres[index] || 'electronic';
         
@@ -4774,18 +4767,16 @@
           </div>
         `;
         
+        // Simple controls: play, volume, speed, pitch
         controls.appendChild(playControlsGroup);
         controls.appendChild(volumeGroup);
         controls.appendChild(speedGroup);
         controls.appendChild(pitchGroup);
-        controls.appendChild(loopGroup);
-        controls.appendChild(cueButtonsGroup);
-        controls.appendChild(eqControls);
         
         videoCard.appendChild(videoWrapper);
         videoCard.appendChild(videoInfo);
         videoCard.appendChild(controls);
-        resultsDiv.appendChild(videoCard);
+        tracksPanel.appendChild(videoCard);
 
         // Initialize track state
         trackLoops[index] = false;
@@ -4918,7 +4909,9 @@
     searchForm.addEventListener('submit', handleFormSubmit);
 
     const addMoreForm = document.getElementById('addMoreForm');
+    if (addMoreForm) {
     addMoreForm.addEventListener('submit', handleAddMoreSubmit);
+    }
 
     const copilotButton = document.getElementById('copilotButton');
     copilotButton.addEventListener('click', toggleCopilot);
@@ -4964,7 +4957,20 @@
     // TTS Stop button
     const ttsStopButton = document.getElementById('ttsStopButton');
     if (ttsStopButton) {
-      ttsStopButton.addEventListener('click', stopTTS);
+      ttsStopButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        stopTTS();
+        // Visual feedback
+        this.style.transform = 'scale(0.95)';
+        this.style.background = 'rgba(255, 0, 0, 0.4)';
+        setTimeout(() => {
+          this.style.transform = 'scale(1)';
+          this.style.background = 'rgba(255, 0, 0, 0.2)';
+        }, 150);
+      });
+      // Ensure button is never disabled
+      ttsStopButton.disabled = false;
     }
     
     // Prefill buttons
@@ -5297,11 +5303,34 @@
     }
 
     function stopTTS() {
-      if ('speechSynthesis' in window) {
-        speechSynthesis.cancel(); // Stop all speech
-        isTTSPlaying = false;
-        ttsQueue = []; // Clear the queue to prevent repeating
-        console.log('TTS stopped and queue cleared');
+      try {
+        if ('speechSynthesis' in window) {
+          // Cancel all pending and current speech
+          speechSynthesis.cancel();
+          
+          // Clear the queue
+          ttsQueue = [];
+          
+          // Reset playing state
+          isTTSPlaying = false;
+          
+          // Force stop any remaining utterances
+          if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+          }
+          
+          console.log('TTS stopped and queue cleared');
+          
+          // Visual feedback on button
+          const stopButton = document.getElementById('ttsStopButton');
+          if (stopButton) {
+            stopButton.disabled = false;
+            stopButton.style.opacity = '1';
+            stopButton.style.cursor = 'pointer';
+          }
+        }
+      } catch (error) {
+        console.error('Error stopping TTS:', error);
       }
     }
 
@@ -5396,22 +5425,284 @@
       }
     });
 
-    function displayLocalVideos() {
-      // NEVER play background videos on mobile - return early
-      if (isMobileDevice()) {
-        console.log('Mobile device detected - background videos disabled');
-        return;
+
+    // Removed - YouTube only
+    function createLocalVideoPlayer_removed(index, videoUrl, fileName) {
+      const resultsDiv = document.getElementById('results');
+      
+      const videoCard = document.createElement('div');
+      videoCard.className = 'video-card';
+      videoCard.id = `card${index}`;
+      videoCard.style.animationDelay = `${index * 0.1}s`;
+      
+      // Close button
+      const closeButton = document.createElement('button');
+      closeButton.className = 'close-button';
+      closeButton.innerHTML = getSVGIcon('close');
+      closeButton.title = 'Remove this song';
+      closeButton.onclick = () => {
+        if (localVideoPlayers[index]) {
+          localVideoPlayers[index].pause();
+          localVideoPlayers[index].src = '';
+          URL.revokeObjectURL(videoUrl);
+        }
+        uploadedVideos = uploadedVideos.filter(v => v.index !== index);
+        delete localVideoPlayers[index];
+        videoCard.remove();
+      };
+      
+      const videoWrapper = document.createElement('div');
+      videoWrapper.className = 'video-wrapper';
+      
+      // Create HTML5 video element
+      const videoElement = document.createElement('video');
+      videoElement.src = videoUrl;
+      videoElement.controls = false;
+      videoElement.playsinline = true;
+      videoElement.preload = 'metadata';
+      videoElement.style.width = '100%';
+      videoElement.style.height = '100%';
+      videoElement.style.objectFit = 'cover';
+      videoElement.id = `localVideo${index}`;
+      
+      videoWrapper.appendChild(videoElement);
+      videoCard.appendChild(closeButton);
+      videoCard.appendChild(videoWrapper);
+      
+      // Video info
+      const videoInfo = document.createElement('div');
+      videoInfo.className = 'video-info';
+      videoInfo.innerHTML = `
+        <div class="video-title">${fileName}</div>
+        <div class="video-channel">Local Video File</div>
+        <div class="video-genre" id="genre${index}">MUSIC</div>
+      `;
+      videoCard.appendChild(videoInfo);
+      
+      // Initialize track state
+      trackLoops[index] = false;
+      trackPitch[index] = 0;
+      trackReverse[index] = false;
+      loopPatterns[index] = '';
+      loopPatternIndex[index] = 0;
+      loopSegmentLooped[index] = false;
+      trackEQ[index] = { low: 0, mid: 0, high: 0 };
+      cuePoints[index] = {};
+      trackBPM[index] = 120;
+      trackGenres[index] = 'electronic';
+      
+      // Store video element
+      localVideoPlayers[index] = videoElement;
+      
+      // Create controls (same as YouTube players)
+      const controls = document.createElement('div');
+      controls.className = 'controls';
+      
+      // Play button
+      const playButton = document.createElement('button');
+      playButton.className = 'play-button';
+      playButton.id = `playBtn${index}`;
+      playButton.innerHTML = getSVGIcon('play');
+      playButton.onclick = () => toggleLocalVideoPlay(index);
+      playButton.title = 'Play/Pause';
+      
+      const playControlsGroup = document.createElement('div');
+      playControlsGroup.className = 'play-controls-group';
+      playControlsGroup.appendChild(playButton);
+      
+      // Volume control
+      const volumeGroup = document.createElement('div');
+      volumeGroup.className = 'control-group';
+      volumeGroup.innerHTML = `
+        <label>Volume</label>
+        <input type="range" id="volume${index}" min="0" max="100" value="50" class="slider">
+        <span class="control-value" id="volumeValue${index}">50%</span>
+      `;
+      
+      // Speed control
+      const speedGroup = document.createElement('div');
+      speedGroup.className = 'control-group';
+      speedGroup.innerHTML = `
+        <label>Speed</label>
+        <input type="range" id="speed${index}" min="0.25" max="2" step="0.01" value="1" class="slider">
+        <span class="control-value" id="speedValue${index}">1.00x</span>
+      `;
+      
+      // Loop checkbox
+      const loopGroup = document.createElement('div');
+      loopGroup.className = 'control-group';
+      loopGroup.innerHTML = `
+        <label style="display: flex; align-items: center; gap: 6px;">
+          <input type="checkbox" id="loop${index}" style="width: auto;">
+          <span>Loop</span>
+        </label>
+        <input type="text" id="loopPattern${index}" placeholder="Pattern: x xx xxx" style="margin-top: 4px; padding: 4px; font-size: 11px; width: 100%;">
+      `;
+      
+      // EQ controls
+      const eqControls = document.createElement('div');
+      eqControls.className = 'eq-controls';
+      eqControls.innerHTML = `
+        <div class="eq-control">
+          <span class="eq-label">Low</span>
+          <input type="range" class="eq-slider" id="eqLow${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+          <span class="control-value" id="eqLowValue${index}" style="font-size: 9px;">0</span>
+        </div>
+        <div class="eq-control">
+          <span class="eq-label">Mid</span>
+          <input type="range" class="eq-slider" id="eqMid${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+          <span class="control-value" id="eqMidValue${index}" style="font-size: 9px;">0</span>
+        </div>
+        <div class="eq-control">
+          <span class="eq-label">High</span>
+          <input type="range" class="eq-slider" id="eqHigh${index}" min="-12" max="12" step="1" value="0" orient="vertical">
+          <span class="control-value" id="eqHighValue${index}" style="font-size: 9px;">0</span>
+        </div>
+      `;
+      
+      controls.appendChild(playControlsGroup);
+      controls.appendChild(volumeGroup);
+      controls.appendChild(speedGroup);
+      controls.appendChild(loopGroup);
+      controls.appendChild(eqControls);
+      
+      videoCard.appendChild(controls);
+      resultsDiv.appendChild(videoCard);
+      
+      // Setup controls
+      setupLocalVideoControls(index, videoElement);
+      
+      // Add to ready players
+      videoElement.addEventListener('loadedmetadata', () => {
+        readyPlayers.push(index);
+      });
+    }
+    
+    // Setup controls for local video
+    function setupLocalVideoControls(index, videoElement) {
+      // Volume
+      const volumeSlider = document.getElementById(`volume${index}`);
+      const volumeValue = document.getElementById(`volumeValue${index}`);
+      if (volumeSlider && volumeValue) {
+        volumeSlider.addEventListener('input', function() {
+          const volume = parseInt(this.value);
+          videoElement.volume = volume / 100;
+          volumeValue.textContent = volume + '%';
+        });
       }
       
+      // Speed
+      const speedSlider = document.getElementById(`speed${index}`);
+      const speedValue = document.getElementById(`speedValue${index}`);
+      if (speedSlider && speedValue) {
+        speedSlider.addEventListener('input', function() {
+          const speed = parseFloat(this.value);
+          videoElement.playbackRate = speed;
+          speedValue.textContent = speed.toFixed(2) + 'x';
+        });
+      }
+      
+      // Loop
+      const loopCheckbox = document.getElementById(`loop${index}`);
+      if (loopCheckbox) {
+        loopCheckbox.addEventListener('change', function() {
+          trackLoops[index] = this.checked;
+          videoElement.loop = this.checked;
+          if (this.checked) {
+            startLocalVideoLoop(index);
+          } else {
+            stopLocalVideoLoop(index);
+          }
+        });
+      }
+      
+      // EQ (visual only for now)
+      ['Low', 'Mid', 'High'].forEach(eqType => {
+        const eqSlider = document.getElementById(`eq${eqType}${index}`);
+        const eqValue = document.getElementById(`eq${eqType}Value${index}`);
+        if (eqSlider && eqValue) {
+          eqSlider.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (!trackEQ[index]) trackEQ[index] = { low: 0, mid: 0, high: 0 };
+            trackEQ[index][eqType.toLowerCase()] = value;
+            eqValue.textContent = value > 0 ? '+' + value : value;
+          });
+        }
+      });
+    }
+    
+    // Toggle local video play
+    function toggleLocalVideoPlay(index) {
+      const video = localVideoPlayers[index];
+      if (!video) return;
+      
+      if (video.paused) {
+        video.play();
+        const playButton = document.getElementById(`playBtn${index}`);
+        if (playButton) {
+          playButton.innerHTML = getSVGIcon('pause');
+          playButton.classList.add('playing');
+        }
+        const card = document.getElementById(`card${index}`);
+        if (card) card.classList.add('playing');
+        
+        if (trackLoops[index]) {
+          startLocalVideoLoop(index);
+        }
+      } else {
+        video.pause();
+        const playButton = document.getElementById(`playBtn${index}`);
+        if (playButton) {
+          playButton.innerHTML = getSVGIcon('play');
+          playButton.classList.remove('playing');
+        }
+        const card = document.getElementById(`card${index}`);
+        if (card) card.classList.remove('playing');
+        stopLocalVideoLoop(index);
+      }
+    }
+    
+    // Loop functions for local videos
+    function startLocalVideoLoop(index) {
+      const video = localVideoPlayers[index];
+      if (!video || !trackLoops[index]) return;
+      
+      stopLocalVideoLoop(index);
+      
+      // If loop points are set, use them; otherwise loop entire video
+      if (loopStartTimes[index] !== undefined && loopEndTimes[index] !== undefined) {
+        const checkLoop = () => {
+          if (!trackLoops[index] || !video) return;
+          const current = video.currentTime;
+          if (current >= loopEndTimes[index] - 0.3) {
+            video.currentTime = loopStartTimes[index];
+          }
+        };
+        loopIntervals[index] = setInterval(checkLoop, 100);
+      } else {
+        // Loop entire video
+        video.loop = true;
+      }
+    }
+    
+    function stopLocalVideoLoop(index) {
+      if (loopIntervals[index]) {
+        clearInterval(loopIntervals[index]);
+        loopIntervals[index] = null;
+      }
+      const video = localVideoPlayers[index];
+      if (video) {
+        video.loop = false;
+      }
+    }
+
+    function displayLocalVideos() {
       const backgroundContainer = document.getElementById('backgroundVideos');
       if (!backgroundContainer) return;
       
       backgroundContainer.innerHTML = '';
       
       localVideoElements = [];
-      readyPlayers = [];
-      autoPlayActive = true;
-      userInteracted = false;
       backgroundVideoStarted = false;
 
       localVideos.forEach((videoFile, index) => {
@@ -5420,55 +5711,30 @@
         videoElement.id = `bgVideo${index}`;
         videoElement.src = videoFile;
         videoElement.muted = true;
-        videoElement.loop = false; // Don't loop - play sequentially
+        videoElement.loop = false;
         videoElement.playsinline = true;
         videoElement.preload = 'auto';
         
         backgroundContainer.appendChild(videoElement);
         localVideoElements.push(videoElement);
         
-        // Single event listener to start first video
-        // NEVER start on mobile
-        let videoStarted = false;
-        const startVideoOnce = () => {
-          // NEVER play background videos on mobile
-          if (isMobileDevice()) {
-            return;
-          }
-          if (index === 0 && autoPlayActive && !backgroundVideoStarted && !videoStarted) {
-            videoStarted = true;
+        // Start first video when ready
+        if (index === 0) {
+          const startFirstVideo = () => {
+            if (!backgroundVideoStarted) {
             backgroundVideoStarted = true;
-            console.log('First background video ready, starting playback');
-            setTimeout(() => playBackgroundVideo(0), 200);
-          }
-        };
-        
-        // Track when video is ready - use multiple events but only start once
-        videoElement.addEventListener('canplay', () => {
-          if (!readyPlayers.includes(index)) {
-            readyPlayers.push(index);
-            console.log(`Background video ${index} ready`);
-          }
-          startVideoOnce();
-        });
-        
-        videoElement.addEventListener('loadeddata', () => {
-          if (!readyPlayers.includes(index)) {
-            readyPlayers.push(index);
-          }
-          startVideoOnce();
-        });
+              setTimeout(() => playBackgroundVideo(0), 300);
+            }
+          };
+          
+          videoElement.addEventListener('canplay', startFirstVideo, { once: true });
+          videoElement.addEventListener('loadeddata', startFirstVideo, { once: true });
+        }
         
         // Auto-advance to next video when current ends
         videoElement.addEventListener('ended', () => {
-          console.log(`Background video ${index} ended, switching to next`);
           const nextIndex = (index + 1) % localVideos.length;
           switchToNextBackground(index);
-        });
-        
-        // Handle errors
-        videoElement.addEventListener('error', (e) => {
-          console.error(`Error loading background video ${index}:`, e, videoFile);
         });
         
         // Try to load immediately
@@ -5476,91 +5742,42 @@
       });
     }
 
-    function startBackgroundVideoSequence() {
-      // NEVER start background videos on mobile
-      if (isMobileDevice()) {
-        return;
-      }
-      
-      if (!autoPlayActive || readyPlayers.length === 0 || backgroundVideoStarted) return;
-      
-      // Start with first video
-      backgroundVideoStarted = true;
-      playBackgroundVideo(0);
-    }
-
     function playBackgroundVideo(index) {
-      // NEVER play background videos on mobile
-      if (isMobileDevice()) {
-        console.log('Mobile device - background videos disabled');
-        return;
-      }
-      
-      if (localVideoElements.length === 0) {
-        console.log('No background videos available');
-        return;
-      }
-      
-      console.log(`Attempting to play background video ${index}`);
+      if (localVideoElements.length === 0) return;
       
       // Stop all background videos
       localVideoElements.forEach((video, i) => {
         if (video) {
           video.pause();
           video.classList.remove('active');
+          video.style.opacity = '0';
         }
       });
       
       // Play selected video
       const video = localVideoElements[index];
-      if (!video) {
-        console.error(`Background video ${index} not found`);
-        return;
-      }
+      if (!video) return;
       
-      console.log(`Playing video ${index}, src: ${video.src}`);
       video.currentTime = 0;
-      video.muted = true; // Ensure muted for autoplay
-      
-      // Make visible immediately
+      video.muted = true;
       video.style.opacity = '1';
       video.classList.add('active');
       
       const playPromise = video.play();
-      
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          console.log(`Background video ${index} playing successfully`);
-          video.style.opacity = '1';
-          video.classList.add('active');
-          // Verify it's actually playing
-          console.log(`Video playing state: ${!video.paused}, currentTime: ${video.currentTime}`);
-        }).catch(err => {
-          console.error(`Background video ${index} play failed:`, err);
-          // Keep it visible even if play fails
-          video.style.opacity = '1';
-          video.classList.add('active');
-          // Try again after a short delay
-          setTimeout(() => {
-            video.play().then(() => {
-              console.log(`Background video ${index} playing on retry`);
-              video.style.opacity = '1';
-            }).catch(e => {
-              console.error('Retry also failed:', e);
-            });
-          }, 1000);
+        playPromise.catch(err => {
+          // Retry on user interaction
+          document.addEventListener('click', function retryPlay() {
+            video.play().catch(() => {});
+            document.removeEventListener('click', retryPlay);
+          }, { once: true });
         });
-      } else {
-        video.style.opacity = '1';
-        video.classList.add('active');
       }
     }
 
     function switchToNextBackground(currentIndex) {
       const nextIndex = (currentIndex + 1) % localVideoElements.length;
-      console.log(`Switching from video ${currentIndex} to video ${nextIndex}`);
       
-      // Fade transition
       const currentVideo = localVideoElements[currentIndex];
       const nextVideo = localVideoElements[nextIndex];
       
@@ -5570,7 +5787,6 @@
         currentVideo.pause();
       }
       
-      // Small delay for smooth transition
       setTimeout(() => {
         if (nextVideo) {
           nextVideo.currentTime = 0;
@@ -5578,15 +5794,16 @@
           nextVideo.style.opacity = '1';
           nextVideo.classList.add('active');
           
-          nextVideo.play().then(() => {
-            console.log(`Background video ${nextIndex} playing`);
-          }).catch(err => {
-            console.error(`Background video ${nextIndex} play failed:`, err);
-            // Retry
-            setTimeout(() => {
-              nextVideo.play().catch(e => console.error('Retry failed:', e));
-            }, 500);
-          });
+          const playPromise = nextVideo.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {
+              // Retry on next user interaction
+              document.addEventListener('click', function retryPlay() {
+                nextVideo.play().catch(() => {});
+                document.removeEventListener('click', retryPlay);
+              }, { once: true });
+            });
+          }
         }
       }, 500);
     }
@@ -5603,20 +5820,12 @@
 
     // Enable video playback on any user interaction (click anywhere)
     document.addEventListener('click', function enableVideos() {
-      if (localVideoElements.length > 0 && !userInteracted) {
-        userInteracted = true;
-        localVideoElements.forEach(video => {
-          if (video && video.paused) {
-            video.muted = true;
-            video.play().catch(err => {
-              console.error('Video play on click failed:', err);
-            });
-          }
-        });
-        // Start the sequence if not already playing
+      if (localVideoElements.length > 0) {
         const activeVideo = localVideoElements.find(v => v.classList.contains('active'));
-        if (!activeVideo) {
-          playBackgroundVideo(0);
+        if (!activeVideo || activeVideo.paused) {
+          const currentIndex = localVideoElements.findIndex(v => v.classList.contains('active'));
+          const indexToPlay = currentIndex >= 0 ? currentIndex : 0;
+          playBackgroundVideo(indexToPlay);
         }
       }
     }, { once: false });
@@ -5810,6 +6019,155 @@
       // Initialize TTS
       initializeTTS();
     });
+
+    // Make a track primary (move to right panel)
+    function makePrimary(index) {
+      if (!videoData[index]) return;
+      
+      const item = videoData[index];
+      const primaryVideoCard = document.getElementById('primaryVideoCard');
+      const primaryVideoWrapper = document.getElementById('primaryVideoWrapper');
+      const primaryVideoInfo = document.getElementById('primaryVideoInfo');
+      const primaryControls = document.getElementById('primaryControls');
+      const emptyState = document.getElementById('emptyState');
+      const trackCard = document.getElementById(`trackCard${index}`);
+      
+      if (!primaryVideoCard || !primaryVideoWrapper) return;
+      
+      // Update active state
+      document.querySelectorAll('.track-card-small').forEach(card => {
+        card.classList.remove('active');
+      });
+      if (trackCard) trackCard.classList.add('active');
+      
+      primaryVideoIndex = index;
+      primaryVideoCard.style.display = 'flex';
+      emptyState.style.display = 'none';
+      
+      // Clear primary panel
+      primaryVideoWrapper.innerHTML = '';
+      primaryControls.innerHTML = '';
+      
+      // Get or create player
+      let player = players[index];
+      if (!player) {
+        // Player not ready yet, will be created
+        return;
+      }
+      
+      // Move iframe to primary panel
+      const iframe = document.querySelector(`#player${index} iframe`);
+      if (iframe) {
+        primaryVideoWrapper.appendChild(iframe);
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+      }
+      
+      // Update info
+      const detectedGenre = trackGenres[index] || 'electronic';
+      primaryVideoInfo.innerHTML = `
+        <div class="video-title">${item.snippet.title}</div>
+        <div class="video-channel">${item.snippet.channelTitle}</div>
+        <div class="video-genre">${detectedGenre.toUpperCase()}</div>
+      `;
+      
+      // Setup controls
+      setupPrimaryControls(index);
+    }
+    
+    // Setup controls for primary video
+    function setupPrimaryControls(index) {
+      const primaryControls = document.getElementById('primaryControls');
+      if (!primaryControls) return;
+      
+      primaryControls.innerHTML = '';
+      
+      // Play button
+      const playButton = document.createElement('button');
+      playButton.className = 'play-button';
+      playButton.id = `primaryPlayBtn${index}`;
+      playButton.innerHTML = getSVGIcon('play');
+      playButton.onclick = () => togglePlay(index);
+      playButton.style.cssText = 'padding: 12px 24px; font-size: 16px; margin-bottom: 16px;';
+      
+      // Volume
+      const volumeGroup = document.createElement('div');
+      volumeGroup.className = 'control-group';
+      volumeGroup.innerHTML = `
+        <span class="control-icon">${getSVGIcon('volume')}</span>
+        <div class="slider-container" style="flex: 1;">
+          <input type="range" class="slider" id="primaryVolume${index}" min="0" max="100" value="50">
+        </div>
+        <span class="control-value" id="primaryVolumeValue${index}">50%</span>
+      `;
+      
+      // Speed
+      const speedGroup = document.createElement('div');
+      speedGroup.className = 'control-group';
+      speedGroup.innerHTML = `
+        <span class="control-icon">${getSVGIcon('speed')}</span>
+        <div class="slider-container" style="flex: 1;">
+          <input type="range" class="slider" id="primarySpeed${index}" min="0.25" max="2" step="0.05" value="1">
+        </div>
+        <span class="control-value" id="primarySpeedValue${index}">1.0x</span>
+      `;
+      
+      // Pitch
+      const pitchGroup = document.createElement('div');
+      pitchGroup.className = 'control-group';
+      pitchGroup.innerHTML = `
+        <span class="control-icon">${getSVGIcon('pitch')}</span>
+        <div class="slider-container" style="flex: 1;">
+          <input type="range" class="slider" id="primaryPitch${index}" min="-12" max="12" step="1" value="0">
+        </div>
+        <span class="control-value" id="primaryPitchValue${index}">0</span>
+      `;
+      
+      primaryControls.appendChild(playButton);
+      primaryControls.appendChild(volumeGroup);
+      primaryControls.appendChild(speedGroup);
+      primaryControls.appendChild(pitchGroup);
+      
+      // Connect controls to existing player
+      const player = players[index];
+      if (player) {
+        // Volume
+        const volSlider = document.getElementById(`primaryVolume${index}`);
+        const volValue = document.getElementById(`primaryVolumeValue${index}`);
+        if (volSlider && volValue) {
+          volSlider.addEventListener('input', function() {
+            player.setVolume(parseInt(this.value));
+            volValue.textContent = this.value + '%';
+          });
+        }
+        
+        // Speed
+        const speedSlider = document.getElementById(`primarySpeed${index}`);
+        const speedValue = document.getElementById(`primarySpeedValue${index}`);
+        if (speedSlider && speedValue) {
+          speedSlider.addEventListener('input', function() {
+            const speed = parseFloat(this.value);
+            const pitchMultiplier = Math.pow(2, (trackPitch[index] || 0) / 12);
+            player.setPlaybackRate(speed * pitchMultiplier);
+            speedValue.textContent = speed.toFixed(2) + 'x';
+          });
+        }
+        
+        // Pitch
+        const pitchSlider = document.getElementById(`primaryPitch${index}`);
+        const pitchValue = document.getElementById(`primaryPitchValue${index}`);
+        if (pitchSlider && pitchValue) {
+          pitchSlider.addEventListener('input', function() {
+            const pitchSemitones = parseInt(this.value);
+            trackPitch[index] = pitchSemitones;
+            const speed = parseFloat(speedSlider.value) || 1.0;
+            const pitchMultiplier = Math.pow(2, pitchSemitones / 12);
+            player.setPlaybackRate(speed * pitchMultiplier);
+            pitchValue.textContent = pitchSemitones > 0 ? '+' + pitchSemitones : pitchSemitones.toString();
+          });
+        }
+      }
+    }
 
     // Videos now automatically advance when each one ends (no timer needed)
   </script>
