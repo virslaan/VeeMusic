@@ -2067,10 +2067,13 @@
         cuePoints[index] = {};
         trackBPM[index] = 120;
         
-        // Create hidden player div for thumbnail
+        // Create player div - don't hide it, YouTube needs it visible to create iframe
         const videoDiv = document.createElement('div');
         videoDiv.id = `player${index}`;
-        videoDiv.style.display = 'none';
+        videoDiv.style.position = 'absolute';
+        videoDiv.style.left = '-9999px';
+        videoDiv.style.width = '160px';
+        videoDiv.style.height = '90px';
         document.body.appendChild(videoDiv);
           
           // Verify videoId exists
@@ -2107,41 +2110,35 @@
                     event.target.setVolume(50);
                     readyPlayers.push(index);
                     
-                    // Move iframe to thumbnail - use setTimeout to ensure iframe is created
-                    setTimeout(() => {
-                    const iframe = videoDiv.querySelector('iframe');
-                    if (iframe) {
+                    // Move iframe to thumbnail - YouTube creates iframe asynchronously, so we need to wait
+                    // Try multiple times with increasing delays
+                    const moveIframeToThumbnail = (attempt = 0) => {
+                      const iframe = videoDiv.querySelector('iframe');
+                      if (iframe) {
                         const thumbDiv = document.getElementById(`thumb${index}`);
                         if (thumbDiv) {
                           // Clear any existing content
                           thumbDiv.innerHTML = '';
                           thumbDiv.appendChild(iframe);
-                      iframe.style.width = '100%';
-                      iframe.style.height = '100%';
+                          iframe.style.width = '100%';
+                          iframe.style.height = '100%';
                           iframe.style.border = 'none';
                           iframe.style.display = 'block';
+                          return true;
                         } else {
                           console.warn(`Thumbnail div thumb${index} not found`);
                         }
+                      } else if (attempt < 10) {
+                        // Retry up to 10 times with increasing delays
+                        setTimeout(() => moveIframeToThumbnail(attempt + 1), 100 * (attempt + 1));
                       } else {
-                        console.warn(`Iframe not found for player${index}`);
-                        // Retry after a bit more time
-                        setTimeout(() => {
-                          const iframe = videoDiv.querySelector('iframe');
-                          if (iframe) {
-                            const thumbDiv = document.getElementById(`thumb${index}`);
-                            if (thumbDiv) {
-                              thumbDiv.innerHTML = '';
-                              thumbDiv.appendChild(iframe);
-                              iframe.style.width = '100%';
-                              iframe.style.height = '100%';
-                              iframe.style.border = 'none';
-                              iframe.style.display = 'block';
-                            }
-                          }
-                        }, 500);
+                        console.warn(`Iframe not found for player${index} after ${attempt} attempts`);
                       }
-                    }, 100);
+                      return false;
+                    };
+                    
+                    // Start trying to move iframe
+                    setTimeout(() => moveIframeToThumbnail(0), 100);
                     
                     // If this is the primary video, move iframe to primary panel
                     if (primaryVideoIndex === index) {
@@ -2252,15 +2249,22 @@
       });
 
       if (limitedItems.length > 0) {
-        document.getElementById('copilotButton').style.display = 'block';
-        document.getElementById('playAllButton').style.display = 'block';
-        document.getElementById('shiftButton').style.display = 'block';
-        document.getElementById('beatDropButton').style.display = 'block';
+        const copilotBtn = document.getElementById('copilotButton');
+        if (copilotBtn) copilotBtn.style.display = 'block';
+        const playAllBtn = document.getElementById('playAllButton');
+        if (playAllBtn) playAllBtn.style.display = 'block';
+        const shiftBtn = document.getElementById('shiftButton');
+        if (shiftBtn) shiftBtn.style.display = 'block';
+        const beatDropBtn = document.getElementById('beatDropButton');
+        if (beatDropBtn) beatDropBtn.style.display = 'block';
         const voiceButton = document.getElementById('voiceButton');
         if (voiceButton) voiceButton.style.display = 'block';
-        document.getElementById('addMoreSection').style.display = 'block';
-        document.getElementById('ttsSection').style.display = 'block';
-        document.getElementById('soundEffectsSection').style.display = 'block';
+        const addMoreSection = document.getElementById('addMoreSection');
+        if (addMoreSection) addMoreSection.style.display = 'block';
+        const ttsSection = document.getElementById('ttsSection');
+        if (ttsSection) ttsSection.style.display = 'block';
+        const soundEffectsSection = document.getElementById('soundEffectsSection');
+        if (soundEffectsSection) soundEffectsSection.style.display = 'block';
       }
       
       // Reset auto-play state
@@ -5020,7 +5024,9 @@
     copilotButton.addEventListener('click', toggleCopilot);
 
     const beatDropButton = document.getElementById('beatDropButton');
-    beatDropButton.addEventListener('click', toggleBeatDropMix);
+    if (beatDropButton) {
+      beatDropButton.addEventListener('click', toggleBeatDropMix);
+    }
 
     // Play All button
     const playAllButton = document.getElementById('playAllButton');
