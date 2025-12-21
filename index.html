@@ -2066,15 +2066,6 @@
         trackEQ[index] = { low: 0, mid: 0, high: 0 };
         cuePoints[index] = {};
         trackBPM[index] = 120;
-        
-        // Create player div - don't hide it, YouTube needs it visible to create iframe
-        const videoDiv = document.createElement('div');
-        videoDiv.id = `player${index}`;
-        videoDiv.style.position = 'absolute';
-        videoDiv.style.left = '-9999px';
-        videoDiv.style.width = '160px';
-        videoDiv.style.height = '90px';
-        document.body.appendChild(videoDiv);
           
           // Verify videoId exists
           const videoId = item.id?.videoId || item.id;
@@ -2082,6 +2073,20 @@
             console.error('No video ID found for item:', item);
             return;
           }
+          
+        // Create player directly in thumbnail div - YouTube needs visible container
+        const thumbDivForPlayer = document.getElementById(`thumb${index}`);
+        if (!thumbDivForPlayer) {
+          console.error(`Thumbnail div thumb${index} not found`);
+          return;
+        }
+        
+        // Create player div inside thumbnail
+        const videoDiv = document.createElement('div');
+        videoDiv.id = `player${index}`;
+        videoDiv.style.width = '100%';
+        videoDiv.style.height = '100%';
+        thumbDivForPlayer.appendChild(videoDiv);
           
         // Function to create player (for thumbnail)
           const createPlayer = () => {
@@ -2091,10 +2096,10 @@
             }
             
             try {
-            // Create small thumbnail player - use larger size for better visibility
+          // Create player directly in thumbnail - YouTube will create iframe here
               players[index] = new YT.Player(videoDiv.id, {
-              height: '90',
-              width: '160',
+            height: '90',
+            width: '160',
                 videoId: videoId,
                 playerVars: {
                   modestbranding: 1,
@@ -2110,59 +2115,36 @@
                     event.target.setVolume(50);
                     readyPlayers.push(index);
                     
-                    // Move iframe to thumbnail - YouTube creates iframe asynchronously, so we need to wait
-                    // Try multiple times with increasing delays
-                    const moveIframeToThumbnail = (attempt = 0) => {
-                      const iframe = videoDiv.querySelector('iframe');
-                      if (iframe) {
-                        const thumbDiv = document.getElementById(`thumb${index}`);
-                        if (thumbDiv) {
-                          // Clear any existing content
-                          thumbDiv.innerHTML = '';
-                          thumbDiv.appendChild(iframe);
-                          iframe.style.width = '100%';
-                          iframe.style.height = '100%';
-                          iframe.style.border = 'none';
-                          iframe.style.display = 'block';
-                          return true;
-                        } else {
-                          console.warn(`Thumbnail div thumb${index} not found`);
-                        }
-                      } else if (attempt < 10) {
-                        // Retry up to 10 times with increasing delays
-                        setTimeout(() => moveIframeToThumbnail(attempt + 1), 100 * (attempt + 1));
-                      } else {
-                        console.warn(`Iframe not found for player${index} after ${attempt} attempts`);
+                    // Player is already in thumbnail div, just ensure iframe is styled correctly
+                    setTimeout(() => {
+                    const iframe = videoDiv.querySelector('iframe');
+                    if (iframe) {
+                      iframe.style.width = '100%';
+                      iframe.style.height = '100%';
+                        iframe.style.border = 'none';
+                        iframe.style.display = 'block';
                       }
-                      return false;
-                    };
+                    }, 100);
                     
-                    // Start trying to move iframe
-                    setTimeout(() => moveIframeToThumbnail(0), 100);
-                    
-                    // If this is the primary video, move iframe to primary panel
+                    // If this is the primary video, move player div to primary panel
                     if (primaryVideoIndex === index) {
                       setTimeout(() => {
                         const primaryVideoWrapper = document.getElementById('primaryVideoWrapper');
-                        const iframe = document.querySelector(`#thumb${index} iframe`) || document.querySelector(`#player${index} iframe`);
-                        if (iframe && primaryVideoWrapper) {
+                        const playerDiv = document.getElementById(`player${index}`);
+                        if (playerDiv && primaryVideoWrapper) {
                           primaryVideoWrapper.innerHTML = '';
-                          primaryVideoWrapper.appendChild(iframe);
-                          iframe.style.width = '100%';
-                          iframe.style.height = '100%';
-                          iframe.style.minHeight = '400px';
-                          iframe.style.border = 'none';
-                          iframe.style.display = 'block';
-                          iframe.style.position = 'absolute';
-                          iframe.style.top = '0';
-                          iframe.style.left = '0';
+                          primaryVideoWrapper.appendChild(playerDiv);
+                          playerDiv.style.width = '100%';
+                          playerDiv.style.height = '100%';
+                          playerDiv.style.position = 'relative';
                           if (!primaryVideoWrapper.style.height || primaryVideoWrapper.style.height === '0px') {
                             primaryVideoWrapper.style.height = '500px';
                           }
                           // Resize player for larger display
                           try {
                             if (event.target && event.target.setSize) {
-                              event.target.setSize(window.innerWidth * 0.6, 500);
+                              const width = Math.min(window.innerWidth * 0.6, 800);
+                              event.target.setSize(width.toString(), '500');
                             }
                           } catch (e) {
                             console.warn('Could not resize player:', e);
@@ -5025,7 +5007,7 @@
 
     const beatDropButton = document.getElementById('beatDropButton');
     if (beatDropButton) {
-      beatDropButton.addEventListener('click', toggleBeatDropMix);
+    beatDropButton.addEventListener('click', toggleBeatDropMix);
     }
 
     // Play All button
@@ -6164,62 +6146,62 @@
         return;
       }
       
-      // Move iframe to primary panel - check both thumbnail and hidden player div
-      let iframe = document.querySelector(`#thumb${index} iframe`);
-      if (!iframe) {
-        iframe = document.querySelector(`#player${index} iframe`);
-      }
-      if (iframe) {
-        // Move the actual iframe (YouTube player API will still work)
+      // Move player div (with iframe) to primary panel
+      const playerDiv = document.getElementById(`player${index}`);
+      if (playerDiv) {
+        // Move the entire player div to primary panel
         primaryVideoWrapper.innerHTML = '';
-        primaryVideoWrapper.appendChild(iframe);
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.minHeight = '400px';
-        iframe.style.border = 'none';
-        iframe.style.display = 'block';
-        iframe.style.position = 'absolute';
-        iframe.style.top = '0';
-        iframe.style.left = '0';
+        primaryVideoWrapper.appendChild(playerDiv);
+        playerDiv.style.width = '100%';
+        playerDiv.style.height = '100%';
+        playerDiv.style.position = 'relative';
         
         // Force the wrapper to have a height
         if (!primaryVideoWrapper.style.height || primaryVideoWrapper.style.height === '0px') {
           primaryVideoWrapper.style.height = '500px';
         }
         
-        // Update iframe dimensions for larger display
+        // Update player size for larger display
         try {
           if (player && player.setSize) {
-            player.setSize(window.innerWidth * 0.6, 500);
+            const width = Math.min(window.innerWidth * 0.6, 800);
+            player.setSize(width.toString(), '500');
           }
         } catch (e) {
           console.warn('Could not resize player:', e);
         }
+        
+        // Ensure iframe is properly sized
+        setTimeout(() => {
+          const iframe = playerDiv.querySelector('iframe');
+          if (iframe) {
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.style.display = 'block';
+          }
+        }, 100);
       } else {
-        console.warn(`Iframe not found for player ${index}. Player may not be ready yet.`);
-        // If player exists but iframe not found, wait a bit and try again
+        console.warn(`Player div not found for player ${index}. Player may not be ready yet.`);
+        // If player exists but div not found, wait a bit and try again
         if (player) {
           setTimeout(() => {
-            let iframe = document.querySelector(`#thumb${index} iframe`) || document.querySelector(`#player${index} iframe`);
-            if (iframe && primaryVideoWrapper) {
+            const playerDiv = document.getElementById(`player${index}`);
+            if (playerDiv && primaryVideoWrapper) {
               primaryVideoWrapper.innerHTML = '';
-              primaryVideoWrapper.appendChild(iframe);
-              iframe.style.width = '100%';
-              iframe.style.height = '100%';
-              iframe.style.minHeight = '400px';
-              iframe.style.border = 'none';
-              iframe.style.display = 'block';
-              iframe.style.position = 'absolute';
-              iframe.style.top = '0';
-              iframe.style.left = '0';
+              primaryVideoWrapper.appendChild(playerDiv);
+              playerDiv.style.width = '100%';
+              playerDiv.style.height = '100%';
+              playerDiv.style.position = 'relative';
               if (!primaryVideoWrapper.style.height || primaryVideoWrapper.style.height === '0px') {
                 primaryVideoWrapper.style.height = '500px';
               }
-              // Update iframe dimensions for larger display
+              // Update player size
               const player = players[index];
               if (player && player.setSize) {
                 try {
-                  player.setSize(window.innerWidth * 0.6, 500);
+                  const width = Math.min(window.innerWidth * 0.6, 800);
+                  player.setSize(width.toString(), '500');
                 } catch (e) {
                   console.warn('Could not resize player:', e);
                 }
