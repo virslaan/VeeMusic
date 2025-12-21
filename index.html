@@ -2707,7 +2707,8 @@
         return;
       }
 
-      // Allow multiple tracks to play together - don't stop other tracks
+      // PARALLEL PLAYBACK ENABLED: Multiple videos can play simultaneously
+      // This function only toggles the specific video - it does NOT stop other videos
       let state;
       try {
         state = player.getPlayerState();
@@ -2741,11 +2742,13 @@
         currentPlayingIndex = -1;
         }
       } else {
-        // Stop reverse if active
+        // PARALLEL PLAYBACK: Start this video without stopping others
+        // Stop reverse if active (only for this video)
         if (trackReverse[index]) {
           stopReverse(index);
         }
         try {
+        // Play this video - other videos continue playing in parallel
         player.playVideo();
         } catch (e) {
           console.error(`Error playing video ${index}:`, e);
@@ -2762,7 +2765,17 @@
         if (trackCard) {
           trackCard.classList.add('playing');
         }
-        currentPlayingIndex = index;
+        // Don't overwrite currentPlayingIndex - allow multiple videos to play in parallel
+        // Only set it if no video is currently tracked, or use it for primary video
+        if (currentPlayingIndex === -1 || index === 0) {
+          currentPlayingIndex = index;
+        }
+        
+        // Switch to row layout when any video is playing
+        const resultsDiv = document.getElementById('results');
+        if (resultsDiv) {
+          resultsDiv.classList.add('playing-layout');
+        }
       }
     }
     
@@ -3019,7 +3032,11 @@
         if (trackCard) {
           trackCard.classList.add('playing');
         }
-        currentPlayingIndex = index;
+        // Don't overwrite currentPlayingIndex - allow multiple videos to play
+        // Only set it if no video is currently tracked, or use it for primary video
+        if (currentPlayingIndex === -1 || index === 0) {
+          currentPlayingIndex = index;
+        }
         
         // Switch to row layout when any video is playing
         if (resultsDiv) {
@@ -3034,32 +3051,35 @@
           primaryPlayButton.innerHTML = getSVGIcon('play');
           primaryPlayButton.classList.remove('playing');
         }
+        // Always update UI when pausing
+        if (videoCard) videoCard.classList.remove('playing');
+        if (trackCard) {
+          trackCard.classList.remove('playing');
+        }
+        
+        // Only clear currentPlayingIndex if this was the tracked video
         if (currentPlayingIndex === index) {
-          if (videoCard) videoCard.classList.remove('playing');
-          if (trackCard) {
-            trackCard.classList.remove('playing');
-          }
           currentPlayingIndex = -1;
-          
-          // Check if any video is still playing
-          let anyPlaying = false;
-          players.forEach((player, idx) => {
-            if (player) {
-              try {
-                const playerState = player.getPlayerState();
-                if (playerState === YT.PlayerState.PLAYING) {
-                  anyPlaying = true;
-                }
-              } catch (e) {
-                // Ignore errors
+        }
+        
+        // Check if any video is still playing
+        let anyPlaying = false;
+        players.forEach((player, idx) => {
+          if (player) {
+            try {
+              const playerState = player.getPlayerState();
+              if (playerState === YT.PlayerState.PLAYING) {
+                anyPlaying = true;
               }
+            } catch (e) {
+              // Ignore errors
             }
-          });
-          
-          // Switch back to panel layout if no videos are playing
-          if (!anyPlaying && resultsDiv) {
-            resultsDiv.classList.remove('playing-layout');
           }
+        });
+        
+        // Switch back to panel layout if no videos are playing
+        if (!anyPlaying && resultsDiv) {
+          resultsDiv.classList.remove('playing-layout');
         }
       }
     }
